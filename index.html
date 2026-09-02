@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0d0716">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Tu joues à Kwa ?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;family=Outfit:wght@400;600;800&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/menu.css">
+<link rel="stylesheet" href="css/board.css">
+<link rel="stylesheet" href="css/game.css">
+<link rel="stylesheet" href="css/minigames.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============ ECRAN TITRE ============ -->
+  <section class="screen is-active" id="screen-title">
+    <div class="crt-scan"></div>
+    <div class="title-wrap">
+      <div class="title-host" id="titleHost"></div>
+      <h1 class="game-title">
+        <span class="gt-l1">TU JOUES À</span>
+        <span class="gt-l2">KWA<span class="gt-q">?</span></span>
+      </h1>
+      <p class="title-sub">Le jeu de plateau qui pose les vraies questions</p>
+      <div class="title-btns">
+        <button class="btn btn-xl btn-primary" data-go="mode">▶ JOUER</button>
+        <button class="btn btn-ghost" data-go="rules">Les règles</button>
+      </div>
+      <p class="title-foot">v1.0 · Forêt Enchantée</p>
+    </div>
+  </section>
+
+  <!-- ============ REGLAGES ============ -->
+  <section class="screen" id="screen-mode">
+    <header class="topbar"><button class="btn-back" data-go="title">‹</button><h2>Réglages de la partie</h2></header>
+    <div class="scroll">
+
+      <div class="card-block">
+        <h3 class="block-title">Combien de téléphones ?</h3>
+        <div class="opt-grid">
+          <button class="opt" data-set="device" data-val="solo">
+            <span class="opt-ico">📱</span><b>1 téléphone</b>
+            <small>On se passe l'appareil. Tout marche hors-ligne.</small>
+          </button>
+          <button class="opt" data-set="device" data-val="multi">
+            <span class="opt-ico">📶</span><b>Chacun le sien</b>
+            <small>Salon avec code à 3 chiffres. Débloque le Duel.</small>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-block">
+        <h3 class="block-title">Condition de victoire</h3>
+        <div class="opt-grid">
+          <button class="opt" data-set="mode" data-val="terminus">
+            <span class="opt-ico">🏁</span><b>Terminus</b>
+            <small>Le premier au bout du chemin gagne.</small>
+          </button>
+          <button class="opt" data-set="mode" data-val="tours">
+            <span class="opt-ico">⏱️</span><b>Nombre de tours</b>
+            <small>Au bout de X tours, le plus loin gagne.</small>
+          </button>
+        </div>
+        <div class="slider-row" id="rowTurns" hidden>
+          <label>Nombre de tours : <b id="turnsVal">5</b></label>
+          <input type="range" id="turnsRange" min="3" max="20" value="5" aria-label="Nombre de tours">
+        </div>
+        <div class="slider-row" id="rowLen">
+          <label>Longueur du chemin : <b id="lenVal">40</b> cases</label>
+          <input type="range" id="lenRange" min="20" max="80" step="2" value="40" aria-label="Longueur du chemin">
+        </div>
+      </div>
+
+      <div class="card-block">
+        <h3 class="block-title">Options</h3>
+        <label class="switch-row"><span>Duel Pong en écran partagé<small>Sinon réservé au multi-téléphones</small></span><input type="checkbox" id="optDuelSolo"><i></i></label>
+        <label class="switch-row"><span>Mode épicé<small>Le Mot Raccord peut partir loin</small></span><input type="checkbox" id="optSpicy" checked><i></i></label>
+        <label class="switch-row"><span>Bruitages et jingles<small>Synthétisés, aucun fichier</small></span><input type="checkbox" id="optSound" checked><i></i></label>
+      </div>
+
+      <button class="btn btn-xl btn-primary w-full" id="btnToPlayers">Suivant ›</button>
+    </div>
+  </section>
+
+  <!-- ============ JOUEURS ============ -->
+  <section class="screen" id="screen-players">
+    <header class="topbar"><button class="btn-back" data-go="mode">‹</button><h2>Les joueurs</h2></header>
+    <div class="scroll">
+      <p class="hint">Choisis ta couleur, ton blase, et l'image qui s'affiche dans ta télé.</p>
+      <div id="playerList" class="player-list"></div>
+      <button class="btn btn-add" id="btnAddPlayer">＋ Ajouter un joueur</button>
+      <button class="btn btn-xl btn-primary w-full" id="btnStart">C'EST PARTI ▶</button>
+    </div>
+  </section>
+
+  <!-- ============ LOBBY ============ -->
+  <section class="screen" id="screen-lobby">
+    <header class="topbar"><button class="btn-back" data-go="mode">‹</button><h2>Salon</h2></header>
+    <div class="scroll" id="lobbyBody"></div>
+  </section>
+
+  <!-- ============ REGLES ============ -->
+  <section class="screen" id="screen-rules">
+    <header class="topbar"><button class="btn-back" data-go="title">‹</button><h2>Les règles</h2></header>
+    <div class="scroll" id="rulesBody"></div>
+  </section>
+
+  <!-- ============ JEU ============ -->
+  <section class="screen screen-game" id="screen-game">
+    <div class="sky"></div>
+    <div class="canopy-far"></div>
+    <div class="fog"></div>
+    <div class="fireflies" id="fireflies"></div>
+
+    <div class="camera" id="camera">
+      <div class="ground" id="ground">
+        <div class="ground-tex"></div>
+        <svg class="path-svg" id="pathSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="layer" id="tiles"></div>
+        <div class="layer" id="props"></div>
+        <div class="layer" id="pawns"></div>
+      </div>
+    </div>
+
+    <div class="vignette"></div>
+    <div class="crt-scan"></div>
+
+    <header class="hud-top">
+      <button class="hud-btn" id="btnMenu">☰</button>
+      <div class="hud-turn"><span id="hudMode">TERMINUS</span><b id="hudTurn">Tour 1</b></div>
+      <button class="hud-btn" id="btnScores">🏆</button>
+    </header>
+
+    <div class="hud-players" id="hudPlayers"></div>
+
+    <div class="kwa-zone" id="kwaZone">
+      <div class="kwa-bot" id="kwaBot"></div>
+      <div class="kwa-bubble" id="kwaBubble"><p id="kwaText"></p><span class="kwa-next" id="kwaNext">▼</span></div>
+    </div>
+
+    <div class="action-zone" id="actionZone"></div>
+  </section>
+
+</div>
+
+<div id="overlay" class="overlay" hidden></div>
+<div id="toast" class="toast" hidden></div>
+<div id="jingle" class="jingle" hidden></div>
+
+<!-- ================= CONFIG ================= -->
+<script src="js/config.js"></script>
+
+<!-- ================= DATA ================= -->
+<script src="js/data/cards-01.js"></script>
+<script src="js/data/cards-02.js"></script>
+<script src="js/data/cards-03.js"></script>
+<script src="js/data/cards-04.js"></script>
+<script src="js/data/cards-05.js"></script>
+<script src="js/data/cards-06.js"></script>
+<script src="js/data/cards-07.js"></script>
+<script src="js/data/cards-08.js"></script>
+<script src="js/data/cards-09.js"></script>
+<script src="js/data/cards-10.js"></script>
+<script src="js/data/dilemmes.js"></script>
+<script src="js/data/mimes.js"></script>
+<script src="js/data/motraccord.js"></script>
+<script src="js/data/undercover.js"></script>
+<script src="js/data/kwalines.js"></script>
+
+<!-- ================= CORE ================= -->
+<script src="js/util.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/state.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/kwa.js"></script>
+<script src="js/board.js"></script>
+<script src="js/pawns.js"></script>
+<script src="js/prompt.js"></script>
+<script src="js/intro.js"></script>
+<script src="js/menu.js"></script>
+<script src="js/net.js"></script>
+<script src="js/game.js"></script>
+
+<!-- ================= CASES ================= -->
+<script src="js/tiles/quiz.js"></script>
+<script src="js/tiles/undercover.js"></script>
+<script src="js/tiles/anecdote.js"></script>
+<script src="js/tiles/verite.js"></script>
+<script src="js/tiles/vingtetun.js"></script>
+<script src="js/tiles/dilemme.js"></script>
+<script src="js/tiles/duel.js"></script>
+<script src="js/tiles/mime.js"></script>
+<script src="js/tiles/motraccord.js"></script>
+
+<script src="js/boot.js"></script>
+</body>
+</html>

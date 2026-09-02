@@ -1,0 +1,190 @@
+/* ==========================================================
+   HUD in-game, Kwa l'animateur, des, classement
+   ========================================================== */
+
+.hud-top{
+  position:absolute;top:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:calc(8px + var(--safe-t)) 12px 8px;
+  background:linear-gradient(180deg,rgba(10,4,22,.92),rgba(10,4,22,0));
+}
+.hud-btn{
+  width:42px;height:42px;border:2px solid var(--line);border-radius:12px;
+  background:rgba(20,10,40,.85);color:var(--txt);font-size:19px;
+  border-bottom-width:4px;
+}
+.hud-btn:active{transform:translateY(2px);border-bottom-width:2px}
+.hud-turn{text-align:center;line-height:1.25}
+.hud-turn span{display:block;font-family:var(--pix);font-size:7px;color:var(--cyan);letter-spacing:1px}
+.hud-turn b{display:block;font-family:var(--pix);font-size:11px;color:var(--gold);text-shadow:0 2px 0 #000}
+
+/* ---------- bandeau joueurs ---------- */
+.hud-players{
+  position:absolute;top:calc(56px + var(--safe-t));left:0;right:0;z-index:49;
+  display:flex;gap:7px;overflow-x:auto;padding:0 12px 4px;scrollbar-width:none;
+}
+.hud-players::-webkit-scrollbar{display:none}
+.hp{
+  flex:0 0 auto;display:flex;align-items:center;gap:6px;
+  background:rgba(14,6,30,.88);border:2px solid var(--pc);border-radius:999px;
+  padding:4px 10px 4px 4px;
+}
+.hp-av{width:24px;height:24px;border-radius:6px;background:#000;overflow:hidden;border:2px solid var(--pc);display:grid;place-items:center;font-size:11px}
+.hp-av img{width:100%;height:100%;object-fit:cover}
+.hp b{font-size:11.5px;max-width:66px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hp i{font-family:var(--pix);font-size:8px;color:var(--gold);font-style:normal}
+.hp.on{box-shadow:0 0 0 2px rgba(255,255,255,.25),0 0 18px var(--pc);transform:scale(1.05)}
+
+/* ---------- Kwa ---------- */
+.kwa-zone{
+  position:absolute;left:0;right:0;bottom:calc(112px + var(--safe-b));z-index:52;
+  display:flex;align-items:flex-end;gap:8px;padding:0 12px;
+  pointer-events:none;
+}
+.kwa-zone.hidden{opacity:0;transform:translateY(20px);transition:.25s}
+.kwa-bot{width:86px;flex:0 0 86px;animation:hostFloat 3.4s ease-in-out infinite}
+.kwa-bubble{
+  flex:1;position:relative;pointer-events:auto;
+  background:linear-gradient(180deg,#fffdf4,#ffeec9);
+  color:#22103a;border:4px solid #22103a;border-radius:16px;
+  padding:12px 30px 12px 14px;min-height:62px;
+  box-shadow:0 8px 0 rgba(0,0,0,.45);
+}
+.kwa-bubble::before{
+  content:'';position:absolute;left:-14px;bottom:16px;
+  border:9px solid transparent;border-right-color:#22103a;
+}
+.kwa-bubble p{margin:0;font-size:15px;font-weight:700;line-height:1.42;min-height:21px}
+.kwa-bubble .kwa-name{
+  position:absolute;top:-13px;left:10px;font-family:var(--pix);font-size:8px;
+  background:#22103a;color:var(--gold);padding:4px 7px;border-radius:6px;
+}
+.kwa-next{
+  position:absolute;right:9px;bottom:7px;font-size:13px;color:#22103a;
+  animation:nextBlink .9s steps(2) infinite;
+}
+.kwa-next[hidden]{display:none}
+@keyframes nextBlink{0%,49%{opacity:1}50%,100%{opacity:.15}}
+
+/* ---------- zone d action ---------- */
+.action-zone{
+  position:absolute;left:0;right:0;bottom:0;z-index:53;
+  padding:10px 14px calc(14px + var(--safe-b));
+  display:flex;flex-direction:column;gap:9px;align-items:center;
+  background:linear-gradient(0deg,rgba(8,3,18,.94) 40%,rgba(8,3,18,0));
+  min-height:96px;justify-content:flex-end;
+}
+.action-zone .btn{width:100%;max-width:420px}
+
+/* ---------- des ---------- */
+.dice-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.dice{
+  width:86px;height:86px;border-radius:18px;
+  background:linear-gradient(160deg,#fffdf5,#e6d9c2);
+  border:4px solid #22103a;box-shadow:0 8px 0 #22103a,0 0 40px rgba(255,207,77,.35);
+  display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:11px;gap:3px;
+}
+.dice.rolling{animation:diceRoll .5s cubic-bezier(.3,1.4,.4,1) infinite}
+@keyframes diceRoll{0%{transform:rotate(0) scale(1)}25%{transform:rotate(-14deg) scale(1.07)}50%{transform:rotate(0) scale(.95)}75%{transform:rotate(14deg) scale(1.07)}100%{transform:rotate(0) scale(1)}}
+.pip{border-radius:50%;background:#22103a;opacity:0}
+.pip.on{opacity:1}
+
+/* ---------- classement ---------- */
+.rank-row{
+  display:flex;align-items:center;gap:10px;padding:11px;border-radius:12px;
+  background:var(--panel);border:2px solid var(--line);border-left-width:6px;margin-bottom:8px;
+}
+.rank-pos{font-family:var(--pix);font-size:13px;color:var(--gold);width:30px;text-align:center}
+.rank-av{width:38px;height:38px;border-radius:8px;overflow:hidden;background:#000;border:2px solid var(--pc);display:grid;place-items:center;font-size:16px}
+.rank-av img{width:100%;height:100%;object-fit:cover}
+.rank-info{flex:1;min-width:0}
+.rank-info b{display:block;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank-info small{color:var(--txt-dim);font-size:12px}
+.rank-bar{height:6px;border-radius:3px;background:#2a1b45;margin-top:5px;overflow:hidden}
+.rank-bar i{display:block;height:100%;background:var(--pc);border-radius:3px;transition:width .5s}
+
+/* ==========================================================
+   Presentation des candidats & tirage de l ordre de passage
+   ========================================================== */
+.spotlight{
+  position:absolute;inset:0;z-index:51;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-start;padding:calc(112px + var(--safe-t)) 18px 0;
+}
+.spotlight::before{
+  content:'';position:absolute;left:50%;top:0;width:min(120vw,760px);height:78%;
+  transform:translateX(-50%);
+  background:radial-gradient(60% 55% at 50% 34%,rgba(255,245,200,.30),rgba(255,220,120,.10) 45%,transparent 72%);
+  animation:beam 2.6s ease-in-out infinite;
+}
+@keyframes beam{0%,100%{opacity:.7}50%{opacity:1}}
+
+.sl-card{
+  position:relative;text-align:center;
+  animation:slIn .5s cubic-bezier(.2,1.5,.4,1) both;
+}
+@keyframes slIn{from{opacity:0;transform:scale(.4) rotate(-10deg)}to{opacity:1;transform:none}}
+.sl-num{
+  font-family:var(--pix);font-size:9px;color:var(--cyan);letter-spacing:2px;
+  margin-bottom:10px;text-shadow:0 2px 0 #000;
+}
+.sl-tv{filter:drop-shadow(0 14px 18px rgba(0,0,0,.6));animation:hostFloat 2.8s ease-in-out infinite}
+.sl-name{
+  font-family:var(--pix);font-size:clamp(15px,6vw,24px);color:#fff;margin-top:12px;
+  text-shadow:0 4px 0 #000,0 0 26px var(--pc);
+}
+.sl-col{
+  display:inline-block;margin-top:10px;padding:5px 14px;border-radius:999px;
+  background:var(--pc);color:#150a24;font-weight:800;font-size:12px;
+  box-shadow:0 3px 0 rgba(0,0,0,.5);
+}
+
+/* --- liste de l ordre de passage --- */
+.sl-order{
+  position:relative;width:100%;max-width:380px;pointer-events:auto;
+  background:rgba(12,5,26,.88);border:3px solid var(--gold);border-radius:18px;
+  padding:12px;box-shadow:0 12px 0 rgba(0,0,0,.45),0 0 40px rgba(255,207,77,.25);
+  max-height:calc(100vh - 300px);overflow-y:auto;
+}
+.sl-title{
+  font-family:var(--pix);font-size:10px;color:var(--gold);text-align:center;
+  letter-spacing:1px;margin-bottom:12px;line-height:1.7;
+}
+.ol-row{
+  display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:12px;margin-bottom:6px;
+  background:#190e30;border:2px solid var(--pc);border-left-width:6px;
+  animation:olIn .4s cubic-bezier(.2,1.5,.4,1) both;
+}
+.ol-row:last-child{margin-bottom:0}
+@keyframes olIn{from{opacity:0;transform:translateX(-26px) scale(.9)}to{opacity:1;transform:none}}
+.ol-pos{font-family:var(--pix);font-size:13px;color:var(--gold);width:26px;text-align:center}
+.ol-av{
+  width:34px;height:34px;flex:0 0 34px;border-radius:8px;overflow:hidden;background:#000;
+  border:2px solid var(--pc);display:grid;place-items:center;font-size:15px;
+}
+.ol-av img{width:100%;height:100%;object-fit:cover}
+.ol-row b{flex:1;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ol-row .ol-tag{font-family:var(--pix);font-size:8px;color:var(--cyan)}
+
+/* --- roulement de tambour --- */
+.jingle.drum{
+  background:radial-gradient(70% 60% at 50% 45%,#3a1560,#12002a 70%,#08001a 100%);
+  animation:drumShake .09s linear infinite;
+}
+@keyframes drumShake{
+  0%{transform:translate(0,0)}25%{transform:translate(-3px,2px)}
+  50%{transform:translate(2px,-3px)}75%{transform:translate(3px,2px)}
+  100%{transform:translate(-2px,-2px)}
+}
+.jingle.drum h2{color:var(--gold);text-shadow:0 4px 0 #000,0 0 34px rgba(255,207,77,.8)}
+.drum-ico{font-size:64px;animation:drumBeat .18s ease-in-out infinite alternate}
+@keyframes drumBeat{from{transform:scale(1) rotate(-6deg)}to{transform:scale(1.18) rotate(6deg)}}
+
+/* ---------- fin de partie ---------- */
+.win-hero{text-align:center;padding:10px 0 18px}
+.win-hero .win-tv{width:140px;margin:0 auto 10px;animation:hostFloat 2.6s ease-in-out infinite}
+.win-hero h2{font-family:var(--pix);font-size:15px;color:var(--gold);margin:0 0 6px;line-height:1.7;text-shadow:0 3px 0 #000}
+.win-hero p{color:var(--txt-dim);margin:0;font-weight:600}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:410;overflow:hidden}
+.cf{position:absolute;width:9px;height:14px;animation:cfFall linear forwards}
+@keyframes cfFall{0%{transform:translateY(-30px) rotate(0);opacity:1}100%{transform:translateY(105vh) rotate(720deg);opacity:.9}}

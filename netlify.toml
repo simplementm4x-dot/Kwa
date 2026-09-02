@@ -1,0 +1,14 @@
+# Netlify sert le jeu tel quel : ce sont des fichiers statiques.
+# Le mode multi-telephones a besoin d un serveur Node ailleurs
+# (voir js/config.js et la section "Netlify" du README).
+
+[build]
+  publish = "."
+  command = ""
+
+# server/ et test/ ne servent a rien en ligne
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "same-origin"

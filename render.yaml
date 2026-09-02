@@ -1,0 +1,25 @@
+# =========================================================
+#  Serveur de salons de "Tu joues a Kwa ?"
+#
+#  Sur Render : New > Blueprint, pointe sur ce depot, deploie.
+#  Render lit ce fichier et cree le service tout seul.
+#
+#  Il te donnera une adresse du type https://kwa-server-xxxx.onrender.com
+#  A reporter dans js/config.js, en wss:// :
+#      server: 'wss://kwa-server-xxxx.onrender.com'
+# =========================================================
+services:
+  - type: web
+    name: kwa-server
+    runtime: node
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: node server/server.js
+    healthCheckPath: /index.html
+    envVars:
+      # seuls ces sites peuvent utiliser le serveur
+      - key: KWA_ORIGINS
+        value: https://kwafr.netlify.app
+      # 3 chiffres se devinent trop vite sur internet
+      - key: KWA_CODE_LEN
+        value: "6"

@@ -1,0 +1,16 @@
+{
+  "name": "tu-joues-a-kwa",
+  "version": "1.0.0",
+  "description": "Jeu de plateau mobile-first anime par Kwa, un poste de television sur pattes.",
+  "private": true,
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "node test/run.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  }
+}
