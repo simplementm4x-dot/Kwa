@@ -112,6 +112,9 @@
         <h3 class="block-title">Options</h3>
         <label class="switch-row"><span>Duel Pong en écran partagé<small>Sinon réservé au multi-téléphones</small></span><input type="checkbox" id="optDuelSolo"><i></i></label>
         <label class="switch-row"><span>Mode épicé<small>Le Mot Raccord peut partir loin</small></span><input type="checkbox" id="optSpicy" checked><i></i></label>
+        <label class="switch-row"><span>Événements de forêt<small>Une règle change à chaque manche</small></span><input type="checkbox" id="optEvents" checked><i></i></label>
+        <label class="switch-row"><span>Les paris<small>Miser sur celui qui est sur scène</small></span><input type="checkbox" id="optBets" checked><i></i></label>
+        <label class="switch-row"><span>Les pactes de Kwa<small>Il propose parfois un marché avant le dé</small></span><input type="checkbox" id="optPacts" checked><i></i></label>
         <label class="switch-row"><span>Bruitages et jingles<small>Synthétisés, aucun fichier</small></span><input type="checkbox" id="optSound" checked><i></i></label>
       </div>
 
@@ -169,6 +172,7 @@
     </header>
 
     <div class="hud-players" id="hudPlayers"></div>
+    <div class="hud-event" id="hudEvent" hidden></div>
 
     <div class="kwa-zone" id="kwaZone">
       <div class="kwa-bot" id="kwaBot"></div>
@@ -218,9 +222,13 @@
 <script src="js/setup.js"></script>
 <script src="js/menu.js"></script>
 <script src="js/net.js"></script>
+<script src="js/events.js"></script>
+<script src="js/bets.js"></script>
+<script src="js/pacte.js"></script>
 <script src="js/game.js"></script>
 
 <!-- ================= CASES ================= -->
+<script src="js/tiles/flash.js"></script>
 <script src="js/tiles/quiz.js"></script>
 <script src="js/tiles/undercover.js"></script>
 <script src="js/tiles/anecdote.js"></script>

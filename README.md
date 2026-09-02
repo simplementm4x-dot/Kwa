@@ -25,6 +25,25 @@ Le bouton **REJOINDRE**, sous JOUER, va directement au champ du code.
 L'écran « Réglages détaillés » reste accessible depuis le titre pour le son
 et le duel en écran partagé.
 
+### Ce qui rythme une partie
+
+Au-delà des cases, quatre systèmes tournent en fond :
+
+- **Les cases éclair** (Échange, Péage, Roue de Kwa) se résolvent en dix
+  secondes, sans mini-jeu. Elles représentent une case sur cinq et existent
+  pour une seule raison : enchaîner trois épreuves de trois minutes épuise
+  une table.
+- **Les paris** — quand un joueur monte seul sur scène, les autres misent sur
+  lui avant qu'il commence. Bon pari +1 case, mauvais -1. C'est ce qui occupe
+  ceux qui, sinon, regarderaient.
+- **Les événements de forêt** — à chaque nouvelle manche, Kwa annonce une
+  règle qui vaut pour tout le tour : tout compte double, gagner veut dire
+  reculer, aucun malus ne passe, le leader paie pour les autres.
+- **Les pactes de Kwa** — de temps en temps, avant le dé, il prend le joueur à
+  part et propose un marché. Refuser ne coûte rien.
+
+Chacun se coupe séparément dans « Réglages détaillés ».
+
 ### Mode 1 téléphone (le plus simple)
 Ouvrir `index.html` dans le navigateur. C'est tout : aucune installation,
 aucune connexion, tout tourne hors-ligne.

@@ -33,20 +33,35 @@
   /* ---------------------------------------------------------
      Repartition des types de cases
      --------------------------------------------------------- */
+  const GROSSES = ['undercover', 'anecdote', 'verite', 'vingtetun',
+                   'dilemme', 'mime', 'motraccord', 'duel'];
+  const ECLAIRS = ['echange', 'peage', 'roue'];
+
+  /** une epreuve au hasard parmi celles jouables : sert a "Kwa a faim" */
+  B.randomPlayable = function () {
+    const pool = ['quiz'].concat(GROSSES, ECLAIRS).filter(t => K.rules.tileAllowed(t));
+    return pool[U.rnd(pool.length)];
+  };
+
   function pickTypes(len) {
     /* a distance, le 21, le mime et le duel ne peuvent pas se jouer :
        ils ne doivent pas non plus apparaitre sur le chemin */
-    const specials = ['undercover', 'anecdote', 'verite', 'vingtetun',
-                      'dilemme', 'mime', 'motraccord', 'duel']
-      .filter(t => K.rules.tileAllowed(t));
+    const grosses = GROSSES.filter(t => K.rules.tileAllowed(t));
+    const eclairs = ECLAIRS.filter(t => K.rules.tileAllowed(t));
 
+    /* Une case sur cinq est une case eclair. C est une question de rythme :
+       enchainer trois epreuves de trois minutes epuise une table, il faut
+       des cases qui se resolvent le temps d une phrase. */
     const mid = len - 2;
-    const nQuiz = Math.max(1, Math.round(mid * 0.55));
-    let nSpec = mid - nQuiz;
+    const nQuiz = Math.max(1, Math.round(mid * 0.42));
+    const nEclair = eclairs.length ? Math.round(mid * 0.22) : 0;
+    const nGrosses = Math.max(0, mid - nQuiz - nEclair);
 
     const bag = [];
     let s = 0;
-    while (bag.length < nSpec) bag.push(specials[s++ % specials.length]);
+    while (bag.length < nGrosses && grosses.length) bag.push(grosses[s++ % grosses.length]);
+    s = 0;
+    for (let i = 0; i < nEclair; i++) bag.push(eclairs[s++ % eclairs.length]);
     for (let i = 0; i < nQuiz; i++) bag.push('quiz');
 
     /* melange puis on evite deux cases speciales identiques collees */

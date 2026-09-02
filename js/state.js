@@ -17,17 +17,22 @@
 
   K.TILE_TYPES = {
     start:      { icon: '🏠', label: 'Depart',           c1: '#5b4b8a', c2: '#3b2f63' },
-    quiz:       { icon: '❓', label: 'Tu te mets combien ?', c1: '#7b3fb3', c2: '#4a1f78' },
+    /* pari: true = un seul joueur est sur scene, les autres peuvent miser */
+    quiz:       { icon: '❓', label: 'Tu te mets combien ?', c1: '#7b3fb3', c2: '#4a1f78', pari: true },
     undercover: { icon: '🕵️', label: 'Undercover',       c1: '#2f4f7a', c2: '#1b2f4d' },
     anecdote:   { icon: '📖', label: 'Anecdote',          c1: '#a86a2e', c2: '#6b3f16' },
-    verite:     { icon: '🎭', label: 'Verite ou Mensonge', c1: '#2f7a5a', c2: '#17402f' },
+    verite:     { icon: '🎭', label: 'Verite ou Mensonge', c1: '#2f7a5a', c2: '#17402f', pari: true },
     /* piece: true = il faut etre dans la meme piece (ou devant le meme
        ecran). Ces epreuves sautent quand la partie se joue a distance. */
     vingtetun:  { icon: '🍻', label: 'Le 21',             c1: '#b83a5e', c2: '#6e1e37', piece: true },
     dilemme:    { icon: '⚖️', label: 'Le Dilemme',        c1: '#3a6fb8', c2: '#1f3f6e' },
     duel:       { icon: '🏓', label: 'Duel',              c1: '#b8452e', c2: '#6e2418', piece: true },
-    mime:       { icon: '🤾', label: 'Mime en folie',     c1: '#8a4fb8', c2: '#50276e', piece: true },
-    motraccord: { icon: '🔤', label: 'Le Mot Raccord',    c1: '#2e9ab8', c2: '#175a6e' },
+    mime:       { icon: '🤾', label: 'Mime en folie',     c1: '#8a4fb8', c2: '#50276e', piece: true, pari: true },
+    motraccord: { icon: '🔤', label: 'Le Mot Raccord',    c1: '#2e9ab8', c2: '#175a6e', pari: true },
+    /* --- les cases eclair : elles se resolvent en dix secondes --- */
+    echange:    { icon: '🔀', label: 'Echange',            c1: '#2e8f8a', c2: '#154c49', eclair: true },
+    peage:      { icon: '🪙', label: 'Le Peage',           c1: '#8a7a2e', c2: '#4c4215', eclair: true },
+    roue:       { icon: '🎡', label: 'La Roue de Kwa',     c1: '#7a3ea8', c2: '#42196b', eclair: true },
     finish:     { icon: '🏁', label: 'Terminus',          c1: '#d4a017', c2: '#8a6400' }
   };
 
@@ -41,12 +46,16 @@
       boardLength: 40,
       duelSolo: false,
       spicy: true,
+      evenements: true,      // la foret change une regle a chaque manche
+      paris: true,           // les autres misent sur celui qui est sur scene
+      pactes: true,          // Kwa propose parfois un marche avant le de
       sound: true
     },
     players: [],             // {id,name,color,hex,img,pos,stats}
     board: [],               // [{i,type,x,y}]
     turn: 1,
     idx: 0,                  // index du joueur courant
+    event: null,             // la regle de foret en cours, ou null
     started: false,
     over: false,
     net: null                // etat reseau (mode multi)

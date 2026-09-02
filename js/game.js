@@ -115,12 +115,19 @@
      Application des resultats d une case
      results : [{id, delta, why}]
      --------------------------------------------------------- */
-  G.applyResults = async function (results) {
-    if (!results || !results.length) return;
+  /**
+   * brut = true : on applique tel quel, sans laisser la regle de foret
+   * transformer les gains (sinon la maree de champignons se doublerait
+   * elle-meme, et les paris seraient inverses deux fois).
+   * Renvoie les resultats reellement appliques.
+   */
+  G.applyResults = async function (results, brut) {
+    if (!results || !results.length) return [];
+    results = brut ? results : K.events.apply(results);
     const real = results.filter(r => r && r.delta);
     if (!real.length) {
       await K.kwa.say('Personne ne bouge. La foret retient son souffle.', { auto: 900 });
-      return;
+      return results;
     }
     /* recapitulatif */
     await showRecap(results);
@@ -139,6 +146,7 @@
       await K.pawns.moveTo(p, target);
       hud();
     }
+    return results;
   };
 
   function showRecap(results) {
@@ -169,24 +177,53 @@
 
     await K.kwa.say(K.kwa.line('turn', { name: p.name }) || ('A toi, ' + p.name + ' !'), { mood: 'happy' });
 
+    /* Kwa propose parfois un marche avant meme que le de soit lance */
+    const pacte = await K.pacte.maybe(p, s.players, s.idx);
+    if (pacte && pacte.results) await G.applyResults(pacte.results);
+    if (p.pos >= K.board.last() && K.rules.isTerminus()) { await endGame(p); return true; }
+
     await G.button('🎲 LANCER LE DÉ');
     const d = await rollDice();
+    const pas = d * ((pacte && pacte.diceMult) || 1);
     await K.kwa.say(K.kwa.line('dice' + d, { name: p.name }) || (p.name + ' fait ' + d + ' !'), { auto: 800, mood: d >= 5 ? 'oh' : 'happy' });
+    if (pas !== d) await K.kwa.say('Et ca compte double : ' + pas + ' cases. Marche est marche.', { auto: 1200, mood: 'oh' });
 
     const before = p.pos;
-    await K.pawns.moveTo(p, before + d);
+    await K.pawns.moveTo(p, before + pas);
     hud();
 
     /* arrivee au bout */
     if (p.pos >= K.board.last() && K.rules.isTerminus()) { await endGame(p); return true; }
 
     const tile = K.board.at(p.pos);
-    const handler = K.tiles[tile.type];
-    if (handler && tile.type !== 'start' && tile.type !== 'finish') {
-      const info = K.TILE_TYPES[tile.type];
-      await U.jingle(info.label, '', 1200);
+    /* "Kwa a faim" : l epreuve jouee n est pas celle de la case */
+    const ev = K.state.event;
+    let type = tile.type;
+    if (ev && ev.wild && type !== 'start' && type !== 'finish') type = K.board.randomPlayable();
+
+    const handler = K.tiles[type];
+    if (pacte && pacte.skipTile) {
+      await K.kwa.say('Marche conclu : ' + p.name + ' saute son epreuve. On ne saura jamais.',
+        { auto: 1400, mood: 'wink' });
+    } else if (handler && type !== 'start' && type !== 'finish') {
+      const info = K.TILE_TYPES[type];
+      await U.jingle(info.label, type !== tile.type ? 'Choisie par Kwa' : '', 1200);
+
+      /* un seul joueur sur scene : les autres misent sur lui */
+      const mises = info.pari ? await K.bets.collect(p, { type }, s.players) : null;
+
       const results = await handler({ player: p, tile, players: s.players });
-      await G.applyResults(results);
+      const faits = await G.applyResults(results);
+
+      if (mises) {
+        const gain = (faits || []).filter(r => r.id === p.id)
+                                  .reduce((n, r) => n + (r.delta || 0), 0);
+        const paris = K.bets.settle(mises, gain, p);
+        if (paris.length) {
+          await K.bets.recap(mises, gain, p, paris);
+          await G.applyResults(paris, true);
+        }
+      }
     } else if (tile.type === 'finish') {
       await K.kwa.say('Bout du chemin ! ' + p.name + ' campe au terminus.', { auto: 1200 });
     } else {
@@ -218,6 +255,8 @@
           return;
         }
         await K.kwa.say('Tour ' + s.turn + ' ! On rembobine pas, on avance.', { auto: 900 });
+        await K.events.draw();
+        if (s.over) return;
       }
       hud();
     }
@@ -229,6 +268,7 @@
   G.start = async function () {
     const s = K.state;
     s.turn = 1; s.idx = 0; s.over = false; s.started = true;
+    s.event = null;
     s.players.forEach(p => { p.pos = 0; p.stats = { correct: 0, wrong: 0, gained: 0, lost: 0 }; });
     U.resetBags();
     if (K.net.isActive()) K.net.markStarted();
@@ -244,6 +284,7 @@
     K.pawns.renderAll();
     K.board.focus(0, true);
     hud();
+    K.events.render();
     K.audio.unlock();
 
     await K.kwa.say('Bien le bonjour ! Moi c est KWA, votre animateur en 625 lignes.', { mood: 'wink' });
@@ -263,6 +304,8 @@
   async function endGame(winner) {
     const s = K.state;
     s.over = true;
+    s.event = null;
+    K.events.render();
     G.clearAction();
     K.kwa.hide();
     K.net && K.net.broadcastState();

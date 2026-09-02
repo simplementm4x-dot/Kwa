@@ -189,3 +189,38 @@
 .confetti{position:fixed;inset:0;pointer-events:none;z-index:410;overflow:hidden}
 .cf{position:absolute;width:9px;height:14px;animation:cfFall linear forwards}
 @keyframes cfFall{0%{transform:translateY(-30px) rotate(0);opacity:1}100%{transform:translateY(105vh) rotate(720deg);opacity:.9}}
+
+
+/* ---------- bandeau de la regle en cours ---------- */
+.hud-event{
+  position:relative;z-index:6;margin:0 8px;
+  display:flex;align-items:center;gap:8px;
+  padding:7px 11px;border-radius:11px;
+  background:linear-gradient(90deg,rgba(122,62,168,.92),rgba(46,154,184,.86));
+  border:2px solid var(--gold);
+  box-shadow:0 4px 14px rgba(0,0,0,.5);
+  animation:evIn .4s cubic-bezier(.2,1.5,.4,1) both;
+}
+.hud-event[hidden]{display:none}
+.hud-event .he-ico{font-size:17px;line-height:1}
+.hud-event b{font-family:var(--pix);font-size:8.5px;letter-spacing:.5px;color:var(--gold);line-height:1.5}
+.hud-event small{font-size:11.5px;font-weight:700;color:#fff;opacity:.92;margin-left:auto;text-align:right}
+@keyframes evIn{from{opacity:0;transform:translateY(-12px) scale(.94)}to{opacity:1;transform:none}}
+
+/* ---------- la roue de Kwa ---------- */
+.roue{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  min-height:190px;
+  background:radial-gradient(circle at 50% 40%,#3b1d5e,#150a26);
+  border:3px solid var(--line);border-radius:18px;
+}
+.roue-val{
+  font-family:var(--pix);font-size:clamp(40px,16vw,72px);
+  text-shadow:0 4px 0 #000,0 0 26px currentColor;
+  animation:roueSpin .09s linear infinite;
+}
+.roue-lbl{font-size:13px;font-weight:700;color:var(--txt-dim);letter-spacing:1px}
+.roue.fini .roue-val{animation:rouePop .45s cubic-bezier(.2,1.7,.4,1) both}
+.roue.fini .roue-lbl{color:var(--txt)}
+@keyframes roueSpin{50%{transform:translateY(-3px) scale(1.04)}}
+@keyframes rouePop{0%{transform:scale(.5) rotate(-10deg)}70%{transform:scale(1.25)}100%{transform:none}}

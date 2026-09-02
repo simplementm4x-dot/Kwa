@@ -431,6 +431,7 @@
       turn: K.state.turn,
       idx: K.state.idx,
       over: K.state.over,
+      ev: K.state.event ? K.state.event.id : null,
       last: K.board.last(),
       order: K.state.players.map(p => p.id),
       pos: K.state.players.map(p => ({ id: p.id, pos: p.pos }))
@@ -525,6 +526,13 @@
       case 'panelClose':
         if (!answering) U.closeOverlay();
         break;
+
+      /* animations rejouees a l identique partout (roue...) */
+      case 'anim': {
+        const fn = K.anim && K.anim[d.fn];
+        if (fn && !answering) fn(d);
+        break;
+      }
 
       /* plateau vivant */
       case 'dice':   K.game.diceAnim(d.v); break;
@@ -626,6 +634,9 @@
     }
     (d.pos || []).forEach(x => { const p = K.player(x.id); if (p) p.pos = x.pos; });
     K.state.netLast = d.last;
+    /* la regle de foret en cours : on ne transporte que son identifiant */
+    K.state.event = d.ev ? K.events.byId(d.ev) : null;
+    K.events.render();
     if (d.over) clearSession();
     if (mirrorReady) { K.game.hud(); K.pawns.layoutLocal(); }
     else companion();
