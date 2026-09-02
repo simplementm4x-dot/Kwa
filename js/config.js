@@ -10,21 +10,18 @@ KWA.CONFIG = {
    * Adresse du serveur de salons (mode multi-telephones).
    *
    * ---------------------------------------------------------------
-   *  A REMPLIR pour jouer en ligne depuis https://kwafr.netlify.app
-   * ---------------------------------------------------------------
-   *  Netlify heberge le jeu mais ne peut pas tenir les salons.
-   *  Deploie ce depot sur Render (fichier render.yaml a la racine :
-   *  New > Blueprint), recupere l adresse qu il te donne, et colle-la
-   *  ici en remplacant http par wss :
-   *
-   *      server: 'wss://kwa-server-xxxx.onrender.com'
+   *  En place : le jeu est sur https://kwafr.netlify.app (Netlify) et
+   *  les salons tournent sur Render. Netlify sert les fichiers mais ne
+   *  peut pas tenir de connexion permanente, d ou les deux adresses.
    *
    *  Depuis un site en https, l adresse DOIT commencer par wss://.
+   *  (l adresse Render est en https:// dans le navigateur, wss:// ici :
+   *  c est le meme serveur, juste l autre protocole)
    *
    * ---------------------------------------------------------------
    *  Laisser vide ('') quand le serveur est au meme endroit que la
    *  page : c est le cas en local avec "node server/server.js", ou
-   *  sur un VPS qui sert le jeu et les salons. Rien a changer alors.
+   *  sur un VPS qui sert le jeu et les salons.
    */
-  server: ''
+  server: 'wss://kwa-6gp9.onrender.com'
 };
