@@ -37,8 +37,11 @@ function boot(opts) {
     const file = path.join(ROOT, src);
     try {
       win.eval(fs.readFileSync(file, 'utf8'));
-      /* config.js est le premier charge : on peut le surcharger tout de suite */
-      if (src.endsWith('config.js') && opts.config) Object.assign(win.KWA.CONFIG, opts.config);
+      /* config.js est le premier charge : on le surcharge tout de suite.
+         Sans ca, l adresse du serveur de production renseignee pour la mise
+         en ligne ferait passer toute la suite de tests par internet, et on
+         testerait le serveur deploye au lieu du code qu on vient d ecrire. */
+      if (src.endsWith('config.js')) Object.assign(win.KWA.CONFIG, { server: '' }, opts.config || {});
     } catch (e) {
       errors.push(src + ' : ' + e.message);
     }

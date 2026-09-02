@@ -139,6 +139,31 @@ input,textarea{user-select:text;-webkit-user-select:text;font-family:inherit}
   animation:toastIn .2s ease-out;
 }
 .toast[hidden]{display:none}
+
+/* ---------- bandeau de connexion ---------- */
+/* au-dessus de tout, y compris des jingles : quand la ligne casse,
+   c est la seule chose que le joueur a besoin de lire */
+.net-banner{
+  position:fixed;left:0;right:0;top:0;z-index:900;
+  display:flex;align-items:center;gap:10px;
+  padding:calc(8px + var(--safe-t)) 14px 8px;
+  font-size:13px;font-weight:700;line-height:1.35;
+  box-shadow:0 4px 18px rgba(0,0,0,.55);
+  animation:bannerIn .22s ease-out;
+}
+.net-banner[hidden]{display:none}
+.net-banner.wait{background:#12233d;border-bottom:2px solid var(--cyan);color:#c9ecff}
+.net-banner.error{background:#3d1220;border-bottom:2px solid var(--red);color:#ffc9c9}
+.net-banner.ok{background:#12331f;border-bottom:2px solid var(--green,#4ade6f);color:#c9ffd8}
+.net-banner .ico{font-size:15px}
+.net-banner .spin{
+  flex:0 0 15px;width:15px;height:15px;border-radius:50%;
+  border:3px solid rgba(255,255,255,.2);border-top-color:var(--cyan);
+  animation:spin .8s linear infinite;
+}
+.net-banner span:nth-child(2){flex:1}
+.net-banner .mini-btn{flex:0 0 auto}
+@keyframes bannerIn{from{opacity:0;transform:translateY(-100%)}to{opacity:1;transform:translateY(0)}}
 @keyframes toastIn{from{opacity:0;transform:translate(-50%,14px)}to{opacity:1;transform:translate(-50%,0)}}
 
 /* ---------- jingle plein ecran ---------- */

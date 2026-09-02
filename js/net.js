@@ -15,9 +15,13 @@
   let askSeq = 1;
   let mirrorReady = false;   /* le plateau est monte sur cet ecran */
   let answering = false;     /* une question privee est en cours ici */
+  let session = null;        /* de quoi retrouver sa place apres une coupure */
+  let resuming = false;
 
-  N.isActive = () => connected && !!code;
-  N.isHost = () => connected && meId && meId === hostId;
+  /* On reste "en partie multi" meme le temps d une coupure : sans ca l hote
+     se remettrait a faire tourner le telephone entre les joueurs. */
+  N.isActive = () => !!code;
+  N.isHost = () => !!code && meId && meId === hostId;
   N.isMe = id => id === meId;
   N.code = () => code;
   N.meId = () => meId;
@@ -76,7 +80,9 @@
     if (sock && sock.readyState === 1) return Promise.resolve();
 
     return wake(onSlow).then(() => new Promise((res, rej) => {
-      try { sock = new WebSocket(u); } catch (e) { rej(new Error('ws')); return; }
+      let s;
+      try { s = new WebSocket(u); } catch (e) { rej(new Error('ws')); return; }
+      sock = s;
 
       /* sans delai maximum, un mauvais reseau laisse le joueur devant un
          bouton qui ne repond jamais */
@@ -88,16 +94,23 @@
         err ? rej(new Error(err)) : res();
       };
       const timer = setTimeout(() => {
-        try { sock.close(); } catch (e) {}
+        try { s.close(); } catch (e) {}
         finish('timeout');
       }, remote() ? 20000 : 7000);
 
-      sock.onopen = () => { connected = true; finish(null); };
-      sock.onmessage = e => { try { onMessage(JSON.parse(e.data)); } catch (err) {} };
-      sock.onerror = () => finish('ws');
-      sock.onclose = () => {
+      s.onopen = () => { connected = true; finish(null); };
+      s.onmessage = e => {
+        if (sock !== s) return;
+        try { onMessage(JSON.parse(e.data)); } catch (err) {}
+      };
+      s.onerror = () => finish('ws');
+      s.onclose = () => {
+        /* une socket neuve a pris le relais : ce fil-la ne parle plus pour nous */
+        if (sock !== s) return;
         connected = false;
         finish('ws');
+        /* en pleine partie, une coupure n est pas une fin de partie */
+        if (session && code && started) { onLost(); return; }
         if (started) { U.toast('Connexion perdue'); return; }
         code = null;
         renderLobby();
@@ -110,19 +123,144 @@
   }
 
   /* ---------------------------------------------------------
+     Garder sa place
+     Le siege est garde par le serveur, le jeton prouve qu il est
+     a nous. On le range hors de la page pour survivre a un
+     rechargement, a un telephone qui se verrouille, a un onglet
+     que le systeme a ferme pour recuperer de la memoire.
+     --------------------------------------------------------- */
+  const SKEY = 'kwa.seat.v1';
+  const SESSION_MAX_MS = 30 * 60000;
+
+  function saveSession() {
+    try { localStorage.setItem(SKEY, JSON.stringify(session)); } catch (e) { /* mode prive */ }
+  }
+  function clearSession() {
+    session = null;
+    clearTimeout(retryT);
+    try { localStorage.removeItem(SKEY); } catch (e) {}
+  }
+  function readSession() {
+    try {
+      const raw = localStorage.getItem(SKEY);
+      const d = raw ? JSON.parse(raw) : null;
+      if (!d || !d.code || !d.id || !d.token) return null;
+      return (Date.now() - (d.at || 0) < SESSION_MAX_MS) ? d : null;
+    } catch (e) { return null; }
+  }
+
+  /* ---------------------------------------------------------
+     Bandeau de connexion
+     --------------------------------------------------------- */
+  let bannerT = null;
+  function banner(kind, msg, action) {
+    const el = U.$('#netBanner');
+    if (!el) return;
+    clearTimeout(bannerT);
+    el.className = 'net-banner ' + kind;
+    el.innerHTML =
+      (kind === 'wait' ? '<span class="spin"></span>'
+                       : '<span class="ico">' + (kind === 'ok' ? '✅' : '⚠️') + '</span>') +
+      '<span>' + U.esc(msg) + '</span>' +
+      (action ? '<button class="mini-btn" id="nbAct">' + U.esc(action) + '</button>' : '');
+    el.hidden = false;
+    if (action) {
+      U.$('#nbAct').addEventListener('click', () => {
+        tries = 0;
+        banner('wait', 'On reessaie...');
+        tryResume();
+      }, { once: true });
+    }
+    if (kind === 'ok') bannerT = setTimeout(hideBanner, 2400);
+  }
+  function hideBanner() {
+    const el = U.$('#netBanner');
+    if (el) { el.hidden = true; el.innerHTML = ''; }
+  }
+
+  /* ---------------------------------------------------------
+     Se rebrancher
+     --------------------------------------------------------- */
+  let retryT = null, resumeT = null, tries = 0;
+
+  function onLost() {
+    K.audio.bad();
+    banner('wait', 'Connexion perdue. On te rebranche...');
+    tries = 0;
+    scheduleRetry();
+  }
+
+  /** on espace les tentatives : inutile de marteler un reseau absent */
+  function scheduleRetry() {
+    clearTimeout(retryT);
+    if (!session) return;
+    if (tries > 24) {
+      banner('error', 'Impossible de te rebrancher pour le moment.', 'Reessayer');
+      return;
+    }
+    const wait = Math.min(8000, 800 * Math.pow(2, Math.min(tries, 4)));
+    tries++;
+    retryT = setTimeout(tryResume, wait);
+  }
+
+  function tryResume() {
+    if (!session) return;
+    resuming = true;
+    connect().then(() => {
+      send({
+        t: 'resume', code: session.code, id: session.id, token: session.token,
+        /* l hote ne peut reprendre que si sa page tient encore la partie */
+        live: !!(K.state.started && !K.state.over)
+      });
+      clearTimeout(resumeT);
+      resumeT = setTimeout(() => { if (resuming) scheduleRetry(); }, 8000);
+    }, () => scheduleRetry());
+  }
+
+  /** au chargement de la page : une partie nous attend peut-etre encore */
+  N.tryResume = function () {
+    session = readSession();
+    if (!session) return false;
+    banner('wait', 'Reprise de la partie en cours...');
+    tries = 0;
+    tryResume();
+    return true;
+  };
+
+  /* ---------------------------------------------------------
      Messages entrants
      --------------------------------------------------------- */
   function onMessage(m) {
     switch (m.t) {
 
-      case 'room':
+      case 'room': {
         clearTimeout(replyT);
+        clearTimeout(resumeT);
+        const back = !!m.resumed;
+        resuming = false;
+        tries = 0;
         code = m.code; meId = m.you; hostId = m.hostId;
+        session = { code, id: meId, token: m.token, at: Date.now() };
+        saveSession();
         status = null;
         syncPlayers(m.players);
-        renderLobby();
+        if (!back) { renderLobby(); K.audio.good(); break; }
+
+        /* --- retour apres coupure --- */
+        started = !!m.started;
         K.audio.good();
+        if (!started) { banner('ok', 'Reconnecte au salon'); renderLobby(); break; }
+        if (N.isHost()) {
+          banner('ok', 'Reconnecte. Tout le monde est resynchronise.');
+          resyncAll();
+        } else {
+          /* le plateau va nous etre renvoye par l hote : on repart de zero */
+          mirrorReady = false;
+          answering = false;
+          banner('wait', 'Reconnecte. On te remet a la page...');
+        }
         break;
+      }
 
       case 'players':
         hostId = m.hostId || hostId;
@@ -163,8 +301,8 @@
 
       /* --- un joueur a repondu (cote hote) --- */
       case 'answer': {
-        const fn = pending[m.id];
-        if (fn) { delete pending[m.id]; fn(m.value); }
+        const q = pending[m.id];
+        if (q) { delete pending[m.id]; q.fn(m.value); }
         break;
       }
 
@@ -172,13 +310,34 @@
         applyState(m.data);
         break;
 
+      /* --- l hote a saute, mais il peut revenir --- */
+      case 'hostoff':
+        banner('wait', 'L hote a perdu la connexion. On l attend...');
+        break;
+
+      case 'hostback':
+        banner('ok', 'L hote est de retour !');
+        break;
+
+      /* --- cote hote : un joueur est parti / revenu --- */
+      case 'gone':
+        onPlayerGone(m.id);
+        break;
+
+      case 'back':
+        resyncTo(m.id);
+        break;
+
       case 'kicked':
+        clearSession();
         started = false; code = null; mirrorReady = false; answering = false;
         U.toast('L hote t a sorti du salon');
         U.go('mode');
         break;
 
       case 'hostgone':
+        clearSession();
+        hideBanner();
         started = false; code = null; mirrorReady = false; answering = false;
         U.closeOverlay(); U.clearSpotlightLocal();
         U.toast('L hote a quitte la partie');
@@ -187,7 +346,18 @@
 
       case 'error':
         clearTimeout(replyT);
+        clearTimeout(resumeT);
+        resuming = false;
         K.audio.bad();
+        /* la place n existe plus : insister ne servirait a rien */
+        if (m.fatal) {
+          clearSession();
+          started = false; code = null; mirrorReady = false; answering = false;
+          banner('error', m.msg || 'Partie terminee.');
+          U.closeOverlay(); U.clearSpotlightLocal();
+          U.go('mode');
+          break;
+        }
         setStatus('error', m.msg || 'Erreur');
         break;
     }
@@ -196,25 +366,127 @@
   /** remplace la liste des joueurs en conservant les positions connues */
   function syncPlayers(list) {
     const old = {};
-    K.state.players.forEach(p => { old[p.id] = p; });
-    K.state.players = (list || []).map(p => {
-      const prev = old[p.id];
-      return {
-        id: p.id, name: p.name, color: p.color, hex: p.hex, img: p.img,
-        pos: prev ? prev.pos : 0,
-        stats: prev ? prev.stats : { correct: 0, wrong: 0, gained: 0, lost: 0 }
+    const rank = {};
+    K.state.players.forEach((p, i) => { old[p.id] = p; rank[p.id] = i; });
+    const next = (list || []).map(p => {
+      /* On met a jour l objet existant au lieu d en fabriquer un neuf : le
+         moteur en garde une reference pendant tout un tour de jeu, et le
+         remplacer en cours de route ferait avancer un pion fantome. */
+      const cur = old[p.id] || {
+        id: p.id, pos: 0, stats: { correct: 0, wrong: 0, gained: 0, lost: 0 }
       };
+      cur.name = p.name;
+      cur.color = p.color;
+      cur.hex = p.hex;
+      cur.img = p.img;
+      cur.off = !!p.off;
+      return cur;
     });
+    /* Une fois la partie lancee, l ordre du tableau EST l ordre de passage,
+       tire au sort par l ouverture. Le serveur, lui, ne connait que l ordre
+       d arrivee : le reprendre ferait sauter des tours a tout le monde. */
+    if (started) {
+      next.sort((a, b) => (rank[a.id] === undefined ? 99 : rank[a.id]) -
+                          (rank[b.id] === undefined ? 99 : rank[b.id]));
+    }
+    K.state.players = next;
   }
 
   /* ---------------------------------------------------------
      Miroir d affichage : l hote emet, tous les autres rejouent
      exactement la meme chose a l ecran.
      --------------------------------------------------------- */
+  /* Ce qu un ecran qui revient doit retrouver : le dernier mot de Kwa, le
+     panneau ouvert, le bouton en attente. On garde donc une trace de ce
+     qu on diffuse, y compris pendant une coupure ou rien ne part. */
+  const echo = { kwa: null, panel: null, act: null, wait: null };
+
+  function remember(name, d) {
+    switch (name) {
+      case 'kwa':        echo.kwa = d; break;
+      case 'kwaHide':    echo.kwa = null; break;
+      case 'panel':      echo.panel = d; break;
+      case 'panelClose': echo.panel = null; break;
+      case 'act':        echo.act = d.to ? d : null; break;
+      case 'wait':       echo.wait = d.id ? d : null; break;
+      case 'spot':       echo.panel = null; break;
+    }
+  }
+
   N.ev = function (name, d) {
-    if (!connected || !started || !N.isHost()) return;
-    send({ t: 'ev', ev: name, d: d || {} });
+    if (!N.isHost()) return;
+    d = d || {};
+    remember(name, d);
+    if (connected && started) send({ t: 'ev', ev: name, d });
   };
+
+  /* ---------------------------------------------------------
+     Remettre un ecran a la page
+     Le miroir marche par evenements : qui en rate un est perdu.
+     On lui rejoue donc l essentiel — le plateau se reconstruit tout
+     seul a partir de la liste des cases, le reste tient en cinq messages.
+     --------------------------------------------------------- */
+  function stateData() {
+    return {
+      turn: K.state.turn,
+      idx: K.state.idx,
+      over: K.state.over,
+      last: K.board.last(),
+      order: K.state.players.map(p => p.id),
+      pos: K.state.players.map(p => ({ id: p.id, pos: p.pos }))
+    };
+  }
+
+  function replay(sendOne) {
+    sendOne({ t: 'ev', ev: 'board', d: { types: K.board.typeList(), settings: K.state.settings } });
+    sendOne({ t: 'state', data: stateData() });
+    if (echo.kwa) sendOne({ t: 'ev', ev: 'kwa', d: echo.kwa });
+    if (echo.panel) sendOne({ t: 'ev', ev: 'panel', d: echo.panel });
+    if (echo.act) sendOne({ t: 'ev', ev: 'act', d: echo.act });
+    if (echo.wait) sendOne({ t: 'ev', ev: 'wait', d: echo.wait });
+  }
+
+  /** un seul joueur revient : on ne derange pas les autres */
+  function resyncTo(id) {
+    const p = K.player(id);
+    if (p) p.off = false;
+    if (!N.isHost() || !started) return;
+    U.toast((p ? p.name : 'Un joueur') + ' est revenu');
+    K.game.hud();
+    replay(msg => send({ t: 'to', id, m: msg }));
+    /* une question restee sans reponse lui est reposee */
+    Object.keys(pending).forEach(qid => {
+      const q = pending[qid];
+      if (q && q.to === id && q.spec) send({ t: 'ask', to: id, id: qid, spec: q.spec });
+    });
+  }
+
+  /** c est l hote qui revient : tout le monde a rate le meme bout de partie */
+  function resyncAll() {
+    if (!N.isHost() || !started) return;
+    replay(send.bind(null));
+    Object.keys(pending).forEach(qid => {
+      const q = pending[qid];
+      if (q && q.to && q.spec) send({ t: 'ask', to: q.to, id: qid, spec: q.spec });
+    });
+  }
+
+  /** un joueur a saute : la partie ne doit pas rester bloquee sur lui */
+  function onPlayerGone(id) {
+    const p = K.player(id);
+    if (p) p.off = true;
+    if (!N.isHost()) return;
+    U.toast((p ? p.name : 'Un joueur') + ' a perdu la connexion');
+    K.game.hud();
+    /* il devait appuyer sur un bouton : on propose de le faire a sa place */
+    const act = pending.act;
+    if (act && act.to === id) K.game.waitingAction(p, 'a perdu la connexion', act.fn);
+    /* il devait repondre a une question : le bouton de secours existe deja */
+    Object.keys(pending).forEach(qid => {
+      const q = pending[qid];
+      if (q && q.to === id && q.spec) K.prompt.waitingLost();
+    });
+  }
 
   function onEv(name, d) {
     if (N.isHost()) return;
@@ -301,7 +573,12 @@
         resolve();
       };
       if (N.isMe(player.id)) K.game.localButton(label, cls).then(finish);
-      else { K.game.waitingAction(player, label); pending.act = finish; }
+      else {
+        pending.act = { fn: finish, to: player.id };
+        /* deja hors ligne au moment ou c est son tour : bouton de secours */
+        if (player.off) K.game.waitingAction(player, 'a perdu la connexion', finish);
+        else K.game.waitingAction(player, label);
+      }
     });
   };
 
@@ -313,14 +590,18 @@
       const id = 'q' + (askSeq++);
       let done = false;
       const finish = v => { if (done) return; done = true; delete pending[id]; resolve(v); };
-      pending[id] = finish;
+      pending[id] = { fn: finish, to: player.id, spec };
       send({ t: 'ask', to: player.id, id, spec });
 
       K.prompt.waiting(player, player.name + ' repond sur son telephone', () => {
-        /* secours : si le telephone du joueur a lache, on repond ici */
+        /* secours : si le telephone du joueur a lache, on repond ici. La
+           question cesse d etre en attente, sinon elle lui serait reposee
+           au moment ou il se rebranche. */
+        if (pending[id]) pending[id].spec = null;
         send({ t: 'unask', to: player.id, id });
         K.prompt.render(spec).then(finish);
       });
+      if (player.off) K.prompt.waitingLost();
     });
   };
 
@@ -329,17 +610,9 @@
      --------------------------------------------------------- */
   N.broadcastState = function () {
     if (!N.isHost() || !started) return;
-    send({
-      t: 'state',
-      data: {
-        turn: K.state.turn,
-        idx: K.state.idx,
-        over: K.state.over,
-        last: K.board.last(),
-        order: K.state.players.map(p => p.id),
-        pos: K.state.players.map(p => ({ id: p.id, pos: p.pos }))
-      }
-    });
+    /* partie finie : plus rien a reprendre, on oublie la place gardee */
+    if (K.state.over) clearSession();
+    send({ t: 'state', data: stateData() });
   };
 
   function applyState(d) {
@@ -353,6 +626,7 @@
     }
     (d.pos || []).forEach(x => { const p = K.player(x.id); if (p) p.pos = x.pos; });
     K.state.netLast = d.last;
+    if (d.over) clearSession();
     if (mirrorReady) { K.game.hud(); K.pawns.layoutLocal(); }
     else companion();
   }
@@ -509,6 +783,7 @@
           '<span class="rank-av" style="--pc:' + p.hex + '">' + K.sprites.avatar(p, 34) + '</span>' +
           '<b>' + U.esc(p.name) + (p.id === meId ? ' <span class="chip">toi</span>' : '') + '</b>' +
           (p.id === hostId ? '<span class="chip">hote</span>' : '') +
+          (p.off ? '<span class="chip off">hors ligne</span>' : '') +
           (isHost && p.id !== meId ? '<button class="mini-btn danger" data-kick="' + p.id + '">✕</button>' : '') +
         '</div>').join('') + '</div>' +
       cardEditor() +
@@ -635,9 +910,14 @@
   }
 
   N.reset = function () {
+    /* quitter de son plein gre, ce n est pas une coupure : on rend la place */
+    if (code) send({ t: 'quit' });
+    clearSession();
+    hideBanner();
     started = false; code = null; pending = {};
     mirrorReady = false; answering = false;
-    if (sock) { try { sock.close(); } catch (e) {} sock = null; }
+    echo.kwa = echo.panel = echo.act = echo.wait = null;
+    if (sock) { const dead = sock; sock = null; try { dead.close(); } catch (e) {} }
     connected = false;
   };
 

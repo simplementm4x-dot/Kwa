@@ -320,6 +320,14 @@
     if (onTakeOver) U.$('#pTake').addEventListener('click', onTakeOver, { once: true });
   };
 
+  /** le joueur attendu a perdu la connexion : on met le secours en avant */
+  P.waitingLost = function () {
+    const sub = U.$('#overlay .ov-sub');
+    if (sub) sub.textContent = 'Il a perdu la connexion';
+    const b = U.$('#pTake');
+    if (b) { b.className = 'btn btn-xl btn-primary'; b.textContent = 'Repondre a sa place'; }
+  };
+
   /* ---------------------------------------------------------
      K.ask : pose la question au bon endroit
      --------------------------------------------------------- */

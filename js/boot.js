@@ -9,6 +9,10 @@
     K.load();
     K.menu.init();
 
+    /* Telephone verrouille, onglet ferme par le systeme, metro sans reseau :
+       si une place nous attend encore dans un salon, on s y rassoit. */
+    K.net.tryResume();
+
     U.$('#btnMenu').addEventListener('click', () => { K.audio.tap(); K.game.showPause(); });
     U.$('#btnScores').addEventListener('click', () => { K.audio.tap(); K.game.showScores(); });
 

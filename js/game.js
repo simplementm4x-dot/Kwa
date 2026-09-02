@@ -24,11 +24,22 @@
     });
   };
 
-  /** ce que voient les autres pendant qu un joueur doit agir */
-  G.waitingAction = function (p, label) {
+  /**
+   * Ce que voient les autres pendant qu un joueur doit agir.
+   * Si son telephone a lache, l hote peut jouer a sa place plutot que
+   * de laisser la partie suspendue a quelqu un qui ne reviendra pas.
+   */
+  G.waitingAction = function (p, label, onTakeOver) {
     G.action('<button class="btn btn-xl btn-ghost" disabled>⏳ ' +
       U.esc(p ? p.name : '') + '</button>' +
-      '<p class="dim center" style="font-size:12px;margin:0">' + U.esc(label || '') + '</p>');
+      '<p class="dim center" style="font-size:12px;margin:0">' + U.esc(label || '') + '</p>' +
+      (onTakeOver ? '<button class="btn btn-cyan" id="actTake" style="margin-top:10px">' +
+        'Jouer a sa place</button>' : ''));
+    if (onTakeOver) {
+      U.$('#actTake').addEventListener('click', () => {
+        K.audio.tap(); G.clearAction(); onTakeOver();
+      }, { once: true });
+    }
   };
 
   /**
@@ -52,7 +63,7 @@
       : 'Tour ' + s.turn + '/' + s.settings.maxTurns;
 
     U.$('#hudPlayers').innerHTML = s.players.map((p, i) =>
-      '<div class="hp' + (i === s.idx ? ' on' : '') + '" style="--pc:' + p.hex + '">' +
+      '<div class="hp' + (i === s.idx ? ' on' : '') + (p.off ? ' off' : '') + '" style="--pc:' + p.hex + '">' +
         '<span class="hp-av">' + K.sprites.avatar(p, 24) + '</span>' +
         '<b>' + U.esc(p.name) + '</b><i>' + p.pos + '</i></div>'
     ).join('');
