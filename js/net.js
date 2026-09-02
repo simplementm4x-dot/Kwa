@@ -47,13 +47,35 @@
     return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + base;
   }
 
-  function connect() {
-    return new Promise((res, rej) => {
-      const u = url();
-      if (!u) { rej(new Error('file')); return; }
-      if (u === 'INSECURE') { rej(new Error('insecure')); return; }
-      if (sock && sock.readyState === 1) { res(); return; }
+  /** meme serveur, en http : sert a le reveiller avant d ouvrir la socket */
+  function wakeUrl() {
+    const r = remote();
+    return r ? r.replace(/^ws/, 'http') + '/index.html' : null;
+  }
 
+  /* Une offre gratuite endort le service apres quelques minutes sans
+     visite, et le reveil prend jusqu a une minute. Une requete http
+     ordinaire patiente pendant ce demarrage la ou une socket, elle, se
+     ferait jeter : on reveille d abord, on branche ensuite. */
+  function wake(onSlow) {
+    const w = wakeUrl();
+    if (!w || typeof fetch !== 'function') return Promise.resolve();
+    return new Promise(res => {
+      const slow = setTimeout(() => { if (onSlow) onSlow(); }, 2500);
+      let done = false;
+      const fini = () => { if (done) return; done = true; clearTimeout(slow); clearTimeout(abandon); res(); };
+      const abandon = setTimeout(fini, 70000);
+      fetch(w, { mode: 'no-cors', cache: 'no-store' }).then(fini, fini);
+    });
+  }
+
+  function connect(onSlow) {
+    const u = url();
+    if (!u) return Promise.reject(new Error('file'));
+    if (u === 'INSECURE') return Promise.reject(new Error('insecure'));
+    if (sock && sock.readyState === 1) return Promise.resolve();
+
+    return wake(onSlow).then(() => new Promise((res, rej) => {
       try { sock = new WebSocket(u); } catch (e) { rej(new Error('ws')); return; }
 
       /* sans delai maximum, un mauvais reseau laisse le joueur devant un
@@ -68,7 +90,7 @@
       const timer = setTimeout(() => {
         try { sock.close(); } catch (e) {}
         finish('timeout');
-      }, 7000);
+      }, remote() ? 20000 : 7000);
 
       sock.onopen = () => { connected = true; finish(null); };
       sock.onmessage = e => { try { onMessage(JSON.parse(e.data)); } catch (err) {} };
@@ -80,7 +102,7 @@
         code = null;
         renderLobby();
       };
-    });
+    }));
   }
 
   function send(obj) {
@@ -596,7 +618,8 @@
     }
     setStatus('wait', action === 'create' ? 'Creation du salon...' : 'Connexion au salon ' + joinCode + '...');
     try {
-      await connect();
+      await connect(() => setStatus('wait',
+        'Le serveur de salons se reveille : ca peut prendre une minute la premiere fois.'));
       send(action === 'create'
         ? { t: 'create', p: payload() }
         : { t: 'join', code: joinCode, p: payload() });
