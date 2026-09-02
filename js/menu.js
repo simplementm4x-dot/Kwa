@@ -144,9 +144,10 @@
     ['🕵️', 'Undercover', "Chacun recoit un mot. Les infiltres en ont un legerement different. Debat, puis vote. L equipe qui gagne avance de 2 cases, l autre recule de 2."],
     ['📖', 'Anecdote', "Chacun ecrit une anecdote vraie. On vote pour la meilleure. Le plus vote avance de 5 cases."],
     ['🎭', 'Verite ou Mensonge', "Le joueur voit un mot en secret. S il tombe sur VERITE il raconte un truc vrai... en essayant de vous faire croire que c est faux. Et inversement. S il vous roule : +3 cases. Sinon : -2."],
+    ['🌍', 'In real life ou online', "Kwa demande d abord ou vous jouez. Dans la meme piece, tout le plateau est disponible. Chacun chez soi, les epreuves qui demandent des corps dans une piece disparaissent du chemin : le 21, le mime et le duel. Gardez un appel vocal ouvert, le reste se joue tres bien a distance."],
     ['🍻', 'Le 21', "Jingle, ambiance, et le joueur designe qui prend le 21 : ce joueur recule de 5 cases. Sauf s il se designe lui-meme : la, il avance de 5."],
     ['⚖️', 'Le Dilemme', "A ou B, il faut choisir. La majorite avance de 2 cases, la minorite recule de 2. En cas d egalite, tout le monde reste."],
-    ['🏓', 'Duel', "Un Pong en un contre un. Le gagnant avance de 3 cases, le perdant recule de 3. Reserve au mode multi-telephones (ou a l ecran partage si vous l activez)."],
+    ['🏓', 'Duel', "Un Pong en un contre un, les deux joueurs autour du meme ecran : une raquette en haut, une en bas. Le gagnant avance de 3 cases, le perdant recule de 3. Il faut donc etre cote a cote : la case ne tombe pas a distance, ni quand vous n avez qu un seul telephone (sauf si vous activez l ecran partage dans les reglages)."],
     ['🤾', 'Mime en folie', "30 secondes. Les autres miment, le joueur devine. Chaque mime trouve vaut 1 case."],
     ['🔤', 'Le Mot Raccord', "Une lettre, 30 secondes, une liste de trucs a completer. Chaque mot valide par le groupe = 1 case, et si vous faites carton plein, 1 case bonus."]
   ];
@@ -159,8 +160,22 @@
   /* ---------------------------------------------------------
      Init
      --------------------------------------------------------- */
+  /** le titre : Kwa mene la configuration, ou on rejoint directement */
+  function title() {
+    U.$('#btnPlay').addEventListener('click', () => { K.audio.tap(); K.setup.run(); });
+    U.$('#btnJoinQuick').addEventListener('click', () => {
+      K.audio.tap();
+      /* rejoindre, c est forcement avoir son propre telephone */
+      S().device = 'multi';
+      K.net.openLobbyScreen();
+      U.go('lobby');
+      const inp = U.$('#netCode');
+      if (inp) { inp.focus(); }
+    });
+  }
+
   M.init = function () {
-    nav(); settings(); players();
+    nav(); settings(); players(); title();
     U.$('#titleHost').innerHTML = K.sprites.kwa(1.5, 'wink');
     if (!K.state.players.length) {
       K.state.players.push(K.newPlayer('', 'rouge'));

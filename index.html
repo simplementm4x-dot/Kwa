@@ -31,10 +31,25 @@
       </h1>
       <p class="title-sub">Le jeu de plateau qui pose les vraies questions</p>
       <div class="title-btns">
-        <button class="btn btn-xl btn-primary" data-go="mode">▶ JOUER</button>
+        <button class="btn btn-xl btn-primary" id="btnPlay">▶ JOUER</button>
+        <button class="btn btn-xl btn-cyan" id="btnJoinQuick">🔑 REJOINDRE</button>
         <button class="btn btn-ghost" data-go="rules">Les règles</button>
+        <button class="btn btn-ghost" data-go="mode">Réglages détaillés</button>
       </div>
       <p class="title-foot">v1.0 · Forêt Enchantée</p>
+    </div>
+  </section>
+
+  <!-- ============ CONFIGURATION MENEE PAR KWA ============ -->
+  <section class="screen" id="screen-setup">
+    <div class="crt-scan"></div>
+    <header class="topbar"><button class="btn-back" data-go="title">‹</button><h2>Kwa prépare la partie</h2></header>
+    <div class="scroll">
+      <div class="setup-stage" id="setupStage">
+        <div class="setup-bot" id="setupBot"></div>
+        <div class="setup-bubble"><span class="kwa-name">KWA</span><p id="setupText"></p></div>
+        <div class="setup-choices" id="setupChoices"></div>
+      </div>
     </div>
   </section>
 
@@ -42,6 +57,20 @@
   <section class="screen" id="screen-mode">
     <header class="topbar"><button class="btn-back" data-go="title">‹</button><h2>Réglages de la partie</h2></header>
     <div class="scroll">
+
+      <div class="card-block">
+        <h3 class="block-title">Où se joue la partie ?</h3>
+        <div class="opt-grid">
+          <button class="opt" data-set="venue" data-val="irl">
+            <span class="opt-ico">🔥</span><b>In real life</b>
+            <small>Tous dans la même pièce. Toutes les épreuves sont là.</small>
+          </button>
+          <button class="opt" data-set="venue" data-val="online">
+            <span class="opt-ico">🤖</span><b>Online</b>
+            <small>Chacun chez soi. Le 21, le mime et le duel sautent.</small>
+          </button>
+        </div>
+      </div>
 
       <div class="card-block">
         <h3 class="block-title">Combien de téléphones ?</h3>
@@ -186,6 +215,7 @@
 <script src="js/pawns.js"></script>
 <script src="js/prompt.js"></script>
 <script src="js/intro.js"></script>
+<script src="js/setup.js"></script>
 <script src="js/menu.js"></script>
 <script src="js/net.js"></script>
 <script src="js/game.js"></script>

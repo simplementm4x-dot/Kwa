@@ -21,10 +21,12 @@
     undercover: { icon: '🕵️', label: 'Undercover',       c1: '#2f4f7a', c2: '#1b2f4d' },
     anecdote:   { icon: '📖', label: 'Anecdote',          c1: '#a86a2e', c2: '#6b3f16' },
     verite:     { icon: '🎭', label: 'Verite ou Mensonge', c1: '#2f7a5a', c2: '#17402f' },
-    vingtetun:  { icon: '🍻', label: 'Le 21',             c1: '#b83a5e', c2: '#6e1e37' },
+    /* piece: true = il faut etre dans la meme piece (ou devant le meme
+       ecran). Ces epreuves sautent quand la partie se joue a distance. */
+    vingtetun:  { icon: '🍻', label: 'Le 21',             c1: '#b83a5e', c2: '#6e1e37', piece: true },
     dilemme:    { icon: '⚖️', label: 'Le Dilemme',        c1: '#3a6fb8', c2: '#1f3f6e' },
-    duel:       { icon: '🏓', label: 'Duel',              c1: '#b8452e', c2: '#6e2418' },
-    mime:       { icon: '🤾', label: 'Mime en folie',     c1: '#8a4fb8', c2: '#50276e' },
+    duel:       { icon: '🏓', label: 'Duel',              c1: '#b8452e', c2: '#6e2418', piece: true },
+    mime:       { icon: '🤾', label: 'Mime en folie',     c1: '#8a4fb8', c2: '#50276e', piece: true },
     motraccord: { icon: '🔤', label: 'Le Mot Raccord',    c1: '#2e9ab8', c2: '#175a6e' },
     finish:     { icon: '🏁', label: 'Terminus',          c1: '#d4a017', c2: '#8a6400' }
   };
@@ -32,6 +34,7 @@
   K.state = {
     screen: 'title',
     settings: {
+      venue: 'irl',          // 'irl' = meme piece | 'online' = chacun chez soi
       device: 'solo',        // 'solo' | 'multi'
       mode: 'terminus',      // 'terminus' | 'tours'
       maxTurns: 5,
@@ -102,10 +105,24 @@
 
   /* --- regles derivees des reglages --- */
   K.rules = {
-    /** le duel Pong demande soit le multi-telephones, soit l option ecran partage */
+    /** chacun chez soi : les epreuves physiques n ont plus de sens */
+    isOnline() { return K.state.settings.venue === 'online'; },
+
+    /**
+     * Le duel Pong se joue a deux sur un seul ecran, l un en haut,
+     * l autre en bas : il faut donc etre cote a cote, et pas seul.
+     */
     duelAllowed() {
       const s = K.state.settings;
+      if (s.venue === 'online') return false;
       return s.device === 'multi' || s.duelSolo;
+    },
+
+    /** une case peut-elle tomber avec les reglages en cours ? */
+    tileAllowed(type) {
+      if (type === 'duel') return K.rules.duelAllowed();
+      const info = K.TILE_TYPES[type];
+      return !(info && info.piece && K.rules.isOnline());
     },
     isTerminus() { return K.state.settings.mode === 'terminus'; },
     lastIndex() { return K.state.settings.boardLength - 1; }

@@ -34,8 +34,11 @@
      Repartition des types de cases
      --------------------------------------------------------- */
   function pickTypes(len) {
-    const specials = ['undercover', 'anecdote', 'verite', 'vingtetun', 'dilemme', 'mime', 'motraccord'];
-    if (K.rules.duelAllowed()) specials.push('duel');
+    /* a distance, le 21, le mime et le duel ne peuvent pas se jouer :
+       ils ne doivent pas non plus apparaitre sur le chemin */
+    const specials = ['undercover', 'anecdote', 'verite', 'vingtetun',
+                      'dilemme', 'mime', 'motraccord', 'duel']
+      .filter(t => K.rules.tileAllowed(t));
 
     const mid = len - 2;
     const nQuiz = Math.max(1, Math.round(mid * 0.55));

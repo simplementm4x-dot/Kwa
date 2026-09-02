@@ -10,6 +10,21 @@ Première map : la **Forêt Enchantée**, un chemin en serpentin.
 
 ## Lancer le jeu
 
+### Régler la partie
+
+Le bouton **JOUER** ne mène pas à un formulaire mais à Kwa, qui pose les
+questions une par une : où vous jouez (*in real life* ou *online*), avec
+combien de téléphones, en Terminus ou en nombre de tours, et sur quelle
+longueur. Le mode épicé est activé d'office.
+
+Le lieu n'est pas qu'une décoration : **online**, les épreuves qui demandent
+d'être dans la même pièce ne sont pas tirées sur le plateau — le 21 (qui se
+compte à la voix), le mime, et le duel (deux raquettes sur un seul écran).
+Le bouton **REJOINDRE**, sous JOUER, va directement au champ du code.
+
+L'écran « Réglages détaillés » reste accessible depuis le titre pour le son
+et le duel en écran partagé.
+
 ### Mode 1 téléphone (le plus simple)
 Ouvrir `index.html` dans le navigateur. C'est tout : aucune installation,
 aucune connexion, tout tourne hors-ligne.

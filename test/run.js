@@ -7,7 +7,7 @@ const { spawn, spawnSync } = require('child_process');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const SUITE = ['content.test.js', 'board.test.js', 'lobby.test.js', 'remote.test.js', 'multi.test.js', 'reconnect.test.js'];
+const SUITE = ['content.test.js', 'board.test.js', 'setup.test.js', 'lobby.test.js', 'remote.test.js', 'multi.test.js', 'reconnect.test.js'];
 
 const server = spawn(process.execPath, [path.join(ROOT, 'server', 'server.js')],
   { cwd: ROOT, stdio: 'ignore' });

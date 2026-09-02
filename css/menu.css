@@ -187,3 +187,137 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:8px;bac
 .rule h4{margin:0 0 6px;font-size:15px;display:flex;align-items:center;gap:8px}
 .rule h4 span{font-size:19px}
 .rule p{margin:0;font-size:13.5px;color:var(--txt-dim);line-height:1.5}
+
+
+/* =========================================================
+   Configuration menee par Kwa
+   ========================================================= */
+.setup-stage{display:flex;flex-direction:column;align-items:center;gap:12px;padding-bottom:20px}
+
+.setup-bot{width:100%;display:flex;justify-content:center;filter:drop-shadow(0 8px 18px rgba(0,0,0,.5))}
+.setup-bot svg{display:block}
+
+.setup-bubble{
+  position:relative;width:100%;
+  background:linear-gradient(180deg,#fffdf3,#ffeec9);
+  color:#1a0f2e;border:3px solid #1a0f2e;border-radius:16px;
+  padding:16px 14px 14px;min-height:74px;
+  box-shadow:0 6px 0 #1a0f2e,0 12px 26px rgba(0,0,0,.45);
+}
+.setup-bubble::after{
+  content:'';position:absolute;left:34px;top:-13px;
+  border:11px solid transparent;border-bottom-color:#1a0f2e;
+}
+.setup-bubble .kwa-name{
+  position:absolute;top:-12px;right:12px;
+  background:var(--magenta);color:#fff;
+  font-family:var(--pix);font-size:9px;letter-spacing:1px;
+  padding:4px 8px;border:2px solid #1a0f2e;border-radius:6px;
+}
+.setup-bubble p{margin:0;font-size:16px;font-weight:700;line-height:1.45;min-height:1.4em}
+
+.setup-choices{width:100%;display:flex;flex-direction:column;gap:12px}
+
+/* ---------- cartes de reponse ---------- */
+.setup-card{
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  width:100%;padding:18px 14px;
+  background:linear-gradient(180deg,var(--panel),var(--ink2));
+  border:3px solid var(--line);border-radius:16px;color:var(--txt);
+  cursor:pointer;text-align:center;
+  animation:cardIn .34s cubic-bezier(.2,1.5,.4,1) both;
+}
+.setup-card .sc-ico{font-size:32px;line-height:1}
+.setup-card b{font-family:var(--pix);font-size:13px;letter-spacing:1px}
+.setup-card small{font-size:12.5px;font-weight:600;color:var(--txt-dim);line-height:1.35}
+.setup-card:disabled{cursor:default}
+.setup-card.faded{opacity:.28;transform:scale(.96);transition:.25s}
+.setup-card.chosen{transform:scale(1.03);transition:.25s}
+@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.9)}to{opacity:1;transform:none}}
+
+/* IN REAL LIFE : ca chauffe */
+.setup-card.card-fire{
+  border-color:#ff8c2e;
+  background:linear-gradient(180deg,#4a1505,#2a0a02);
+  box-shadow:0 0 26px rgba(255,110,20,.42),inset 0 0 26px rgba(255,140,46,.18);
+  animation:cardIn .34s cubic-bezier(.2,1.5,.4,1) both,fireGlow 1.5s ease-in-out infinite;
+}
+.setup-card.card-fire b{color:#ffb43d;text-shadow:0 0 12px #ff6a00,0 2px 0 #000}
+.setup-card.card-fire .sc-ico{animation:flicker .55s steps(2) infinite}
+.setup-card.card-fire::before{
+  content:'';position:absolute;inset:auto 0 -14px 0;height:52px;
+  background:radial-gradient(closest-side,rgba(255,140,20,.75),transparent);
+  animation:flames .9s ease-in-out infinite alternate;
+}
+@keyframes fireGlow{50%{box-shadow:0 0 40px rgba(255,110,20,.7),inset 0 0 34px rgba(255,140,46,.3)}}
+@keyframes flicker{50%{transform:scale(1.14) rotate(-4deg)}}
+@keyframes flames{to{transform:translateY(-10px) scaleX(1.16);opacity:.65}}
+
+/* ONLINE : ca gresille */
+.setup-card.card-robot{
+  border-color:var(--cyan);
+  background:linear-gradient(180deg,#04222b,#01121a);
+  box-shadow:0 0 22px rgba(57,231,255,.3),inset 0 0 22px rgba(57,231,255,.12);
+}
+.setup-card.card-robot b{color:var(--cyan);text-shadow:0 0 10px var(--cyan),0 2px 0 #000;animation:glitchTxt 2.6s steps(1) infinite}
+.setup-card.card-robot .sc-ico{animation:robotNod 1.5s ease-in-out infinite}
+.setup-card.card-robot::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(57,231,255,.13) 0 1px,transparent 1px 4px);
+  animation:scanMove 5s linear infinite;
+}
+@keyframes robotNod{50%{transform:translateY(-4px) rotate(6deg)}}
+@keyframes scanMove{to{background-position:0 40px}}
+@keyframes glitchTxt{
+  0%,88%{transform:none;opacity:1}
+  90%{transform:translateX(-3px);opacity:.7}
+  92%{transform:translateX(3px)}
+  94%{transform:none}
+}
+
+.setup-card.card-yes{border-color:var(--green)}
+.setup-card.card-yes b{color:var(--green)}
+.setup-card.card-no{border-color:var(--cyan)}
+.setup-card.card-no b{color:var(--cyan)}
+.setup-card.card-quick{border-color:var(--gold)}
+.setup-card.card-quick b{color:var(--gold)}
+.setup-card.card-long{border-color:var(--magenta)}
+.setup-card.card-long b{color:var(--magenta)}
+
+/* ---------- choix d un nombre ---------- */
+.num-pick{
+  width:100%;display:flex;flex-direction:column;gap:14px;align-items:center;
+  background:linear-gradient(180deg,var(--panel),var(--ink2));
+  border:3px solid var(--line);border-radius:16px;padding:16px 14px;
+  animation:cardIn .34s cubic-bezier(.2,1.5,.4,1) both;
+}
+.num-big{display:flex;align-items:baseline;gap:8px}
+.num-big b{font-family:var(--pix);font-size:38px;color:var(--gold);text-shadow:0 3px 0 #000}
+.num-big small{font-size:13px;font-weight:700;color:var(--txt-dim)}
+.num-presets{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.num-chip{
+  min-width:52px;padding:10px 12px;border-radius:12px;
+  background:var(--panel2);border:2px solid var(--line);color:var(--txt);
+  font-family:var(--pix);font-size:12px;cursor:pointer;
+}
+.num-chip.on{border-color:var(--gold);color:var(--gold);box-shadow:0 0 14px rgba(255,207,77,.35)}
+.num-range{width:100%}
+
+/* ---------- annonces plein ecran ---------- */
+.jingle.fire{
+  background:repeating-linear-gradient(45deg,#ff6a00 0 40px,#2a0a02 40px 80px);
+  animation:jingleBg .35s linear infinite;
+}
+.jingle.fire .fire-row{font-size:44px;animation:flicker .4s steps(2) infinite}
+.jingle.robot{
+  background:repeating-linear-gradient(45deg,#04222b 0 40px,#0a2f3d 40px 80px);
+  animation:none;
+}
+.jingle.robot .robot-scan{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,rgba(57,231,255,.16) 0 2px,transparent 2px 6px);
+  animation:scanMove 1.2s linear infinite;
+}
+.jingle.robot h2.glitch{color:var(--cyan);text-shadow:3px 0 #ff3fa4,-3px 0 #39e7ff,0 4px 0 #000;animation:glitchTxt .5s steps(1) infinite}
+.jingle.robot p{color:var(--cyan);font-family:var(--pix);font-size:11px;letter-spacing:2px}
