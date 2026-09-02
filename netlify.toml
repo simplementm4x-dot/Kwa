@@ -4,7 +4,6 @@
 
 [build]
   publish = "."
-  command = ""
 
 # server/ et test/ ne servent a rien en ligne
 [[headers]]
