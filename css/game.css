@@ -370,3 +370,44 @@
   55%{transform:translateY(-6px) rotate(6deg)}
   100%{transform:none}
 }
+
+/* =========================================================
+   Le rideau
+   Sous les projecteurs de presentation (51) et sous le HUD,
+   mais au-dessus de la foret : Kwa joue devant, le plateau
+   se construit derriere.
+   ========================================================= */
+.rideau{position:absolute;inset:0;z-index:44;pointer-events:none;overflow:hidden}
+.rideau[hidden]{display:none}
+
+.rid-panneau{
+  position:absolute;top:0;bottom:0;width:53%;
+  /* les plis : des bandes verticales sombres et des reflets etroits */
+  background:
+    repeating-linear-gradient(90deg,
+      rgba(0,0,0,.42) 0 3px,
+      rgba(0,0,0,.10) 3px 16px,
+      rgba(255,255,255,.075) 16px 21px,
+      rgba(0,0,0,.10) 21px 34px,
+      rgba(0,0,0,.30) 34px 40px),
+    linear-gradient(90deg,#4d0912,#9e1120 24%,#6d0c17 46%,#b81527 72%,#5a0a14);
+  box-shadow:inset 0 0 90px rgba(0,0,0,.65);
+  transition:transform var(--rid-ms,1700ms) cubic-bezier(.62,0,.24,1);
+}
+.rid-panneau.g{left:0}
+.rid-panneau.d{right:0;transform:scaleX(-1)}
+.rideau.ouvert .rid-panneau.g{transform:translateX(-101%)}
+.rideau.ouvert .rid-panneau.d{transform:scaleX(-1) translateX(-101%)}
+
+/* la cantonniere festonnee, avec son galon dore */
+.rid-cantonniere{
+  position:absolute;left:-2%;right:-2%;top:0;height:84px;
+  background:
+    radial-gradient(24px 26px at 24px 100%,#7e0d19 0 22px,transparent 23px),
+    repeating-radial-gradient(24px 26px at 24px 100%,#a3121f 0 22px,transparent 23px 48px),
+    linear-gradient(180deg,#c0182a,#87101c 70%,#6d0c17);
+  border-bottom:4px solid rgba(255,207,77,.85);
+  box-shadow:0 10px 26px rgba(0,0,0,.6);
+  transition:transform var(--rid-ms,1700ms) cubic-bezier(.62,0,.24,1);
+}
+.rideau.ouvert .rid-cantonniere{transform:translateY(-104%)}

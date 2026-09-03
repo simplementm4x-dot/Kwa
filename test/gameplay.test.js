@@ -403,6 +403,54 @@ async function partie(reglages) {
   }
 
   /* =====================================================
+     4 bis. Le rideau couvre la mise en place
+     ===================================================== */
+  {
+    const c = await partie({ maxTurns: 2 });
+    const K = c.K;
+    K.game.start();
+
+    const rideau = () => c.$('#rideau');
+    await until(() => rideau() && !rideau().hidden, 8000, 'rideau tire au demarrage');
+    step('rideau tire avant meme que la foret s affiche');
+
+    /* on tape jusqu a ce qu il s ouvre, en surveillant ce qui se passe
+       devant : les presentations doivent avoir lieu rideau ferme */
+    let presenteDevantRideau = false, ouvert = false;
+    const t0 = Date.now();
+    while (Date.now() - t0 < 120000) {
+      if (c.$('#spotlight') && rideau() && !rideau().hidden) presenteDevantRideau = true;
+      if (rideau() && rideau().hidden) { ouvert = true; break; }
+      const foot = c.win.document.querySelector('.ov-foot button:not([disabled])');
+      if (foot) click(c.win, foot, c.errors);
+      else {
+        const b = c.$('#kwaBubble');
+        if (b) click(c.win, b, c.errors);
+      }
+      await sleep(60);
+    }
+    if (!ouvert) fails.push('le rideau ne s ouvre jamais : la partie reste derriere');
+    else step('rideau ouvert une fois les presentations faites');
+    if (!presenteDevantRideau) fails.push('les presentations ne se font pas devant le rideau');
+    else step('les joueurs sont presentes devant le rideau tire');
+
+    /* et la partie demarre derriere : Kwa parle encore, il faut taper */
+    const t1 = Date.now();
+    let demarre = false;
+    while (Date.now() - t1 < 60000) {
+      if (c.$('#actBtn') || K.state.over) { demarre = true; break; }
+      const foot = c.win.document.querySelector('.ov-foot button:not([disabled])');
+      if (foot) click(c.win, foot, c.errors);
+      else { const b2 = c.$('#kwaBubble'); if (b2) click(c.win, b2, c.errors); }
+      await sleep(60);
+    }
+    if (!demarre) fails.push('la partie ne demarre pas apres l ouverture du rideau');
+    else step('la partie enchaine sur le premier tour');
+
+    c.errors.forEach(e => fails.push('rideau : ' + e));
+  }
+
+  /* =====================================================
      5. Une partie entiere, tous systemes allumes
      ===================================================== */
   {

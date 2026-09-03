@@ -22,7 +22,7 @@ async function tapThrough(ctx, fn, ms) {
     if (b) click(ctx.win, b, ctx.errors);
     await sleep(120);
   }
-  throw new Error('delai depasse en tapant sur Kwa');
+  throw new Error('delai depasse en tapant sur Kwa (ouverture : presentations, rideau, travelling)');
 }
 
 
@@ -84,6 +84,13 @@ async function toLobby(name) {
   step('les 3 ecrans sont sur le plateau');
 
   /* --- meme plateau partout --- */
+  /* le rideau doit etre en place partout avant que la foret s affiche */
+  [host].concat(guests).forEach((c, i) => {
+    const r = c.$('#rideau');
+    if (!r || r.hidden) fails.push('ecran ' + i + ' : le plateau s affiche sans rideau');
+  });
+  step('rideau tire sur les 3 ecrans');
+
   const ref = host.K.board.typeList().join(',');
   guests.forEach((g, i) => {
     if (g.K.board.typeList().join(',') !== ref) fails.push('plateau different chez l invite ' + (i + 1));
@@ -97,7 +104,7 @@ async function toLobby(name) {
 
   /* --- l ouverture : presentation + tirage de l ordre --- */
   await tapThrough(host, () => host.$('#actionZone').textContent.includes('DÉ') ||
-                               host.$('#actionZone').textContent.includes('DE'), 60000);
+                               host.$('#actionZone').textContent.includes('DE'), 150000);
   step('ouverture terminee, ordre tire : ' + host.K.state.players.map(p => p.name).join(' > '));
 
   await until(() => guests.every(g => g.K.state.players.map(p => p.id).join() ===

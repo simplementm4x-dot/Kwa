@@ -26,7 +26,7 @@ async function tapThrough(ctx, fn, ms) {
     if (b) click(ctx.win, b, ctx.errors);
     await sleep(120);
   }
-  throw new Error('delai depasse en tapant sur Kwa');
+  throw new Error('delai depasse en tapant sur Kwa (ouverture : presentations, rideau, travelling)');
 }
 
 /** garde la main sur les sockets ouvertes par un ecran */
@@ -112,7 +112,7 @@ const banniere = ctx => {
   await until(() => guests.every(g => g.$('#screen-game').classList.contains('is-active')), 8000, 'plateau partout');
   const stop = autoInvites(guests);
   await tapThrough(host, () => host.$('#actionZone').textContent.includes('DÉ') ||
-                               host.$('#actionZone').textContent.includes('DE'), 60000);
+                               host.$('#actionZone').textContent.includes('DE'), 150000);
   step('partie a 3 lancee, ordre : ' + host.K.state.players.map(p => p.name).join(' > '));
 
   const actif = host.K.state.players[0];
@@ -127,6 +127,9 @@ const banniere = ctx => {
   const vnom = host.K.player(vid).name;
 
   couper(victime);
+  /* on ne se contente pas de l avis du serveur : la socket du telephone
+     doit etre reellement fermee avant de juger qu il a rate la suite */
+  await until(() => victime.sockets.every(s => s.readyState === 3), 8000, 'socket fermee');
   await until(() => { const p = host.K.player(vid); return p && p.off === true; }, 8000,
               'l hote voit la deconnexion');
 

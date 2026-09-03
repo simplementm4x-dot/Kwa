@@ -277,9 +277,12 @@
     if (K.net.isActive()) K.net.markStarted();
 
     K.board.generate(s.settings.boardLength);
-    /* les autres telephones reconstruisent exactement le meme plateau */
-    K.net.ev('board', { types: K.board.typeList(), settings: s.settings });
+    /* les autres telephones reconstruisent exactement le meme plateau.
+       Le rideau part avec l evenement du plateau : sur les autres
+       ecrans il doit etre en place AVANT que la foret s affiche. */
+    K.net.ev('board', { types: K.board.typeList(), settings: s.settings, rideau: true });
     U.clearSpotlight();
+    K.rideau.fermerLocal();
     U.go('game');
     K.kwa.mount();
     K.board.fireflies(20);
@@ -291,15 +294,12 @@
 
     /* On montre d abord le terrain, pas l animateur : le plateau defile
        du terminus jusqu au depart, et Kwa n entre qu ensuite. */
+    /* Kwa fait tout son numero devant le rideau tire. Pendant ce
+       temps-la, le navigateur dessine la foret tranquillement : elle
+       n apparaitra qu une fois prete. */
     K.kwa.hide();
-    /* quoi qu il arrive pendant le travelling, l animateur revient :
-       le laisser cache serait la panne la plus difficile a comprendre */
-    try {
-      await K.board.travelling(3400);
-      await U.sleep(200);
-    } finally {
-      await K.kwa.entree();
-    }
+    await U.sleep(160);
+    await K.kwa.entree();
 
     await K.kwa.say('Bien le bonjour ! Moi c est KWA, votre animateur en 625 lignes.', { mood: 'wink' });
     await K.kwa.say('Bienvenue dans la Foret Enchantee. ' +
@@ -308,7 +308,12 @@
         : 'On joue ' + s.settings.maxTurns + ' tours, et le plus loin gagne.'));
     await K.kwa.say('Regle numero un : on ne triche pas. Regle numero deux : on triche discretement.', { mood: 'wink' });
 
+    /* presentations et tirage de l ordre, toujours devant le rideau */
     await K.intro.run();
+
+    await K.kwa.say('La foret vous attend. Rideau !', { auto: 900, mood: 'oh' });
+    await K.rideau.ouvrir(1700);
+    await K.board.travelling(3200);
     loop();
   };
 

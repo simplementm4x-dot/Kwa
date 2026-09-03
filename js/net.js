@@ -503,6 +503,9 @@
         Object.assign(K.state.settings, d.settings || {});
         K.board.build(d.types || []);
         U.closeOverlay();
+        /* le rideau se met en place avant l affichage, pas apres :
+           sinon la foret apparait une image avant d etre masquee */
+        if (d.rideau) K.rideau.fermerLocal();
         U.go('game');
         K.kwa.mount();
         K.board.fireflies(18);
@@ -539,6 +542,7 @@
       }
 
       /* ouverture */
+      case 'rideau': d.ouvre ? K.rideau.ouvrirLocal(d.ms) : K.rideau.fermerLocal(); break;
       case 'travel': K.board.travellingLocal(d.ms); break;
       case 'kwaIn':  K.kwa.entreeLocal(); break;
 
