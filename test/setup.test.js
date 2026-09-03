@@ -73,7 +73,11 @@ const ecran = ctx => {
     step('reglages : ' + s.venue + ' / ' + s.device + ' / ' + s.mode + ' / ' +
          s.boardLength + ' cases / epice=' + s.spicy);
 
-    /* les epreuves physiques ne doivent pas tomber sur le chemin */
+    /* les epreuves physiques ne doivent pas tomber sur le chemin.
+       Quatre joueurs : certaines cases demandent du monde, et ce n est
+       pas ce qu on teste ici. */
+    c.K.state.players = ['Alice', 'Bob', 'Chloe', 'David']
+      .map((n, i) => c.K.newPlayer(n, c.K.COLORS[i].id));
     c.K.board.generate(40);
     const types = c.K.board.typeList();
     ['vingtetun', 'mime', 'duel'].forEach(t => {
@@ -112,6 +116,8 @@ const ecran = ctx => {
     if (s.maxTurns !== 3) fails.push('nombre de tours non retenu : ' + s.maxTurns);
     step('reglages : ' + s.venue + ' / ' + s.device + ' / ' + s.mode + ' / ' + s.maxTurns + ' tours');
 
+    c.K.state.players = ['Alice', 'Bob', 'Chloe', 'David']
+      .map((n, i) => c.K.newPlayer(n, c.K.COLORS[i].id));
     c.K.board.generate(40);
     const types = c.K.board.typeList();
     if (types.indexOf('vingtetun') < 0) fails.push('le 21 devrait etre jouable en vrai');
