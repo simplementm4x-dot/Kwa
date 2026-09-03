@@ -44,8 +44,9 @@
     aveugle:    { icon: '🙈', label: 'A l aveugle',        c1: '#c8901a', c2: '#7d5806', img: 'case-aveugle.png', piece: true },
 
     /* --- les cases eclair : elles se resolvent en dix secondes --- */
-    echange:    { icon: '🔀', label: 'Echange',            c1: '#2e8f8a', c2: '#154c49', eclair: true, img: 'case-echange.png' },
-    peage:      { icon: '🪙', label: 'Le Peage',           c1: '#8a7a2e', c2: '#4c4215', eclair: true, img: 'case-peage.png' },
+    /* la case objet a remplace l Echange et le Peage : leurs effets sont
+       devenus des objets qu on ramasse et qu on declenche quand on veut */
+    objet:      { icon: '📦', label: 'La Caisse',          c1: '#2e8f8a', c2: '#154c49', eclair: true },
     roue:       { icon: '🎡', label: 'La Roue de Kwa',     c1: '#7a3ea8', c2: '#42196b', eclair: true, img: 'case-roue.png' },
     finish:     { icon: '🏁', label: 'Terminus',          c1: '#d4a017', c2: '#8a6400' }
   };

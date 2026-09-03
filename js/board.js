@@ -36,7 +36,7 @@
   const GROSSES = ['undercover', 'anecdote', 'verite', 'vingtetun',
                    'dilemme', 'mime', 'motraccord', 'duel',
                    'shifumi', 'djmix', 'echelle', 'aveugle'];
-  const ECLAIRS = ['echange', 'peage', 'roue'];
+  const ECLAIRS = ['objet', 'roue'];
 
   /** une epreuve au hasard parmi celles jouables : sert a "Kwa a faim" */
   B.randomPlayable = function () {

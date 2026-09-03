@@ -168,3 +168,30 @@
 .res .d.up{color:var(--green)}
 .res .d.down{color:var(--red)}
 .res .d.zero{color:var(--txt-dim)}
+
+/* ==========================================================
+   La caisse : ce qu on trouve dans la case objet
+   La caisse s ouvre, la carte sort. On laisse le temps de
+   lire ce que l objet fait : c est un objet qu on garde,
+   pas un gain qu on encaisse.
+   ========================================================== */
+.obj-drop{position:relative;display:grid;place-items:center;min-height:280px;gap:10px}
+.obj-caisse{
+  font-size:66px;line-height:1;filter:drop-shadow(0 8px 14px rgba(0,0,0,.55));
+  transition:transform .45s cubic-bezier(.3,1.6,.5,1),opacity .35s;
+}
+.obj-caisse.ouverte{transform:translateY(-18px) scale(1.25) rotate(-8deg);opacity:.15}
+.obj-carte{
+  position:absolute;left:0;right:0;top:24px;
+  display:grid;justify-items:center;gap:4px;padding:18px 16px;
+  background:linear-gradient(180deg,#fffdf4,#ffe9c4);
+  border:3px solid #1a1030;border-radius:16px;
+  box-shadow:0 14px 0 rgba(0,0,0,.35),0 0 42px rgba(255,207,77,.35);
+  opacity:0;transform:translateY(26px) scale(.7) rotate(4deg);
+  transition:opacity .4s ease,transform .55s cubic-bezier(.2,1.7,.4,1);
+}
+.obj-carte.sortie{opacity:1;transform:none}
+.obj-carte .obj-ico{font-size:52px;line-height:1;filter:drop-shadow(0 4px 6px rgba(0,0,0,.3))}
+.obj-carte b{font-size:19px;color:#1a1030}
+.obj-carte small{font-family:var(--pix);font-size:8px;color:#7b3fb3;letter-spacing:.5px}
+.obj-carte p{margin:8px 2px 0;font-size:13px;line-height:1.5;color:#3a2a52;text-align:center}

@@ -67,7 +67,7 @@ async function ouvre(nb) {
     step(total + ' epreuves proposees');
 
     /* les cases de plateau n ont rien a faire ici */
-    ['echange', 'peage', 'roue'].forEach(t => {
+    ['objet', 'roue'].forEach(t => {
       if (carte(t)) fails.push('"' + t + '" est une mecanique de plateau et ne devrait pas etre proposee');
     });
     step('les cases eclair restent au plateau');

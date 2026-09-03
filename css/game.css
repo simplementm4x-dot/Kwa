@@ -34,6 +34,14 @@
 .hp b{font-size:11.5px;max-width:66px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hp i{font-family:var(--pix);font-size:8px;color:var(--gold);font-style:normal}
 .hp.off{opacity:.4;filter:grayscale(1)}
+/* l objet en poche : assez visible pour qu on sache qui peut degainer */
+.hp-obj{
+  font-style:normal;text-decoration:none;font-size:12px;line-height:1;
+  background:rgba(255,255,255,.12);border-radius:6px;padding:2px 3px;
+  animation:objPulse 2.4s ease-in-out infinite;
+}
+.hp-obj.maudit{background:rgba(120,60,190,.45);filter:saturate(1.4)}
+@keyframes objPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.16)}}
 .hp.on{box-shadow:0 0 0 2px rgba(255,255,255,.25),0 0 18px var(--pc);transform:scale(1.05)}
 
 /* ---------- Kwa ---------- */

@@ -16,8 +16,8 @@
   const U = K.util;
   const L = K.libre = {};
 
-  /* Les cases eclair sont des mecaniques de plateau — echanger sa
-     position, payer un peage — et n ont aucun sens hors du chemin. */
+  /* Les cases eclair sont des mecaniques de plateau — ramasser un objet,
+     tourner la roue — et n ont aucun sens hors du chemin. */
   const CATALOGUE = [
     'quiz', 'undercover', 'anecdote', 'verite', 'dilemme',
     'shifumi', 'djmix', 'echelle', 'mime', 'motraccord',

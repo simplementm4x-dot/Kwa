@@ -1,9 +1,14 @@
 /* =========================================================
-   CASES ECLAIR
-   Trois cases qui se resolvent en dix secondes. Elles ne sont
-   pas la pour occuper la table mais pour la laisser respirer :
-   entre deux epreuves de trois minutes, il faut des moments ou
-   il ne se passe presque rien — sauf une trahison.
+   LA ROUE DE KWA
+
+   Une case eclair : elle se resout en dix secondes. Ces cases
+   ne sont pas la pour occuper la table mais pour la laisser
+   respirer — entre deux epreuves de trois minutes, il faut des
+   moments ou il ne se passe presque rien.
+
+   L Echange et le Peage vivaient ici. Ils sont devenus des
+   objets (le Vaisseau, le Rocher) : le meme effet, mais garde
+   en poche et declenche au moment choisi. Voir js/objets.js.
    ========================================================= */
 (function (K) {
   'use strict';
@@ -11,78 +16,6 @@
 
   /* le registre des animations rejouees a l identique sur tous les ecrans */
   K.anim = K.anim || {};
-
-  /* ---------------------------------------------------------
-     ECHANGE — tu prends la place de qui tu veux
-     --------------------------------------------------------- */
-  K.registerTile('echange', async function (ctx) {
-    const p = ctx.player;
-    const autres = ctx.players.filter(x => x.id !== p.id);
-    if (!autres.length) return [];
-
-    await K.kwa.say('ECHANGE ! ' + p.name + ', tu prends la place de qui ?', { mood: 'wink' });
-
-    const id = await K.ask(p, {
-      kind: 'list', icon: '🔀',
-      title: 'Tu prends la place de qui ?',
-      sub: 'Case Echange',
-      intro: 'Vous echangez vos positions sur le chemin. Choisis bien : si tu es devant, ' +
-             'tu vas le regretter tout de suite.',
-      passMsg: 'A toi de decider qui tu vas contrarier.',
-      items: autres.map(x => ({
-        id: x.id, pid: x.id, color: x.hex,
-        label: x.name + ' — case ' + x.pos + (x.pos > p.pos ? ' (devant toi)' : x.pos < p.pos ? ' (derriere toi)' : ' (a egalite)')
-      }))
-    });
-    U.closeOverlay();
-
-    const q = K.player(id);
-    if (!q) return [];
-    const ecart = q.pos - p.pos;
-
-    if (!ecart) {
-      await K.kwa.say('Vous etiez sur la meme case. Bel echange, tres utile.', { auto: 1400, mood: 'wink' });
-      return [];
-    }
-    await K.kwa.say(ecart > 0
-      ? p.name + ' vole ' + U.cases(ecart) + ' a ' + q.name + '. La foret adore ca.'
-      : p.name + ' descend de ' + U.cases(-ecart) + ' pour embeter ' + q.name + '. Courageux.',
-      { auto: 1600, mood: 'oh' });
-
-    return [{ id: p.id, delta: ecart }, { id: q.id, delta: -ecart }];
-  });
-
-  /* ---------------------------------------------------------
-     LE PEAGE — on avance, mais on paie
-     --------------------------------------------------------- */
-  K.registerTile('peage', async function (ctx) {
-    const p = ctx.player;
-    const autres = ctx.players.filter(x => x.id !== p.id);
-    if (!autres.length) return [{ id: p.id, delta: 4 }];
-
-    await K.kwa.say('LE PEAGE ! Quatre cases pour toi, ' + p.name + '. Mais on ne passe pas gratuitement.',
-      { mood: 'oh' });
-
-    const id = await K.ask(p, {
-      kind: 'list', icon: '🪙',
-      title: 'A qui tu offres 2 cases ?',
-      sub: 'Le peage',
-      intro: 'Tu avances de 4 cases quoi qu il arrive. Le droit de passage, c est 2 cases ' +
-             'offertes a quelqu un d autre. A toi de voir qui te fait le moins peur.',
-      passMsg: 'Choisis ton oblige.',
-      items: autres.map(x => ({
-        id: x.id, pid: x.id, color: x.hex,
-        label: x.name + ' — case ' + x.pos
-      }))
-    });
-    U.closeOverlay();
-
-    const q = K.player(id);
-    await K.kwa.say(q ? p.name + ' arrose ' + q.name + '. On note, on note.' : 'Personne ? Tant pis.',
-      { auto: 1500, mood: 'wink' });
-
-    return q ? [{ id: p.id, delta: 4 }, { id: q.id, delta: 2 }] : [{ id: p.id, delta: 4 }];
-  });
 
   /* ---------------------------------------------------------
      LA ROUE DE KWA

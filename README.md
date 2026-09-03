@@ -68,10 +68,11 @@ et le duel en écran partagé.
 
 Au-delà des cases, cinq systèmes tournent en fond :
 
-- **Les cases éclair** (Échange, Péage, Roue de Kwa) se résolvent en dix
+- **Les cases éclair** (la Caisse, la Roue de Kwa) se résolvent en dix
   secondes, sans mini-jeu. Elles représentent une case sur cinq et existent
   pour une seule raison : enchaîner trois épreuves de trois minutes épuise
-  une table.
+  une table. La Caisse, elle, ne résout rien du tout : elle donne un objet,
+  et c'est le joueur qui choisit quand il le déclenche.
 - **Les paris** — quand un joueur monte seul sur scène, les autres misent sur
   lui avant qu'il commence. Bon pari +1 case, mauvais -1. C'est ce qui occupe
   ceux qui, sinon, regarderaient.
@@ -166,13 +167,39 @@ du salon en mode multi.
 | 🏓 **Duel** | Pong en un contre un | +3 / −3 |
 | 🤾 **Mime en folie** | 30 s, les autres miment | +1 case par mime trouvé |
 | 🔤 **Le Mot Raccord** | Une lettre, 5 consignes, 30 s | +1 par mot validé, +1 si carton plein |
+| ✊ **Shifumi** | Duel à la main dans la même pièce, à l'écran et en simultané à distance | +2 / −2 |
+| 🎧 **DJ Mix** | Le DJ reçoit une année en secret et la fait deviner en musique | joueur +4, DJ +1 |
+| 🪜 **L'Échelle** | Trois joueurs reçoivent un chiffre secret de 1 à 10 sur un thème | +2 par chiffre exact, +1 pour l'exemple compris |
+| 🙈 **À l'aveugle** | Yeux fermés, toucher ou goûter (même pièce uniquement) | +4 s'il reconnaît |
+| 📦 **La Caisse** | Un objet au hasard, gardé en poche | rien tout de suite |
+| 🎡 **La Roue de Kwa** | Douze quartiers, aucun talent requis | de −3 à +5 |
 
-Répartition sur un plateau de 40 cases : environ 22 cases de quiz et 2 de chaque
-mini-jeu, jamais deux mini-jeux identiques collés.
+Répartition sur un plateau de 40 cases : environ 42 % de quiz, 22 % de cases
+éclair (Caisse et Roue) et le reste en épreuves, jamais deux mini-jeux
+identiques collés. Les épreuves qui demandent du monde ou une pièce commune
+disparaissent du chemin quand la table est trop petite ou trop dispersée.
+
+### Les objets
+
+Une seule poche. La Caisse donne un objet au hasard, et on le sort **avant le
+dé**, au tour de son choix : c'est la seule chose du jeu qui se garde, donc la
+seule décision qu'on peut différer.
+
+| Objet | Ce qu'il fait |
+|---|---|
+| 🛸 **Le Vaisseau** | Tu échanges ta place avec un joueur tiré au sort — tu ne choisis pas qui |
+| 🎲 **Le Dé +** | +3 cases sur ton prochain lancer, le seul qui ne se retourne jamais contre toi |
+| 👻 **Le Fantôme** | Tu maudis quelqu'un : à son prochain tour, il recule de ce qu'il aurait avancé |
+| 🌈 **La Roue des couleurs** | Elle tourne sur toi ou sur qui tu veux, de −4 à +4 selon la couleur |
+| 🪨 **Le Rocher** | Il pousse le joueur de ton choix jusqu'au joueur le plus proche derrière lui |
+
+Ramasser un second objet oblige à en abandonner un : impossible d'accumuler
+puis de tout lâcher à l'arrivée. Le Rocher qui ne trouve personne à pousser
+n'est pas gaspillé, il reste en poche.
 
 ## Le contenu
 
-- **200 cartes de quiz**, soit **2000 questions** (10 niveaux par thème)
+- **400 cartes de quiz**, soit **4000 questions** (10 niveaux par thème)
   — séries, cinéma, animés, musique, géo, histoire, sport, sciences, bouffe,
   jeux vidéo, marques, décennies, culture générale.
 - 121 dilemmes, 80 paires Undercover, 202 mots à mimer, 85 consignes de Mot Raccord.
@@ -209,6 +236,7 @@ js/
   net.js              salon, code à 3 chiffres, routage des questions
   events.js           les règles de forêt : quand elles tombent, ce qu elles font
   esprit.js           la créature qui garde une case et frappe qui s y arrête
+  objets.js           la Caisse, l inventaire à une poche et les cinq objets
   game.js             moteur : tours, dé, résolution, fin de partie
   tiles/*.js          une case = un fichier
   data/*.js           tout le contenu

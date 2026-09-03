@@ -435,6 +435,9 @@
       over: K.state.over,
       ev: K.state.event ? K.state.event.id : null,
       esp: K.esprit.at(),
+      /* les poches font partie de la partie : un ecran qui revient doit
+         retrouver son objet et savoir qui est maudit */
+      inv: K.state.players.map(p => ({ id: p.id, it: p.item || null, mau: !!p.maudit })),
       last: K.board.last(),
       order: K.state.players.map(p => p.id),
       pos: K.state.players.map(p => ({ id: p.id, pos: p.pos }))
@@ -648,6 +651,10 @@
       K.state.players.sort((a, b) => d.order.indexOf(a.id) - d.order.indexOf(b.id));
     }
     (d.pos || []).forEach(x => { const p = K.player(x.id); if (p) p.pos = x.pos; });
+    (d.inv || []).forEach(x => {
+      const p = K.player(x.id);
+      if (p) { p.item = x.it; p.maudit = !!x.mau; }
+    });
     K.state.netLast = d.last;
     /* la regle de foret en cours : on ne transporte que son identifiant */
     K.state.event = d.ev ? K.events.byId(d.ev) : null;

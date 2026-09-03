@@ -101,7 +101,7 @@ async function partie(reglages) {
 
     if (eclairs < 6) fails.push('trop peu de cases eclair (' + eclairs + ') : le rythme ne changera pas');
     if (part > 32) fails.push('trop de cases eclair (' + part + '%) : le jeu perd ses epreuves');
-    ['echange', 'peage', 'roue'].forEach(t => {
+    ['objet', 'roue'].forEach(t => {
       if (types.indexOf(t) < 0) fails.push('la case "' + t + '" n apparait jamais');
     });
     step('sur 60 cases : ' + quiz + ' quiz, ' + eclairs + ' eclair (' + part + '%), ' +
@@ -116,27 +116,29 @@ async function partie(reglages) {
     const K = c.K;
     K.kwa.say = () => Promise.resolve();
     K.anim.roue = () => Promise.resolve();
+    K.anim.objet = () => Promise.resolve();
+    K.game.hud = () => {};
     K.state.players = [
       K.newPlayer('Alice', 'rouge'),
       K.newPlayer('Bob', 'bleu')
     ];
     const [a, b] = K.state.players;
     a.pos = 4; b.pos = 11;
+    K.objets.reset();
 
-    /* echange : Alice choisit Bob, ils troquent leurs positions */
+    /* la caisse : elle ne fait avancer personne, elle remplit une poche */
     K.ask = (p, spec) => Promise.resolve(spec.items[0].id);
-    let res = await K.tiles.echange({ player: a, tile: {}, players: K.state.players });
-    const da = res.find(r => r.id === a.id).delta;
-    const db = res.find(r => r.id === b.id).delta;
-    if (da !== 7 || db !== -7) fails.push('echange : deltas incoherents (' + da + ' / ' + db + ')');
-    if (da + db !== 0) fails.push('echange : les deux joueurs ne se croisent pas');
-    step('echange : Alice ' + (da > 0 ? '+' : '') + da + ', Bob ' + db + ' (elle passe de 4 a 11)');
+    let res = await K.tiles.objet({ player: a, tile: {}, players: K.state.players });
+    if (res.length) fails.push('la caisse fait bouger les pions au lieu de donner un objet');
+    if (!a.item || !K.objets.byId(a.item)) fails.push('la caisse ne laisse rien dans la poche');
+    else step('la caisse : Alice repart avec ' + K.objets.byId(a.item).nom);
 
-    /* peage : 4 cases pour soi, 2 offertes */
-    res = await K.tiles.peage({ player: a, tile: {}, players: K.state.players });
-    if (res.find(r => r.id === a.id).delta !== 4) fails.push('peage : le joueur devrait avancer de 4');
-    if (res.find(r => r.id === b.id).delta !== 2) fails.push('peage : l oblige devrait avancer de 2');
-    step('peage : +4 pour le joueur, +2 pour celui qu il designe');
+    /* deuxieme caisse : une seule poche, il faut trancher */
+    const avant = a.item;
+    await K.tiles.objet({ player: a, tile: {}, players: K.state.players });
+    if (!a.item) fails.push('la seconde caisse vide la poche au lieu de la remplacer');
+    else step('seconde caisse : elle garde ' + K.objets.byId(a.item).nom +
+              ' (elle avait ' + K.objets.byId(avant).nom + ')');
 
     /* roue : toujours dans la fourchette annoncee */
     const vus = {};

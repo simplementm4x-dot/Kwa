@@ -65,7 +65,7 @@
     U.$('#hudPlayers').innerHTML = s.players.map((p, i) =>
       '<div class="hp' + (i === s.idx ? ' on' : '') + (p.off ? ' off' : '') + '" style="--pc:' + p.hex + '">' +
         '<span class="hp-av">' + K.sprites.avatar(p, 24) + '</span>' +
-        '<b>' + U.esc(p.name) + '</b><i>' + p.pos + '</i></div>'
+        '<b>' + U.esc(p.name) + '</b><i>' + p.pos + '</i>' + K.objets.badge(p) + '</div>'
     ).join('');
     K.net && K.net.broadcastState();
     const on = U.$('#hudPlayers .hp.on');
@@ -194,6 +194,15 @@
     if (pacte && pacte.results) await G.applyResults(pacte.results);
     if (p.pos >= K.board.last() && K.rules.isTerminus()) { await endGame(p); return true; }
 
+    /* L objet se sort apres le pacte : on sait alors si un de sera
+       lance, et le De + n est propose que si c est le cas. */
+    const objet = await K.objets.tour(p, { lance: !(pacte && pacte.pas) });
+    if (p.pos >= K.board.last() && K.rules.isTerminus()) { await endGame(p); return true; }
+    if (K.rules.isTerminus()) {
+      const w = s.players.find(x => x.pos >= K.board.last());
+      if (w) { await endGame(w); return true; }
+    }
+
     /* Un marche qui fait avancer REMPLACE le de : sinon le joueur
        empochait ses cases puis relancait par-dessus, ce qui faisait du
        pacte un cadeau et non un choix. */
@@ -206,9 +215,18 @@
     } else {
       await G.button('🎲 LANCER LE DÉ');
       const d = await rollDice();
-      pas = d * ((pacte && pacte.diceMult) || 1);
+      pas = d * ((pacte && pacte.diceMult) || 1) + ((objet && objet.bonusDe) || 0);
       await K.kwa.say(K.kwa.line('dice' + d, { name: p.name }) || (p.name + ' fait ' + d + ' !'), { auto: 800, mood: d >= 5 ? 'oh' : 'happy' });
       if (pas !== d) await K.kwa.say('Et ca compte double : ' + pas + ' cases. Marche est marche.', { auto: 1200, mood: 'oh' });
+    }
+
+    /* la malediction du Fantome : ce qu il aurait gagne, il le recule */
+    if (p.maudit) {
+      p.maudit = false;
+      pas = -pas;
+      K.game.hud();
+      await K.kwa.say('Le fantome ne l a pas lache : ' + p.name + ' ne monte pas de ' +
+        U.cases(-pas) + ', il les descend.', { auto: 1800, mood: 'what' });
     }
 
     const before = p.pos;
@@ -304,6 +322,7 @@
     s.turn = 1; s.idx = 0; s.over = false; s.started = true;
     K.events.reset();
     s.players.forEach(p => { p.pos = 0; p.stats = { correct: 0, wrong: 0, gained: 0, lost: 0 }; });
+    K.objets.reset();
     U.resetBags();
     if (K.net.isActive()) K.net.markStarted();
 
