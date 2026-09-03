@@ -35,7 +35,7 @@
      --------------------------------------------------------- */
   const GROSSES = ['undercover', 'anecdote', 'verite', 'vingtetun',
                    'dilemme', 'mime', 'motraccord', 'duel',
-                   'shifumi', 'djmix', 'echelle', 'aveugle', 'cliche'];
+                   'shifumi', 'djmix', 'echelle', 'aveugle', 'cliche', 'tictac'];
   const ECLAIRS = ['objet', 'roue'];
 
   /** une epreuve au hasard parmi celles jouables : sert a "Kwa a faim" */

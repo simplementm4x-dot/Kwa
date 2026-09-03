@@ -241,17 +241,103 @@
 }
 .ph-verdict b{font-size:18px;color:var(--gold)}
 
-/* le Mot Raccord quand le carnet est chez le voisin : la lettre et les
-   consignes s affichent sur tous les ecrans, le joueur cherche a voix
-   haute et n a rien a toucher */
-.mr-public{
-  background:rgba(12,5,26,.92);border:3px solid var(--gold);border-radius:16px;
-  padding:14px 18px;max-width:420px;text-align:center;
-  box-shadow:0 10px 0 rgba(0,0,0,.45);
+
+/* ==========================================================
+   L ecran public de l epreuve
+
+   Ce que la table voit pendant qu un joueur repond sur son
+   telephone. Meme carte sur tous les appareils : la question,
+   ses propositions, la photo qui se devoile.
+
+   Elle est posee dans le projecteur, donc sous la bulle de Kwa
+   et au-dessus du plateau — on garde la foret en fond, c est
+   toujours une partie, pas un questionnaire.
+   ========================================================== */
+.sc-carte{
+  position:relative;width:100%;max-width:440px;
+  display:grid;gap:8px;justify-items:center;text-align:center;
+  background:rgba(10,4,22,.94);border:3px solid var(--gold);border-radius:16px;
+  padding:14px 16px 16px;
+  box-shadow:0 10px 0 rgba(0,0,0,.45),0 0 42px rgba(0,0,0,.6);
+  animation:slIn .4s cubic-bezier(.2,1.5,.4,1) both;
 }
-.mr-public ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
-.mr-public li{
-  font-size:14px;font-weight:700;color:#fff;
-  background:rgba(255,255,255,.08);border-radius:8px;padding:6px 10px;
+.sc-carte small{font-family:var(--pix);font-size:8px;color:var(--cyan);letter-spacing:1.5px}
+.sc-carte b{font-family:var(--pix);font-size:11px;color:var(--gold);line-height:1.6}
+.sc-carte p{margin:0;font-size:16px;font-weight:800;line-height:1.4;color:#fff}
+
+/* les propositions, sans rien marquer : la table joue avec, mais c est
+   le joueur sur scene qui tranche */
+.sc-choix{
+  list-style:none;margin:4px 0 0;padding:0;width:100%;
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;
 }
-.mr-public small{display:block;margin-top:10px;font-family:var(--pix);font-size:8px;color:var(--gold)}
+.sc-choix li{
+  display:flex;align-items:center;gap:7px;text-align:left;
+  background:rgba(255,255,255,.07);border-radius:9px;padding:7px 9px;
+  font-size:12.5px;font-weight:700;color:#fff;line-height:1.25;
+}
+.sc-choix li span{
+  flex:0 0 19px;width:19px;height:19px;border-radius:5px;background:var(--panel2);
+  display:grid;place-items:center;font-family:var(--pix);font-size:8px;color:var(--gold);
+}
+
+.sc-liste{list-style:none;margin:2px 0 0;padding:0;width:100%;display:grid;gap:5px}
+.sc-liste li{
+  font-size:13.5px;font-weight:700;color:#fff;
+  background:rgba(255,255,255,.07);border-radius:8px;padding:6px 10px;
+}
+.sc-pied{color:var(--gold) !important;margin-top:4px}
+
+/* la photo du Cliche, au meme cadre que sur le telephone du joueur */
+.sc-photo .sc-img{
+  width:100%;aspect-ratio:4/3;max-height:32vh;overflow:hidden;
+  border-radius:12px;border:2px solid #1a1030;background:#0a0418;
+}
+.sc-photo .sc-img img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* la jauge de temps, sur toute la hauteur de la carte */
+.sc-jauge{
+  position:absolute;left:5px;top:8px;bottom:8px;width:5px;border-radius:3px;
+  background:linear-gradient(180deg,var(--green),var(--gold) 60%,var(--red));
+  transform-origin:50% 0;
+  animation:jaugeVide var(--t,20s) linear forwards;
+}
+
+/* ---------- la meme jauge, le long de la question du joueur ---------- */
+.q-bloc{position:relative;padding-left:15px}
+.q-jauge{
+  position:absolute;left:0;top:0;bottom:18px;width:6px;border-radius:3px;
+  background:linear-gradient(180deg,var(--green),var(--gold) 60%,var(--red));
+  transform-origin:50% 0;
+  animation:jaugeVide var(--t,20s) linear forwards;
+}
+.q-jauge.fini{animation:none;transform:scaleY(0)}
+@keyframes jaugeVide{from{transform:scaleY(1)}to{transform:scaleY(0)}}
+
+/* ==========================================================
+   Tic-Tac
+   Un temps a atteindre et rien pour aider : pas de chronometre,
+   pas de barre, pas de compte. Le bouton est la seule chose qui
+   change a l ecran, et c est voulu.
+   ========================================================== */
+.tt{display:grid;justify-items:center;gap:14px;padding:14px 0}
+.tt-but{
+  display:grid;justify-items:center;gap:2px;
+  background:linear-gradient(180deg,#2b1650,#180c2f);
+  border:3px solid var(--gold);border-radius:18px;padding:20px 34px;
+  box-shadow:0 8px 0 rgba(0,0,0,.45);
+}
+.tt-but small{font-family:var(--pix);font-size:8px;color:var(--cyan);letter-spacing:2px}
+.tt-but b{font-family:var(--pix);font-size:40px;color:var(--gold);line-height:1.2;text-shadow:0 4px 0 #000}
+.tt-but i{font-style:normal;font-size:12px;font-weight:700;color:var(--txt-dim)}
+.tt-aide{text-align:center;max-width:300px}
+/* pendant la course, le cadre respire — mais il ne compte rien */
+.tt.encours .tt-but{animation:ttPouls 1.1s ease-in-out infinite}
+@keyframes ttPouls{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.tt-btn.lance{animation:ttPouls .9s ease-in-out infinite}
+
+/* le tableau des temps */
+.tt-temps{
+  margin-left:auto;text-align:right;font-family:var(--pix);font-size:12px;color:var(--gold);
+}
+.tt-temps small{display:block;font-family:var(--sys,inherit);font-size:11px;color:var(--txt-dim);font-weight:700}

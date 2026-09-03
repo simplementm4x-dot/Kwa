@@ -222,6 +222,44 @@ async function plateau(reglages) {
   }
 
   /* =====================================================
+     4 ter. Les trois animations sont bien distinctes
+
+     Ce test lit le CSS, ce qui est inhabituel — mais jsdom ne
+     joue aucune animation, et le bug qu on garde ici ne se voit
+     que sur un vrai navigateur : avec un seul nom d animation
+     partage entre l attente, la marche et le coup de baton,
+     changer de classe ne relance rien. Le navigateur garde le
+     temps ecoule de l animation en cours, donc l attaque
+     demarrait deja terminee et on ne la voyait jamais.
+     ===================================================== */
+  {
+    const css = require('fs').readFileSync(
+      require('path').join(__dirname, '..', 'css', 'board.css'), 'utf8');
+
+    const noms = {};
+    [['attente', /\.esprit \.sp\{[^}]*animation:(\w+)/],
+     ['marche',  /\.esprit\.marche \.sp\{[^}]*animation:(\w+)/],
+     ['frappe',  /\.esprit\.frappe \.sp\{[^}]*animation:(\w+)/]].forEach(([etat, re]) => {
+      const m = css.match(re);
+      if (!m) fails.push('l animation de l etat "' + etat + '" est introuvable dans le CSS');
+      else noms[etat] = m[1];
+    });
+
+    const vus = Object.keys(noms).map(k => noms[k]);
+    if (vus.length === 3 && new Set(vus).size !== 3) {
+      fails.push('deux etats partagent le meme nom d animation (' + vus.join(', ') +
+                 ') : celle qui tourne deja ne repartira pas du debut');
+    } else if (vus.length === 3) {
+      step('trois animations distinctes : ' + vus.join(', '));
+    }
+
+    /* et chacune doit exister comme keyframes */
+    vus.forEach(n => {
+      if (css.indexOf('@keyframes ' + n) < 0) fails.push('les keyframes "' + n + '" n existent pas');
+    });
+  }
+
+  /* =====================================================
      5. Coupe dans les reglages, il n existe pas
      ===================================================== */
   {

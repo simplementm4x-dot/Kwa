@@ -331,11 +331,26 @@
   background-size:calc(var(--ew) * var(--en) * var(--es) * 1px) calc(var(--eh) * var(--es) * 1px);
   image-rendering:auto;
   filter:drop-shadow(0 6px 10px rgba(0,0,0,.55)) drop-shadow(0 0 12px rgba(190,120,255,.35));
-  animation:espSteps 1.1s steps(8) infinite;
+  animation:espAttente 1.1s steps(8) infinite;
 }
 /* steps(n) s arrete a la derniere vignette : la valeur finale n est
-   jamais atteinte, la bande ne montre donc pas de vide */
-@keyframes espSteps{
+   jamais atteinte, la bande ne montre donc pas de vide.
+
+   Les trois bandes ont chacune leur nom d animation, et ce n est pas
+   de la coquetterie : changer la duree ou le nombre de repetitions
+   d une animation DEJA EN COURS ne la relance pas — le navigateur
+   garde le temps ecoule. Avec un seul nom partage, le coup de baton
+   demarrait a l instant ou en etait l attente, donc apres sa fin, et
+   "both" figeait la derniere image : on ne voyait jamais l attaque. */
+@keyframes espAttente{
+  from{background-position-x:0}
+  to  {background-position-x:calc(var(--ew) * var(--en) * var(--es) * -1px)}
+}
+@keyframes espMarche{
+  from{background-position-x:0}
+  to  {background-position-x:calc(var(--ew) * var(--en) * var(--es) * -1px)}
+}
+@keyframes espFrappe{
   from{background-position-x:0}
   to  {background-position-x:calc(var(--ew) * var(--en) * var(--es) * -1px)}
 }
@@ -344,12 +359,12 @@
 .esprit.marche .sp{
   --eh:117; --en:7;
   background-image:url(../assets/esprit-walk.png);
-  animation:espSteps .62s steps(7) infinite;
+  animation:espMarche .62s steps(7) infinite;
 }
 .esprit.frappe .sp{
   --eh:201; --en:8;
   background-image:url(../assets/esprit-atk.png);
-  animation:espSteps .72s steps(8) 1 both;
+  animation:espFrappe .72s steps(8) 1 both;
 }
 
 /* ==========================================================
@@ -458,3 +473,16 @@
   animation:viseFlotte 1.6s ease-in-out infinite;
 }
 @keyframes viseFlotte{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-6px)}}
+
+/* ---------- la derniere ligne droite ----------
+   Le plateau vire a l or quand le meneur voit l arrivee. C est le
+   seul moment de la partie ou la foret change de couleur sans
+   qu une regle soit tombee. */
+.screen-game.finale .vignette{
+  background:
+    radial-gradient(120% 90% at 50% 45%,transparent 38%,rgba(90,50,0,.55) 100%),
+    radial-gradient(120% 90% at 50% 45%,transparent 40%,rgba(5,0,15,.62) 100%);
+  animation:finaleBat 3.2s ease-in-out infinite;
+}
+@keyframes finaleBat{0%,100%{opacity:.85}50%{opacity:1}}
+.screen-game.finale .tile.is-finish{filter:drop-shadow(0 0 22px rgba(255,207,77,.85))}

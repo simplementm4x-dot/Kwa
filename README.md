@@ -187,6 +187,7 @@ du salon en mode multi.
 | 🪜 **L'Échelle** | Trois joueurs reçoivent un chiffre secret de 1 à 10 sur un thème | +2 par chiffre exact, +1 pour l'exemple compris |
 | 🙈 **À l'aveugle** | Yeux fermés, toucher ou goûter (même pièce uniquement) | +4 s'il reconnaît |
 | 📷 **Le Cliché** | Une photo part floue et se résout en six secondes, 4 réponses | +4 / +3 / +2 selon le moment, −1 si raté |
+| ⏱️ **Tic-Tac** | Un temps à atteindre entre 4 et 15 s, sans aucun chronomètre à l'écran | +2 au plus proche, +1 au deuxième, −1 au dernier |
 | 📦 **La Caisse** | Un objet au hasard, gardé en poche | rien tout de suite |
 | 🎡 **La Roue de Kwa** | Douze quartiers, aucun talent requis | de −3 à +5 |
 
@@ -194,6 +195,69 @@ Répartition sur un plateau de 40 cases : environ 42 % de quiz, 22 % de cases
 éclair (Caisse et Roue) et le reste en épreuves, jamais deux mini-jeux
 identiques collés. Les épreuves qui demandent du monde ou une pièce commune
 disparaissent du chemin quand la table est trop petite ou trop dispersée.
+
+### Quand tout le monde a un écran
+
+Deux épreuves changent de forme dès que chacun joue sur son téléphone, parce
+qu'elles n'ont plus besoin de faire tourner l'appareil :
+
+- **Tic-Tac** se joue simultanément — même temps à atteindre pour tout le
+  monde, un seul classement. Dans la même pièce, on joue à tour de rôle et
+  personne ne voit le résultat des autres avant la fin, sinon le dernier à
+  jouer saurait exactement quoi battre.
+- **Le Cliché** devient une course : la même photo se dévoile sur tous les
+  écrans, le premier qui trouve empoche ce que valait le moment où il a
+  répondu, et **se tromper coûte 2 cases**. Sans ce malus, taper au hasard dès
+  la première seconde serait la meilleure stratégie. Les paris ne s'ouvrent pas
+  sur une épreuve où tout le monde joue : on ne mise pas sur soi-même.
+
+### L'écran public
+
+Le trou noir des parties à plusieurs appareils, c'est le moment où un joueur
+répond sur son téléphone pendant que les autres le regardent fixer un écran
+qu'ils ne voient pas. La question, ses propositions, la photo qui se dévoile,
+la lettre du Mot Raccord : tout ça s'affiche **sur tous les téléphones à la
+fois**. Jamais ce qui est secret — le mot de l'Undercover, le numéro de
+L'Échelle, l'année du DJ n'y passent pas.
+
+Les questions fermées portent une **jauge de 20 secondes** le long de leur
+hauteur. Sans limite, une table de dix attend qu'un seul se décide.
+
+### La dernière ligne droite
+
+Quand le meneur arrive à cinq cases du terminus — ou au dernier tour en mode
+tours — le plateau vire à l'or et **tout ce que gagnent les poursuivants compte
+double**. Pas les pertes : on accélère ceux qui reviennent, on ne punit
+personne. Et pas le meneur, il a déjà son avance.
+
+C'est volontairement brutal. Une course où quelqu'un prend dix cases d'avance
+se termine sinon sur un quart d'heure où plus personne ne joue vraiment.
+
+### Les missions de Kwa
+
+Dans la même pièce uniquement. Kwa prend un joueur à part et lui donne une
+consigne à tenir **pendant son tour** : parler avec l'accent belge, glisser le
+mot « aubergine » dans une phrase, aller chuchoter une qualité à l'oreille de
+quelqu'un. Il accepte ou il refuse, et personne d'autre n'en sait rien.
+
+Kwa revient à son tour suivant. La mission est alors annoncée à toute la table,
+le groupe tranche, et si c'est passé inaperçu ce sont **3 cases**. Le joueur ne
+se note pas lui-même : dès qu'il y a plusieurs téléphones, le verdict part chez
+son voisin de tour.
+
+52 missions, dont trois réservées au mode épicé. Rien de tout ça ne passe par
+le réseau ni par aucun bandeau : faire fuiter une mission, c'est la tuer.
+
+### L'épreuve finale
+
+Arriver au terminus ne suffit pas. Kwa pose une dernière question, tirée au
+hasard, de **niveau 8 minimum** — les plus dures du paquet. Bonne réponse, la
+partie est gagnée. Ratée, on recule de 3 cases et la course repart : ceux qui
+suivaient ont une ouverture, et celui qui menait doit revenir la chercher.
+
+Quand la question est ouverte, le joueur répond **à voix haute** devant tout le
+monde, la réponse s'affiche sur tous les écrans, et c'est la table qui tranche
+— on ne se déclare pas vainqueur tout seul.
 
 ### Les objets
 
@@ -254,6 +318,10 @@ js/
   events.js           les règles de forêt : quand elles tombent, ce qu elles font
   esprit.js           la créature qui garde une case et frappe qui s y arrête
   objets.js           la Caisse, l inventaire à une poche et les cinq objets
+  missions.js         les consignes secrètes tenues pendant un tour
+  finale.js           la dernière ligne droite
+  scene.js            l écran public : ce que la table voit pendant l épreuve
+  simultane.js        poser la même question à tout le monde en même temps
   game.js             moteur : tours, dé, résolution, fin de partie
   tiles/*.js          une case = un fichier
   data/cliche.js      les photos du Cliché, figées par tools/cliche.js

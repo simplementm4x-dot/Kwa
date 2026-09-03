@@ -581,3 +581,17 @@
 .pk-btn.non{background:linear-gradient(180deg,#3b2a63,#241844);color:#efe7ff}
 .pk-btn:hover{transform:translateY(-3px);filter:brightness(1.12);box-shadow:0 9px 0 rgba(0,0,0,.5)}
 .pk-btn:active,.pk-btn.pris{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.5)}
+
+/* la vedette du pari se pose a cote de Kwa : on mise sur quelqu un,
+   pas sur une phrase */
+.pk-scene{display:flex;align-items:flex-end;justify-content:center;gap:14px}
+.pk-vedette{
+  display:grid;justify-items:center;gap:6px;
+  filter:drop-shadow(0 10px 14px rgba(0,0,0,.6));
+  animation:hostFloat 3.4s ease-in-out .4s infinite;
+}
+.pk-vedette b{
+  font-family:var(--pix);font-size:8px;color:#fff;
+  background:var(--pc);border:2px solid #12081f;border-radius:8px;
+  padding:4px 8px;box-shadow:0 3px 0 rgba(0,0,0,.45);
+}

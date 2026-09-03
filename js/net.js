@@ -438,6 +438,9 @@
          affiche un compte a rebours, il doit etre le meme partout */
       evReste: K.state.event ? (K.state.event.reste || 1) : 0,
       esp: K.esprit.at(),
+      /* la derniere ligne droite change la couleur du plateau chez tout
+         le monde, pas seulement chez l hote */
+      fin: !!K.state.finale,
       /* les poches font partie de la partie : un ecran qui revient doit
          retrouver son objet et savoir qui est maudit */
       inv: K.state.players.map(p => ({ id: p.id, it: p.item || null, mau: !!p.maudit })),
@@ -614,13 +617,17 @@
   /* ---------------------------------------------------------
      Poser une question a un joueur distant
      --------------------------------------------------------- */
-  N.ask = function (player, spec) {
+  N.ask = function (player, spec, opts) {
     return new Promise(resolve => {
       const id = 'q' + (askSeq++);
       let done = false;
       const finish = v => { if (done) return; done = true; delete pending[id]; resolve(v); };
       pending[id] = { fn: finish, to: player.id, spec };
       send({ t: 'ask', to: player.id, id, spec });
+
+      /* muet : plusieurs joueurs repondent en meme temps, l hote montre
+         sa propre question ou l ecran public, pas une file d attente */
+      if (opts && opts.muet) return;
 
       K.prompt.waiting(player, player.name + ' repond sur son telephone', () => {
         /* secours : si le telephone du joueur a lache, on repond ici. La
@@ -668,6 +675,8 @@
     /* la case gardee fait partie du plateau : un ecran qui revient
        doit retrouver l esprit exactement la ou il est */
     if (d.esp !== undefined) K.esprit.mirror({ i: d.esp });
+    K.state.finale = !!d.fin;
+    K.finale.peint(K.state.finale);
     if (d.over) clearSession();
     if (mirrorReady) { K.game.hud(); K.pawns.layoutLocal(); }
     else companion();

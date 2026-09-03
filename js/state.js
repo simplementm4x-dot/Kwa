@@ -45,7 +45,10 @@
     djmix:      { icon: '🎧', label: 'DJ Mix',             c1: '#7a3ea8', c2: '#42196b', img: 'case-djmix.png' },
     echelle:    { icon: '🪜', label: 'L Echelle',          c1: '#3f8f3a', c2: '#1f4d1c', img: 'case-echelle.png', min: 4 },
     aveugle:    { icon: '🙈', label: 'A l aveugle',        c1: '#c8901a', c2: '#7d5806', img: 'case-aveugle.png', piece: true },
-    cliche:     { icon: '📷', label: 'Le Cliche',          c1: '#3a6f8f', c2: '#1c3a4d', pari: true },
+    /* tous: true = quand chacun a son ecran, l epreuve se joue a toute
+       la table en meme temps plutot qu avec un seul joueur sur scene */
+    cliche:     { icon: '📷', label: 'Le Cliche',          c1: '#3a6f8f', c2: '#1c3a4d', pari: true, tous: true },
+    tictac:     { icon: '⏱️', label: 'Tic-Tac',            c1: '#b8452e', c2: '#6e2418', min: 2 },
 
     /* --- les cases eclair : elles se resolvent en dix secondes --- */
     /* la case objet a remplace l Echange et le Peage : leurs effets sont
@@ -77,6 +80,7 @@
     idx: 0,                  // index du joueur courant
     event: null,             // la regle de foret en cours, ou null
     esprit: null,            // {i, depuis} : la case gardee par la creature
+    finale: false,           // la derniere ligne droite est-elle ouverte ?
     started: false,
     over: false,
     net: null                // etat reseau (mode multi)

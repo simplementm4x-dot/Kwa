@@ -182,6 +182,91 @@ async function jusquAuBout(c, ms) {
     c.errors.forEach(e => fails.push('erreur javascript : ' + e));
   }
 
+  /* =====================================================
+     4. Chacun voit ce qui est demande
+     Un joueur repond sur son telephone ; les autres doivent
+     voir la question, sinon ils regardent quelqu un fixer un
+     ecran. Et jamais ce qui est secret.
+     ===================================================== */
+  {
+    const c = await table({}, ['Alice', 'Bob', 'Chloe']);
+    const K = c.K;
+    K.kwa.say = () => Promise.resolve();
+    K.util.panel = () => Promise.resolve();
+    K.util.precharge = () => Promise.resolve(true);
+    K.anim.objet = () => Promise.resolve();
+
+    /* on espionne l ecran public sans casser son fonctionnement */
+    const vus = [];
+    const vraiMontre = K.scene.montre;
+    K.scene.montre = html => { vus.push(html); return vraiMontre(html); };
+
+    const [a] = K.state.players;
+
+    /* --- le quiz --- */
+    vus.length = 0;
+    let question = null;
+    K.ask = (p, spec) => {
+      if (spec.kind === 'bet') return Promise.resolve(4);
+      if (spec.kind === 'quiz') { question = spec; return Promise.resolve(spec.good); }
+      return Promise.resolve(true);
+    };
+    const avant = await K.tileIntro.quiz({ player: a, tile: {}, players: K.state.players });
+    await K.tiles.quiz({ player: a, tile: {}, players: K.state.players, avant });
+
+    if (!vus.length) fails.push('le quiz ne montre rien a la table');
+    else if (question && vus.join('').indexOf(question.text) < 0) {
+      fails.push('la question du quiz n est pas affichee publiquement');
+    } else if (question && question.choices.some(ch => vus.join('').indexOf(ch) < 0)) {
+      fails.push('les propositions ne sont pas affichees a la table');
+    } else {
+      step('quiz : la question et ses ' + question.choices.length + ' propositions sont publiques');
+    }
+    if (c.$('#spotlight')) fails.push('la carte publique du quiz reste affichee apres l epreuve');
+
+    /* --- le cliche --- */
+    vus.length = 0;
+    let photo = null;
+    K.ask = (p, spec) => {
+      if (spec.kind === 'photo') { photo = spec; return Promise.resolve({ k: spec.good, phase: 1 }); }
+      return Promise.resolve(4);
+    };
+    await K.tiles.cliche({ player: a, tile: {}, players: K.state.players });
+    if (!photo) fails.push('le cliche ne pose pas sa question');
+    else if (!vus.length || vus.join('').indexOf(photo.url) < 0) {
+      fails.push('la photo du Cliche n est pas montree a la table');
+    } else step('cliche : la photo et ses propositions passent sur tous les ecrans');
+    if (c.$('#spotlight')) fails.push('la carte publique du Cliche reste affichee apres l epreuve');
+
+    /* --- le mot raccord, y compris a un seul telephone --- */
+    vus.length = 0;
+    let raccord = null;
+    K.ask = (p, spec) => { raccord = spec; return Promise.resolve(3); };
+    await K.tiles.motraccord({ player: a, tile: {}, players: K.state.players });
+    if (!raccord) fails.push('le mot raccord ne pose pas sa question');
+    else if (!vus.length) {
+      fails.push('le mot raccord ne montre la lettre a personne');
+    } else if (raccord.items.some(it => vus.join('').indexOf(it) < 0)) {
+      fails.push('les consignes du mot raccord ne sont pas publiques');
+    } else step('mot raccord : la lettre et les cinq consignes sont publiques');
+
+    /* --- et ce qui est secret le reste --- */
+    vus.length = 0;
+    let mot = null;
+    K.ask = (p, spec) => {
+      if (spec.kind === 'secret') { mot = spec.word; return Promise.resolve(true); }
+      if (spec.kind === 'list') return Promise.resolve(spec.items[0].id);
+      return Promise.resolve(true);
+    };
+    await K.tiles.verite({ player: a, tile: {}, players: K.state.players });
+    if (mot && vus.join('').indexOf(mot) >= 0) {
+      fails.push('le mot secret de Verite ou Mensonge est affiche a toute la table');
+    } else step('rien de secret ne passe par l ecran public');
+
+    K.scene.montre = vraiMontre;
+    c.errors.forEach(e => fails.push('erreur javascript : ' + e));
+  }
+
   await sleep(50);
   if (fails.length) {
     console.log('\nECHECS :');

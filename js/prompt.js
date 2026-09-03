@@ -27,9 +27,41 @@
       case 'nombre': return nombre(spec);
       case 'photo':  return photo(spec);
       case 'pacte':  return pacte(spec);
+      case 'tictac': return tictac(spec);
       default:       return Promise.resolve(null);
     }
   };
+
+  /**
+   * La jauge de temps, collee a la hauteur de la question.
+   *
+   * Elle ne sert pas a presser les gens pour le plaisir : sans limite,
+   * une table de dix attend qu un seul se decide, et c est la que les
+   * telephones sortent. Vingt secondes, c est large pour repondre et
+   * trop court pour partir en debat.
+   *
+   * Rend un objet { html, arme } : le html a poser autour de la
+   * question, et arme(finSansReponse) qui lance le decompte et rend de
+   * quoi l annuler quand le joueur a repondu.
+   */
+  function jauge(spec) {
+    const sec = spec.duree || 0;
+    if (!sec) return { html: t => t, arme: () => () => {} };
+    return {
+      html: txt => '<div class="q-bloc" style="--t:' + sec + 's">' +
+        '<i class="q-jauge"></i>' + txt + '</div>',
+      arme: fin => {
+        const t = setTimeout(() => {
+          const j = U.$('.q-jauge');
+          if (j) j.classList.add('fini');
+          K.audio.buzzer();
+          U.buzz([60, 40, 60]);
+          fin();
+        }, sec * 1000);
+        return () => clearTimeout(t);
+      }
+    };
+  }
 
   function head(spec, body, foot) {
     return U.ovShell(spec.icon || '❓', spec.title || '', spec.sub || '',
@@ -151,16 +183,30 @@
   function quiz(spec) {
     return new Promise(res => {
       const letters = 'ABCDEF';
+      const chrono = jauge(spec);
       head(spec,
         '<div class="q-head"><span class="q-diff" style="background:' + diffColor(spec.diff || 1) + '">NIVEAU ' +
         (spec.diff || 1) + '</span><span class="chip">' + U.esc(spec.theme || '') + '</span></div>' +
-        '<p class="q-text">' + U.esc(spec.text) + '</p>' +
+        chrono.html('<p class="q-text">' + U.esc(spec.text) + '</p>') +
         '<div class="q-choices">' + spec.choices.map((txt, k) =>
           '<button class="choice" data-k="' + k + '"><span class="k">' + letters[k] + '</span>' + U.esc(txt) + '</button>'
         ).join('') + '</div>');
+
+      /* le temps ecoule vaut une reponse fausse : on montre la bonne et
+         on rend -1, que le jeu lit comme "pas de reponse" */
+      const stop = chrono.arme(() => {
+        const boutons = U.$('.choice');
+        if (!boutons.length || boutons[0].dataset.done) return;
+        boutons.forEach(c => { c.dataset.done = '1'; });
+        const g = boutons.find(c => +c.dataset.k === spec.good);
+        if (g) g.classList.add('good');
+        setTimeout(() => res(-1), 1300);
+      });
+
       U.on(U.$('#overlay'), 'click', '.choice', (e, t) => {
         if (t.dataset.done) return;
-        U.$$('.choice').forEach(c => { c.dataset.done = '1'; });
+        stop();
+        U.$('.choice').forEach(c => { c.dataset.done = '1'; });
         const k = +t.dataset.k;
         const ok = k === spec.good;
         t.classList.add(ok ? 'good' : 'bad');
@@ -194,11 +240,13 @@
         return d < paliers[0] ? 0 : (d < paliers[1] ? 1 : 2);
       };
 
+      const chrono = jauge(spec);
       head(spec,
-        '<div class="ph-wrap">' +
-          '<img class="ph-img" id="phImg" src="' + U.esc(spec.url) + '" alt="">' +
-          '<span class="ph-gain" id="phGain">+' + gains[0] + '</span>' +
-        '</div>' +
+        chrono.html(
+          '<div class="ph-wrap">' +
+            '<img class="ph-img" id="phImg" src="' + U.esc(spec.url) + '" alt="">' +
+            '<span class="ph-gain" id="phGain">+' + gains[0] + '</span>' +
+          '</div>') +
         '<div class="q-choices">' + spec.choices.map((txt, k) =>
           '<button class="choice" data-k="' + k + '"><span class="k">' + letters[k] + '</span>' +
           U.esc(txt) + '</button>').join('') + '</div>');
@@ -215,9 +263,22 @@
         g.className = 'ph-gain p' + phase();
       }, 200);
 
+      /* plus de temps : la photo se revele et la reponse est perdue */
+      const stop = chrono.arme(() => {
+        const boutons = U.$('.choice');
+        if (!boutons.length || boutons[0].dataset.done) return;
+        boutons.forEach(c => { c.dataset.done = '1'; });
+        clearInterval(compteur);
+        if (img) img.classList.add('revelee');
+        const g = boutons.find(c => +c.dataset.k === spec.good);
+        if (g) g.classList.add('good');
+        setTimeout(() => res({ k: -1, phase: 2 }), 1400);
+      });
+
       U.on(U.$('#overlay'), 'click', '.choice', (e, t) => {
         if (t.dataset.done) return;
-        U.$$('.choice').forEach(c => { c.dataset.done = '1'; });
+        stop();
+        U.$('.choice').forEach(c => { c.dataset.done = '1'; });
         clearInterval(compteur);
         const k = +t.dataset.k;
         const ok = k === spec.good;
@@ -230,7 +291,8 @@
         }
         ok ? K.audio.good() : K.audio.bad();
         U.buzz(ok ? 30 : [40, 60, 40]);
-        setTimeout(() => res({ k, phase: quand }), 1500);
+        /* le temps mis a repondre : en course, c est lui qui departage */
+        setTimeout(() => res({ k, phase: quand, ms: Date.now() - t0 }), 1500);
       });
     });
   }
@@ -246,9 +308,19 @@
    */
   function pacte(spec) {
     return new Promise(res => {
+      /* de qui on parle : sa television se pose a cote de Kwa. Sur un
+         pari, savoir sur QUI on mise compte autant que la question. */
+      const vedette = spec.pid ? K.player(spec.pid) : null;
       const o = U.overlay(
         '<div class="pk">' +
-          '<div class="pk-kwa">' + K.sprites.kwa(1.2, 'louche') + '</div>' +
+          '<div class="pk-scene">' +
+            '<div class="pk-kwa">' + K.sprites.kwa(1.2, spec.mood || 'louche') + '</div>' +
+            (vedette
+              ? '<div class="pk-vedette" style="--pc:' + vedette.hex + '">' +
+                  K.sprites.tvPawn(vedette, 0.8) +
+                  '<b>' + U.esc(vedette.name) + '</b></div>'
+              : '') +
+          '</div>' +
           '<div class="pk-bulle">' +
             '<small>' + U.esc(spec.sub || 'Le pacte de Kwa') + '</small>' +
             '<p>' + U.esc(spec.intro || '') + '</p>' +
@@ -265,6 +337,50 @@
         K.audio.blip(); U.buzz(20);
         t.classList.add('pris');
         setTimeout(() => res(t.dataset.v), 280);
+      });
+    });
+  }
+
+  /**
+   * Tic-Tac : un temps a atteindre, et rien pour t aider.
+   *
+   * Aucun chronometre, aucune barre, aucun compte : c est toute
+   * l epreuve. Le bouton change de tete quand c est lance, et c est
+   * la seule chose qui bouge a l ecran.
+   *
+   * Rend le temps ecoule en millisecondes, ou 0 si le joueur n a
+   * jamais arrete.
+   */
+  function tictac(spec) {
+    return new Promise(res => {
+      head(spec,
+        '<div class="tt">' +
+          '<div class="tt-but"><small>A ATTEINDRE</small><b>' +
+            (Math.round(spec.but * 100) / 100) + '</b><i>secondes</i></div>' +
+          '<p class="hint tt-aide" id="ttAide">Lance quand tu veux. Compte dans ta tete. ' +
+          'Il n y aura pas de chronometre.</p>' +
+        '</div>',
+        '<button class="btn btn-xl btn-green tt-btn" id="ttGo">DEPART</button>');
+
+      const bouton = U.$('#ttGo');
+      let t0 = 0;
+      bouton.addEventListener('click', () => {
+        if (!t0) {
+          t0 = Date.now();
+          K.audio.blip(); U.buzz(20);
+          bouton.textContent = 'STOP';
+          bouton.className = 'btn btn-xl btn-red tt-btn lance';
+          const aide = U.$('#ttAide');
+          if (aide) aide.textContent = 'C est parti. Arrete quand tu y crois.';
+          const box = U.$('.tt');
+          if (box) box.classList.add('encours');
+          return;
+        }
+        const ms = Date.now() - t0;
+        K.audio.tap(); U.buzz(30);
+        bouton.disabled = true;
+        bouton.textContent = 'C EST NOTE';
+        res(ms);
       });
     });
   }

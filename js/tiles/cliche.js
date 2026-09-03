@@ -23,6 +23,11 @@
   const GAINS = [4, 3, 2];
   /* et ce que coute une mauvaise, quel que soit le moment */
   const RATE = -1;
+  /* le temps laisse pour se decider */
+  const SECONDES = 20;
+  /* en course, se tromper coute plus cher : sans ca, taper au hasard
+     des la premiere seconde serait la meilleure strategie */
+  const RATE_COURSE = -2;
 
   /**
    * Trois mauvaises reponses. On les prend d abord dans la meme
@@ -59,13 +64,86 @@
       return [];
     }
 
-    const rep = await K.ask(p, {
-      kind: 'photo', icon: '📷',
+    const spec = {
+      kind: 'photo', icon: '📷', duree: SECONDES,
       title: 'Le Cliche', sub: bonne.c,
       intro: 'Quatre reponses. La photo se precise, mais le gain fond.',
       passMsg: 'A toi de reconnaitre la photo.',
       url: bonne.u, choices: choix.map(x => x.r), good, gains: GAINS
-    });
+    };
+
+    /* ---------------------------------------------------------
+       Chacun son ecran : c est une course.
+
+       Tout le monde voit la meme photo se devoiler au meme
+       instant. Le premier a trouver empoche ce que valait le
+       moment ou il a repondu ; les autres, meme justes, arrivent
+       trop tard. Et se tromper coute deux cases : sans ca, la
+       reponse optimale serait de taper au hasard des la premiere
+       seconde.
+       --------------------------------------------------------- */
+    if (K.simultane.possible()) {
+      const joueurs = ctx.players.filter(x => !x.off);
+      await K.kwa.say('Tout le monde joue ! Le premier qui trouve rafle la mise. ' +
+        'Et une erreur coute deux cases.', { auto: 1800, mood: 'oh' });
+
+      K.scene.montre(K.scene.photo({
+        cat: bonne.c, url: bonne.u, choix: choix.map(x => x.r), duree: SECONDES
+      }));
+      const rep = await K.simultane.demande(joueurs, spec, { ms: 40000 });
+      K.scene.cache();
+      U.closeOverlay();
+
+      const justes = joueurs
+        .filter(x => rep[x.id] && rep[x.id].k === good)
+        .sort((a2, b2) => (rep[a2.id].ms || 0) - (rep[b2.id].ms || 0));
+      const rates = joueurs.filter(x => rep[x.id] && rep[x.id].k >= 0 && rep[x.id].k !== good);
+
+      const out = [];
+      if (justes.length) {
+        const gagnant = justes[0];
+        const gain = GAINS[rep[gagnant.id].phase] || GAINS[GAINS.length - 1];
+        gagnant.stats.correct++;
+        out.push({ id: gagnant.id, delta: gain });
+      }
+      rates.forEach(x => { x.stats.wrong++; out.push({ id: x.id, delta: RATE_COURSE }); });
+
+      await U.panel('📸', justes.length ? 'C etait ' + bonne.r : 'Personne !', bonne.c,
+        '<div class="ph-verdict"><img src="' + U.esc(bonne.u) + '" alt=""><b>' +
+          U.esc(bonne.r) + '</b></div>' +
+        '<div class="res-list">' + joueurs.map(x => {
+          const r = rep[x.id];
+          const juste = r && r.k === good;
+          const premier = justes.length && justes[0].id === x.id;
+          return '<div class="res" style="border-left-color:' + x.hex + '">' +
+            '<span class="rank-av" style="--pc:' + x.hex + '">' + K.sprites.avatar(x, 30) + '</span>' +
+            '<b>' + U.esc(x.name) + '</b>' +
+            '<span class="tt-temps">' +
+              (!r ? 'pas joue' : juste
+                ? (r.ms / 1000).toFixed(1) + 's'
+                : (r.k === -1 ? 'trop tard' : 'a cote')) +
+              '<small>' + (premier ? 'le plus rapide' : juste ? 'trouve' : '') + '</small>' +
+            '</span></div>';
+        }).join('') + '</div>');
+      U.closeOverlay();
+
+      if (justes.length) {
+        await K.kwa.say(justes[0].name + ' a ete le plus rapide. ' +
+          (rates.length ? rates.length + ' se sont plantes, et ca se paie.' : 'Sans une seule erreur.'),
+          { auto: 1900, mood: 'happy' });
+      } else {
+        await K.kwa.say('Personne n a trouve. C etait ' + bonne.r + '.',
+          { auto: 1700, mood: 'wink' });
+      }
+      return out;
+    }
+
+    /* --- un seul ecran : le joueur de la case, seul en scene --- */
+    K.scene.montre(K.scene.photo({
+      cat: bonne.c, url: bonne.u, choix: choix.map(x => x.r), duree: SECONDES
+    }));
+    const rep = await K.ask(p, spec);
+    K.scene.cache();
     U.closeOverlay();
 
     const ok = !!rep && rep.k === good;
@@ -76,7 +154,9 @@
       ? (rep.phase === 0 ? 'Dans le flou complet. Enorme.'
         : rep.phase === 1 ? 'Avant que ce soit net. Propre.'
         : 'Une fois nette. Ca compte quand meme.')
-      : 'C etait ' + bonne.r + '.';
+      : (rep && rep.k === -1
+        ? 'Vingt secondes passees sans se decider. C etait ' + bonne.r + '.'
+        : 'C etait ' + bonne.r + '.');
 
     await U.panel(ok ? '📸' : '💀', ok ? 'Trouve !' : 'Rate...', bonne.c,
       '<div class="ph-verdict"><img src="' + U.esc(bonne.u) + '" alt=""><b>' +

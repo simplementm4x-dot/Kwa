@@ -19,7 +19,7 @@
   /* Les cases eclair sont des mecaniques de plateau — ramasser un objet,
      tourner la roue — et n ont aucun sens hors du chemin. */
   const CATALOGUE = [
-    'quiz', 'undercover', 'anecdote', 'verite', 'dilemme',
+    'quiz', 'undercover', 'anecdote', 'verite', 'dilemme', 'tictac',
     'shifumi', 'djmix', 'echelle', 'mime', 'motraccord', 'cliche',
     'vingtetun', 'duel', 'aveugle'
   ];

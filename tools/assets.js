@@ -305,4 +305,63 @@ lot('src/lot_plant.png', 'plante', 10, [92, 86, 80, 74, 96], 96);
 console.log('decors :');
 lot('src/lot_decors.png', 'decor', 12, [86, 78, 72, 66, 92], 96);
 
+/* =========================================================
+   7. Le decor lointain, reserve aux grands ecrans
+
+   Sur un telephone, l ecran est rempli par le chemin : il n y
+   a pas de place pour un arriere-plan, et charger des images
+   qui ne se verront pas coute de la batterie et du forfait.
+
+   Sur un ecran d ordinateur, le plateau tient au milieu et il
+   reste deux tiers de vide de chaque cote. Ces morceaux-la
+   remplissent ce vide : une chaine de montagnes a l horizon,
+   des falaises qui encadrent le chemin, des bosquets et des
+   nuages. Le CSS ne les demande qu au-dela d une certaine
+   largeur — un navigateur ne telecharge pas une image de fond
+   dont la regle ne s applique pas, donc un telephone ne les
+   voit jamais passer.
+
+   Les morceaux sont pris par leur boite : les indices viennent
+   de l analyse des paquets de pixels relies, ils sont stables
+   tant que les planches ne bougent pas.
+   ========================================================= */
+console.log('decor lointain (grands ecrans) :');
+
+/** un morceau d une planche, pris a la boite, ramene a une hauteur */
+function morceau(pl, x, y, w, h, haut, nom, couleurs) {
+  return sors(nettoieHalo(hauteur(P.crop(pl, x, y, w, h), haut), 50), nom, couleurs || 96);
+}
+
+const ext2 = P.decode('src/externe2.png');
+
+/* la chaine de montagnes : volcan, sommets enneiges, collines et
+   cascades ne font qu un seul tenant sur la planche. Tant mieux —
+   c est exactement le bandeau d horizon qu on cherche. On s arrete
+   avant le soleil, qui n a rien a faire dans une foret de nuit. */
+morceau(ext2, 4, 8, 1186, 396, 300, 'pano-montagnes.png', 128);
+
+/* les bosquets de sapins, poses devant les montagnes */
+morceau(ext2, 498, 413, 512, 213, 150, 'pano-foret.png', 96);
+/* la falaise a cascade, et la colline rocheuse : deux blocs pleins */
+morceau(ext2, 8, 335, 488, 353, 230, 'pano-cascade.png', 96);
+morceau(ext2, 1014, 339, 517, 315, 210, 'pano-collines.png', 96);
+/* l ile flottante : elle donne de la profondeur, tres haut dans le ciel */
+morceau(ext2, 1290, 38, 233, 273, 150, 'pano-ile.png', 96);
+/* trois nuages, qui derivent lentement */
+morceau(ext2, 322, 15, 214, 122, 70, 'pano-nuage-1.png', 64);
+morceau(ext2, 987, 24, 145, 74, 46, 'pano-nuage-2.png', 64);
+morceau(ext2, 1120, 119, 106, 62, 38, 'pano-nuage-3.png', 64);
+/* et deux gros elements de premier plan, pour habiller les cotes */
+morceau(ext2, 1318, 652, 213, 336, 260, 'pano-chene.png', 96);
+morceau(ext2, 1070, 664, 257, 200, 170, 'pano-grotte.png', 96);
+
+/* les falaises viennent de l autre planche : ce sont des blocs de
+   roche a sommet herbeux, faits pour etre poses cote a cote */
+const ext1 = P.decode('src/externe1.png');
+morceau(ext1, 14, 25, 255, 234, 300, 'pano-falaise-1.png', 96);
+morceau(ext1, 557, 25, 329, 228, 300, 'pano-falaise-2.png', 96);
+morceau(ext1, 1727, 19, 276, 247, 300, 'pano-falaise-3.png', 96);
+/* et un eperon isole, pour casser la ligne */
+morceau(ext1, 1416, 25, 94, 224, 260, 'pano-eperon.png', 96);
+
 console.log('\ntotal : ' + (total / 1024).toFixed(1) + ' Ko');

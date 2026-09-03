@@ -70,16 +70,16 @@
       'Chrono !');
     U.closeOverlay();
 
-    /* tout le monde doit voir les consignes et la lettre, y compris
-       celui qui cherche : le carnet est chez quelqu un d autre */
-    if (carnet) {
-      U.spotlight(
-        '<div class="mr-public">' +
-          '<div class="letter-big">' + U.esc(letter) + '</div>' +
-          '<ul>' + items.map(it => '<li>' + U.esc(it) + '</li>').join('') + '</ul>' +
-          '<small>' + U.esc(carnet.name) + ' tient le chrono et coche</small>' +
-        '</div>');
-    }
+    /* Tout le monde voit la lettre et les consignes, sur son propre
+       ecran. C est indispensable des qu il y a plusieurs telephones —
+       celui qui cherche n a plus le carnet — et ca ne gene personne a
+       un seul appareil. */
+    K.scene.montre(K.scene.liste({
+      cat: 'Le Mot Raccord', lettre: letter, items,
+      duree: DUREE,
+      pied: carnet ? carnet.name + ' tient le chrono et coche'
+                   : 'Le groupe valide, on coche au fur et a mesure'
+    }));
 
     const n = await K.ask(carnet || p, {
       kind: 'raccord', icon: '🔤', noPass: true,
@@ -88,7 +88,7 @@
       letter, items, duration: DUREE
     });
     U.closeOverlay();
-    if (carnet) U.clearSpotlight();
+    K.scene.cache();
 
     const bonus = n >= items.length ? 1 : 0;
     const total = n + bonus;

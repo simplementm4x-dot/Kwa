@@ -38,7 +38,30 @@ async function tapThrough(ctx, fn, ms) {
     }
     await sleep(120);
   }
-  throw new Error('delai depasse en tapant sur Kwa (ouverture : presentations puis rideau)');
+  throw new Error('delai depasse en tapant sur Kwa (ouverture : presentations puis rideau)\n' +
+    '        etat des ecrans : ' + etatDesEcrans());
+}
+
+/**
+ * Ce que montre chaque telephone, en une ligne.
+ * Quand la partie se fige, la question est toujours la meme : qui
+ * attend quoi ? Sans ca on relance le test en esperant voir passer.
+ */
+let tousLesEcrans = [];
+function etatDesEcrans() {
+  return tousLesEcrans.map(c => {
+    const ov = c.$('#overlay');
+    const ouvert = ov && !ov.hidden;
+    const boutons = ouvert
+      ? [...ov.querySelectorAll('button')].map(b => (b.disabled ? '[x]' : '[o]') +
+          b.textContent.trim().slice(0, 18)).join(' ')
+      : '-';
+    return '\n          ' + ((c.K.player(c.K.net.meId()) || {}).name || '?') +
+      ' | overlay ' + (ouvert ? 'OUVERT : ' + ov.textContent.trim().slice(0, 60) : 'ferme') +
+      ' | boutons ' + boutons +
+      ' | action "' + c.$('#actionZone').textContent.trim().slice(0, 30) + '"' +
+      ' | kwa "' + c.$('#kwaText').textContent.trim().slice(0, 40) + '"';
+  }).join('');
 }
 
 
@@ -122,6 +145,7 @@ async function toLobby(name) {
   step('plateau identique : ' + host.$('#tiles').children.length + ' cases, ' +
        host.$('#props').children.length + ' decors, ' + host.$('#pawns').children.length + ' pions');
 
+  tousLesEcrans = [host].concat(guests);
   const stop = autoInvites(guests);
 
   /* --- l ouverture : presentation + tirage de l ordre --- */
@@ -146,14 +170,61 @@ async function toLobby(name) {
     });
     step('bouton du de : uniquement chez ' + actif.name + ', les autres voient son nom');
 
-    /* --- il lance, tout le monde voit le meme resultat --- */
+    /* --- il lance, tout le monde voit le meme resultat ---
+       Le de ne reste a l ecran qu une seconde et demie : on note au
+       passage qui l a vu, plutot que d exiger que les trois ecrans
+       l affichent dans la meme fraction de seconde. Sous charge, un
+       telephone peut finir son animation avant qu un autre commence. */
+    const vuLeDe = {};
+    const tousVu = () => [host].concat(guests).every(c => vuLeDe[c.K.net.meId()]);
+    const noter = () => {
+      [host].concat(guests).forEach(c => { if (c.$('#dice')) vuLeDe[c.K.net.meId()] = true; });
+      return tousVu();
+    };
+
     click(holder.win, holder.$('#actBtn'), holder.errors);
-    await until(() => [host].concat(guests).every(c => c.$('#dice')), 6000, 'de affiche partout');
-    step('le de roule sur les 3 ecrans');
+    try {
+      await until(noter, 8000, 'de affiche partout');
+    } catch (e) {
+      const etat = [host].concat(guests).map(c =>
+        (c.K.player(c.K.net.meId()) || {}).name + ' : "' +
+        c.$('#actionZone').textContent.trim().slice(0, 40) + '"').join(' | ');
+      fails.push('le de ne roule pas sur tous les ecrans (' + etat + ')');
+    }
+    if (tousVu()) step('le de roule sur les 3 ecrans');
     await until(() => host.K.state.players.some(p => p.pos > 0), 15000, 'deplacement du pion');
     const posHost = host.K.state.players.map(p => p.pos).join(',');
     await until(() => guests.every(g => g.K.state.players.map(p => p.pos).join() === posHost), 8000, 'positions propagees');
     step('positions identiques partout : ' + posHost);
+  }
+
+  /* --- l ecran public de l epreuve arrive sur les trois telephones ---
+     C est tout l interet du mode a plusieurs appareils : celui qui ne
+     joue pas doit voir ce qui est demande, sinon il regarde quelqu un
+     fixer un ecran qu il n a pas. */
+  {
+    const ecrans = [host].concat(guests);
+    host.K.scene.montre(host.K.scene.question({
+      cat: 'Test · niveau 4', titre: 'Les pyramides',
+      texte: 'Combien de cotes a une pyramide a base carree ?',
+      choix: ['Quatre', 'Trois', 'Cinq', 'Six'], duree: 20
+    }));
+    await until(() => ecrans.every(c => c.$('#spotlight')), 6000, 'carte publique partout');
+
+    const manque = ecrans.filter(c => {
+      const sl = c.$('#spotlight');
+      return !sl || sl.textContent.indexOf('pyramide a base carree') < 0 ||
+             sl.textContent.indexOf('Quatre') < 0;
+    });
+    if (manque.length) fails.push(manque.length + ' ecran(s) ne montrent pas la question posee');
+    else step('la question et ses propositions s affichent sur les 3 telephones');
+
+    if (!host.$('#spotlight .sc-jauge')) fails.push('la jauge de temps ne s affiche pas sur la carte');
+    else step('la jauge des 20 secondes est sur la carte publique');
+
+    host.K.scene.cache();
+    await until(() => ecrans.every(c => !c.$('#spotlight')), 6000, 'carte publique retiree');
+    step('la carte se retire des 3 ecrans en meme temps');
   }
 
   /* --- texte de Kwa identique --- */

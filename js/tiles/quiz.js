@@ -7,6 +7,9 @@
   'use strict';
   const U = K.util;
 
+  /* le temps laisse pour repondre a une question fermee */
+  const SECONDES = 20;
+
   /**
    * L ouverture : la carte se tire au milieu de l ecran.
    *
@@ -67,35 +70,52 @@
 
     /* --- la question --- */
     const q = card.q[n - 1];
-    let ok;
+    let ok, tempsEcoule = false;
     if (q.o && q.o.length) {
       const order = U.shuffle(q.o.map((txt, i) => ({ txt, i })));
       const good = order.findIndex(o => o.i === q.a);
+
+      /* la table voit la question et les propositions pendant qu il
+         cherche : sans ca, neuf personnes sur dix regardent un joueur
+         fixer son telephone */
+      K.scene.montre(K.scene.question({
+        cat: card.c + ' · niveau ' + n, titre: card.t, texte: q.q,
+        choix: order.map(o => o.txt), duree: SECONDES
+      }));
+
       const k = await K.ask(p, {
-        kind: 'quiz', icon: '❓', noPass: true,
+        kind: 'quiz', icon: '❓', noPass: true, duree: SECONDES,
         title: card.t, sub: 'Niveau ' + n + ' · ' + card.c,
         theme: card.t, diff: n, text: q.q,
         choices: order.map(o => o.txt), good
       });
+      K.scene.cache();
+      tempsEcoule = k === -1;
       ok = k === good;
     } else {
+      K.scene.montre(K.scene.question({
+        cat: card.c + ' · niveau ' + n, titre: card.t, texte: q.q
+      }));
       ok = await K.ask(p, {
         kind: 'reveal', icon: '❓', noPass: true,
         title: card.t, sub: 'Niveau ' + n + ' · reponse libre',
         theme: card.t, diff: n, text: q.q, answer: q.a
       });
+      K.scene.cache();
     }
     U.closeOverlay();
 
     const delta = ok ? n : (n >= 8 ? -1 : 0);
     if (ok) p.stats.correct++; else p.stats.wrong++;
 
-    await U.panel(ok ? '🎉' : '💀', ok ? 'Bien joue !' : 'Rate...', card.t,
-      U.verdict(ok, ok ? '🎉' : '💀',
+    await U.panel(ok ? '🎉' : (tempsEcoule ? '⏱️' : '💀'),
+      ok ? 'Bien joue !' : (tempsEcoule ? 'Trop tard !' : 'Rate...'), card.t,
+      U.verdict(ok, ok ? '🎉' : (tempsEcoule ? '⏱️' : '💀'),
         ok ? '+' + delta + ' CASES' : (delta < 0 ? delta + ' CASE' : 'ZERO CASE'),
         ok ? 'Niveau ' + n + ' encaisse sans trembler.'
-           : (delta < 0 ? 'Niveau ' + n + ' rate : la foret te reprend une case.'
-                        : 'Ce sera pour la prochaine fois.')));
+           : (tempsEcoule ? 'Les vingt secondes sont passees. La foret n attend pas.'
+              : delta < 0 ? 'Niveau ' + n + ' rate : la foret te reprend une case.'
+                          : 'Ce sera pour la prochaine fois.')));
     U.closeOverlay();
 
     return [{ id: p.id, delta }];

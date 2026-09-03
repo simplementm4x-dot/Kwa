@@ -146,7 +146,11 @@
    */
   G.applyResults = async function (results, brut) {
     if (!results || !results.length) return [];
-    results = brut ? results : K.events.apply(results);
+    /* les regles de foret d abord, la derniere ligne droite ensuite :
+       elle double ce qui reste apres, sinon un gain double par la nuit
+       serait double une seconde fois et on avancerait de huit cases sur
+       un quiz a deux */
+    results = brut ? results : K.finale.applique(K.events.apply(results));
     const real = results.filter(r => r && r.delta);
     if (!real.length) {
       await K.kwa.say("Personne ne bouge. La foret retient son souffle.", { auto: 900 });
@@ -199,6 +203,19 @@
     return why ? phrase.replace(/[.!]$/, "") + ", a cause de " + why + "." : phrase;
   }
 
+  /**
+   * Quelqu un est au bout du chemin.
+   *
+   * On ne gagne pas en posant le pied sur la derniere case : il reste
+   * l epreuve finale. Rend true quand la partie est finie pour de bon.
+   */
+  async function auBout(p) {
+    if (!K.rules.isTerminus() || !p || p.pos < K.board.last()) return false;
+    if (!await K.finale.challenge(p)) return false;
+    await endGame(p);
+    return true;
+  }
+
   /* ---------------------------------------------------------
      Un tour de joueur
      --------------------------------------------------------- */
@@ -212,18 +229,28 @@
 
     await K.kwa.say(K.kwa.line('turn', { name: p.name }) || ('A toi, ' + p.name + ' !'), { mood: 'happy' });
 
+    /* une mission etait peut-etre en cours depuis le tour dernier :
+       Kwa vient aux nouvelles avant toute chose */
+    const bilan = await K.missions.verifie(p);
+    if (bilan && bilan.length) await G.applyResults(bilan, true);
+
     /* Kwa propose parfois un marche avant meme que le de soit lance */
     const pacte = await K.pacte.maybe(p, s.players, s.idx);
     if (pacte && pacte.results) await G.applyResults(pacte.results);
+    if (await auBout(p)) return true;
+    /* pas de marche ? alors peut-etre une mission pour ce tour-ci.
+       Jamais les deux : Kwa ne prend pas le meme joueur a part deux
+       fois dans le meme tour. */
+    if (!pacte) await K.missions.maybe(p);
     if (p.pos >= K.board.last() && K.rules.isTerminus()) { await endGame(p); return true; }
 
     /* L objet se sort apres le pacte : on sait alors si un de sera
        lance, et le De + n est propose que si c est le cas. */
     const objet = await K.objets.tour(p, { lance: !(pacte && pacte.pas) });
-    if (p.pos >= K.board.last() && K.rules.isTerminus()) { await endGame(p); return true; }
+    if (await auBout(p)) return true;
     if (K.rules.isTerminus()) {
       const w = s.players.find(x => x.pos >= K.board.last());
-      if (w) { await endGame(w); return true; }
+      if (w && await auBout(w)) return true;
     }
 
     /* Un marche qui fait avancer REMPLACE le de : sinon le joueur
@@ -256,8 +283,8 @@
     await K.pawns.moveTo(p, before + pas);
     hud();
 
-    /* arrivee au bout */
-    if (p.pos >= K.board.last() && K.rules.isTerminus()) { await endGame(p); return true; }
+    /* arrivee au bout : reste l epreuve finale */
+    if (await auBout(p)) return true;
 
     /* la case est peut-etre gardee : le coup de baton passe avant tout,
        et celui qui le prend ne joue pas l epreuve */
@@ -284,8 +311,11 @@
       const ouverture = K.tileIntro[type];
       const avant = ouverture ? await ouverture({ player: p, tile, players: s.players }) : null;
 
-      /* un seul joueur sur scene : les autres misent sur lui */
-      const mises = info.pari
+      /* Une epreuve ou tout le monde joue ne se parie pas : on ne mise
+         pas sur soi-meme. Les paris ne s ouvrent donc que quand un seul
+         joueur monte sur scene. */
+      const collectif = info.tous && K.simultane.possible();
+      const mises = (info.pari && !collectif)
         ? await K.bets.collect(p, { type }, s.players, avant && avant.sujet)
         : null;
 
@@ -310,7 +340,7 @@
     /* quelqu un a pu etre pousse jusqu au bout */
     if (K.rules.isTerminus()) {
       const w = s.players.find(x => x.pos >= K.board.last());
-      if (w) { await endGame(w); return true; }
+      if (w && await auBout(w)) return true;
     }
     return false;
   }
@@ -323,6 +353,9 @@
     while (!s.over) {
       const finished = await playTurn();
       if (finished) return;
+
+      /* l arrivee se voit : a partir d ici, les poursuivants comptent double */
+      await K.finale.check();
 
       /* la foret reagit a ce qui vient de se passer, pas au calendrier */
       await K.events.maybe();
@@ -353,6 +386,8 @@
     K.events.reset();
     s.players.forEach(p => { p.pos = 0; p.stats = { correct: 0, wrong: 0, gained: 0, lost: 0 }; });
     K.objets.reset();
+    K.missions.reset();
+    K.finale.reset();
     U.resetBags();
     if (K.net.isActive()) K.net.markStarted();
 

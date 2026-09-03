@@ -42,11 +42,15 @@
 
     const mises = {};
     for (const p of autres) {
+      /* meme ecran que le pacte : Kwa s avance, le plateau s assombrit,
+         deux boutons. L ancien panneau plein ecran ressemblait a une
+         epreuve alors qu un pari se prend en deux secondes. */
       mises[p.id] = await K.ask(p, {
-        kind: 'choice', icon: '🎰',
+        kind: 'pacte', icon: '🎰', mood: 'wink', pid: star.id,
         title: 'Il s en sort ?',
-        sub: sujet ? star.name + ' · ' + sujet : 'Pari sur ' + star.name,
-        intro: 'Bon pari : +' + (MISE * B.multiplier()) + ' case(s). Mauvais pari : autant en moins. ' +
+        sub: sujet ? star.name + ' · ' + sujet : 'Tu paries sur ' + star.name,
+        intro: 'Bon pari : +' + (MISE * B.multiplier()) + ' case' +
+               (MISE * B.multiplier() > 1 ? 's' : '') + '. Mauvais pari : autant en moins. ' +
                'Tu paries sur le fait qu il gagne des cases, pas sur sa dignite.',
         passMsg: 'Ton pari reste secret jusqu au resultat.',
         a: 'IL GAGNE DES CASES', b: 'IL SE PLANTE'
