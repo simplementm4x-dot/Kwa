@@ -171,20 +171,36 @@ const banniere = ctx => {
   }
   host.K.util.closeOverlay();
 
-  /* la partie continue sans lui : le joueur actif lance le de */
-  if (porteur && porteur !== victime && porteur.$('#actBtn')) {
-    click(porteur.win, porteur.$('#actBtn'), porteur.errors);
-    await until(() => host.K.state.players.some(p => p.pos > 0), 15000, 'le de a bouge un pion');
-    step('la partie a continue pendant la coupure : ' + host.K.state.players.map(p => p.pos).join(','));
-  } else {
-    fails.push('impossible de faire avancer la partie pendant la coupure');
-  }
+  /* On fait avancer la partie pendant qu il est coupe. Plutot que de
+     compter sur un clic precis, on joue jusqu a ce que les pions
+     bougent : la boucle de taps peut traverser un tour entier, et
+     supposer qu on tombe pile au debut d un tour rend le test
+     dependant du hasard. */
+  const gele = pions(victime);
+  const avance = await (async () => {
+    const t0 = Date.now();
+    while (Date.now() - t0 < 90000) {
+      if (pions(host) !== gele) return true;
+      const act = porteur && porteur !== victime ? porteur.$('#actBtn') : null;
+      if (act) click(porteur.win, act, porteur.errors);
+      else {
+        const foot = host.win.document.querySelector('#overlay button:not([disabled])');
+        if (foot) click(host.win, foot, host.errors);
+        else { const k = host.$('#kwaBubble'); if (k) click(host.win, k, host.errors); }
+      }
+      await sleep(90);
+    }
+    return false;
+  })();
+  if (!avance) fails.push('impossible de faire avancer la partie pendant la coupure');
+  else step('la partie a continue pendant la coupure : ' + pions(host));
 
-  /* le telephone coupe n a rien vu passer */
-  if (pions(victime) === pions(host)) {
-    fails.push('l ecran coupe suit encore la partie : la coupure n a pas eu lieu');
+  /* le telephone coupe est reste fige a l instant de la coupure */
+  if (pions(victime) !== gele) {
+    fails.push('l ecran coupe a continue de suivre : ' + pions(victime) + ' au lieu de ' + gele);
+  } else {
+    step('ecran coupe fige sur ' + gele + ' pendant que la partie avance');
   }
-  step('ecran coupe en retard : ' + pions(victime) + ' au lieu de ' + pions(host));
 
   /* =====================================================
      2. Le reseau revient : il doit retrouver la partie

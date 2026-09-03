@@ -34,7 +34,8 @@
      Repartition des types de cases
      --------------------------------------------------------- */
   const GROSSES = ['undercover', 'anecdote', 'verite', 'vingtetun',
-                   'dilemme', 'mime', 'motraccord', 'duel'];
+                   'dilemme', 'mime', 'motraccord', 'duel',
+                   'shifumi', 'djmix', 'echelle', 'aveugle'];
   const ECLAIRS = ['echange', 'peage', 'roue'];
 
   /** une epreuve au hasard parmi celles jouables : sert a "Kwa a faim" */

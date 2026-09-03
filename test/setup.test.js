@@ -80,8 +80,14 @@ const ecran = ctx => {
       .map((n, i) => c.K.newPlayer(n, c.K.COLORS[i].id));
     c.K.board.generate(40);
     const types = c.K.board.typeList();
-    ['vingtetun', 'mime', 'duel'].forEach(t => {
+    ['vingtetun', 'mime', 'duel', 'aveugle'].forEach(t => {
       if (types.indexOf(t) >= 0) fails.push('la case "' + t + '" est injouable a distance et se trouve pourtant sur le plateau');
+    });
+    /* On interroge la regle et non le tirage : le plateau force ses deux
+       premieres cases en quiz, ce qui peut effacer un type rare. Une case
+       interdite, elle, ne peut jamais apparaitre — ca se verifie au-dessus. */
+    ['shifumi', 'djmix', 'echelle'].forEach(t => {
+      if (!c.K.rules.tileAllowed(t)) fails.push('la case "' + t + '" se joue tres bien a distance et reste pourtant interdite');
     });
     const restants = [...new Set(types)].filter(t => t !== 'start' && t !== 'finish');
     step('cases retenues a distance : ' + restants.join(', '));
@@ -120,10 +126,15 @@ const ecran = ctx => {
       .map((n, i) => c.K.newPlayer(n, c.K.COLORS[i].id));
     c.K.board.generate(40);
     const types = c.K.board.typeList();
-    if (types.indexOf('vingtetun') < 0) fails.push('le 21 devrait etre jouable en vrai');
-    if (types.indexOf('mime') < 0) fails.push('le mime devrait etre jouable en vrai');
-    if (types.indexOf('duel') >= 0) fails.push('le duel ne se joue pas a un seul telephone');
-    step('en vrai : le 21 et le mime reviennent, le duel reste au vestiaire (1 seul telephone)');
+    /* Ce qui est autorise se verifie sur la regle : le plateau force ses
+       deux premieres cases en quiz et peut effacer un type rare. Ce qui
+       est interdit, en revanche, ne peut jamais apparaitre. */
+    ['vingtetun', 'mime', 'aveugle'].forEach(t => {
+      if (!c.K.rules.tileAllowed(t)) fails.push('"' + t + '" devrait etre jouable en vrai');
+    });
+    if (c.K.rules.tileAllowed('duel')) fails.push('le duel ne se joue pas a un seul telephone');
+    if (types.indexOf('duel') >= 0) fails.push('le duel se trouve pourtant sur le plateau');
+    step('en vrai : le 21, le mime et A l aveugle reviennent, le duel reste au vestiaire (1 seul telephone)');
 
     c.errors.forEach(e => fails.push('irl : ' + e));
   }

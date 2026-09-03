@@ -151,6 +151,49 @@ for (const [nom, x, y, w, h] of CASES_ENTIERES) {
   sors(P.resize(P.crop(casesPl, x, y, w, h), 152, 144), nom, 128);
 }
 
+/* La planche cases2 arrive sur fond noir opaque. Un simple seuil sur la
+   luminance mangerait les contours, qui sont eux aussi tres sombres :
+   on remplit donc depuis les bords, ce qui n atteint que le fond. */
+function detourFond(img, seuil) {
+  seuil = seuil || 42;
+  const vu = new Uint8Array(img.w * img.h);
+  const pile = new Int32Array(img.w * img.h);
+  let n = 0;
+  const sombre = p => {
+    const s = p * 4;
+    return (img.px[s] + img.px[s + 1] + img.px[s + 2]) / 3 <= seuil;
+  };
+  const pousse = p => { if (!vu[p] && sombre(p)) { vu[p] = 1; pile[n++] = p; } };
+  for (let x = 0; x < img.w; x++) { pousse(x); pousse((img.h - 1) * img.w + x); }
+  for (let y = 0; y < img.h; y++) { pousse(y * img.w); pousse(y * img.w + img.w - 1); }
+  while (n) {
+    const p = pile[--n];
+    const x = p % img.w, y = (p / img.w) | 0;
+    img.px[p * 4 + 3] = 0;
+    if (x > 0) pousse(p - 1);
+    if (x < img.w - 1) pousse(p + 1);
+    if (y > 0) pousse(p - img.w);
+    if (y < img.h - 1) pousse(p + img.w);
+  }
+  return img;
+}
+
+console.log('nouvelles cases :');
+const cases2 = detourFond(P.decode('src/cases2.png'), 46);
+
+/* Les quatre cases se touchent par leurs ombres : la recherche de
+   paquets relies ne trouve que deux colonnes. On decoupe donc par
+   cadres, puis on resserre chaque morceau sur ses pixels visibles. */
+const NOUVELLES = [
+  ['case-djmix.png',   111, 21, 604, 544],
+  ['case-shifumi.png', 730, 21, 605, 544],
+  ['case-echelle.png', 111, 578, 604, 493],
+  ['case-aveugle.png', 730, 578, 605, 493]
+];
+for (const [nom, x, y, w, h] of NOUVELLES) {
+  sors(P.resize(serre(P.crop(cases2, x, y, w, h)), 152, 144), nom, 128);
+}
+
 /* =========================================================
    3. La route
 

@@ -24,6 +24,7 @@
       case 'mime':   return mime(spec);
       case 'raccord': return raccord(spec);
       case 'counter': return counter(spec);
+      case 'nombre': return nombre(spec);
       default:       return Promise.resolve(null);
     }
   };
@@ -128,13 +129,18 @@
         grid += '<button class="bet" data-n="' + n + '" style="background:linear-gradient(180deg,' +
           diffColor(n) + ',hsl(' + Math.round(140 - (n - 1) * 15.5) + ' 78% 44%))">' + n + '</button>';
       }
+      /* la grille de 1 a 10 sert au quiz mais aussi a L Echelle :
+         les libelles sont donc remplacables */
       head(spec,
         '<div class="bet-theme"><div class="cat">' + U.esc(spec.cat || '') + '</div><h2>' + U.esc(spec.theme) + '</h2></div>' +
-        '<p class="bet-q">Tu te mets combien en <b>' + U.esc(spec.theme) + '</b> ?</p>' +
+        '<p class="bet-q">' + (spec.question ||
+          'Tu te mets combien en <b>' + U.esc(spec.theme) + '</b> ?') + '</p>' +
         '<div class="bet-grid">' + grid + '</div>' +
-        '<div class="bet-legend"><span>1 · cadeau</span><span>10 · suicidaire</span></div>' +
-        '<p class="hint" style="margin-top:14px">Bonne reponse = tu avances du nombre choisi. ' +
-        'A partir de 8, une erreur te fait reculer d une case.</p>');
+        '<div class="bet-legend"><span>' + U.esc(spec.legendeA || '1 · cadeau') + '</span>' +
+        '<span>' + U.esc(spec.legendeB || '10 · suicidaire') + '</span></div>' +
+        '<p class="hint" style="margin-top:14px">' + U.esc(spec.note ||
+          'Bonne reponse = tu avances du nombre choisi. A partir de 8, une erreur te fait reculer d une case.') +
+        '</p>');
       U.on(U.$('#overlay'), 'click', '.bet', (e, t) => { K.audio.blip(); res(+t.dataset.n); });
     });
   }
@@ -303,6 +309,42 @@
       U.$('#cMinus').addEventListener('click', () => { n = Math.max(spec.min || 0, n - 1); K.audio.blip(); upd(); });
       U.$('#cPlus').addEventListener('click', () => { n = Math.min(spec.max || 20, n + 1); K.audio.blip(); upd(); });
       U.$('#cOk').addEventListener('click', () => { K.audio.tap(); res(n); }, { once: true });
+    });
+  }
+
+  /**
+   * Choix d un nombre dans un intervalle, avec des raccourcis.
+   * Le compteur a plus/moins ne convient qu aux petits ecarts :
+   * pour choisir une annee entre 1990 et 2026, il faudrait trente-six
+   * appuis.
+   */
+  function nombre(spec) {
+    return new Promise(res => {
+      const min = spec.min || 0, max = spec.max === undefined ? 100 : spec.max;
+      let v = U.clamp(spec.value === undefined ? min : spec.value, min, max);
+      const presets = spec.presets || [];
+      head(spec,
+        '<div class="num-pick">' +
+          '<div class="num-big"><b id="nbVal">' + v + '</b>' +
+            (spec.unite ? '<small>' + U.esc(spec.unite) + '</small>' : '') + '</div>' +
+          (presets.length
+            ? '<div class="num-presets">' + presets.map(n =>
+                '<button class="num-chip' + (n === v ? ' on' : '') + '" data-n="' + n + '">' + n + '</button>').join('') +
+              '</div>'
+            : '') +
+          '<input type="range" class="num-range" id="nbRange" min="' + min + '" max="' + max + '" value="' + v + '">' +
+        '</div>',
+        '<button class="btn btn-xl btn-primary" id="nbOk">' + U.esc(spec.btn || 'Valider') + '</button>');
+
+      const range = U.$('#nbRange');
+      const montre = () => {
+        U.$('#nbVal').textContent = v;
+        range.value = v;
+        U.$('#overlay .num-chip').forEach(c => c.classList.toggle('on', +c.dataset.n === v));
+      };
+      U.on(U.$('#overlay'), 'click', '.num-chip', (e, t) => { v = +t.dataset.n; K.audio.blip(); montre(); });
+      range.addEventListener('input', () => { v = +range.value; K.audio.tick(); montre(); });
+      U.$('#nbOk').addEventListener('click', () => { K.audio.tap(); res(v); }, { once: true });
     });
   }
 

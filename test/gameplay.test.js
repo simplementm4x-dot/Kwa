@@ -34,6 +34,7 @@ function repondeur(K) {
       case 'mime':    return Promise.resolve(Math.floor(Math.random() * 5));
       case 'raccord': return Promise.resolve(Math.floor(Math.random() * 4));
       case 'counter': return Promise.resolve(Math.floor(Math.random() * 5));
+      case 'nombre':  return Promise.resolve(spec.min + Math.floor(Math.random() * (spec.max - spec.min + 1)));
       default:        return Promise.resolve(null);
     }
   };
@@ -68,10 +69,13 @@ async function partie(reglages) {
     boardLength: 20, spicy: true, duelSolo: false,
     evenements: true, paris: true, pactes: true, sound: false
   }, reglages || {});
+  /* quatre joueurs : c est le minimum pour que L Echelle tombe, et donc
+     pour qu une partie de bout en bout traverse toutes les epreuves */
   K.state.players = [
     K.newPlayer('Alice', 'rouge'),
     K.newPlayer('Bob', 'bleu'),
-    K.newPlayer('Chloe', 'vert')
+    K.newPlayer('Chloe', 'vert'),
+    K.newPlayer('David', 'jaune')
   ];
   K.ask = repondeur(K);
   return ctx;
@@ -185,6 +189,83 @@ async function partie(reglages) {
     await promesse;
     if (c.$('#roueDisc')) fails.push('la roue reste affichee apres le tirage');
     step('la roue se referme toute seule');
+  }
+
+  /* =====================================================
+     2 ter. Les quatre epreuves de la seconde planche
+     ===================================================== */
+  {
+    const c = await boot();
+    const K = c.K;
+    /* on coupe la mise en scene : seuls les deplacements nous interessent */
+    K.kwa.say = () => Promise.resolve();
+    K.util.panel = () => Promise.resolve();
+    K.util.drumroll = () => Promise.resolve();
+    K.util.rnd = () => 0;            /* annee = 1990, niveaux = 1 */
+    Object.assign(K.state.settings, { venue: 'irl', device: 'multi' });
+    K.state.players = ['Alice', 'Bob', 'Chloe', 'David']
+      .map((n, i) => K.newPlayer(n, K.COLORS[i].id));
+    const [a, b] = K.state.players;
+    const ctxJeu = () => ({ player: a, tile: {}, players: K.state.players });
+    const delta = (r, id) => (r.find(x => x.id === id) || {}).delta;
+
+    /* on repond toujours au premier choix propose */
+    K.ask = (p, spec) => Promise.resolve(
+      spec.kind === 'list' ? spec.items[0].id :
+      spec.kind === 'bet' ? 1 :
+      spec.kind === 'nombre' ? spec.min :
+      spec.kind === 'secret' ? true : 'a');
+
+    /* --- shifumi : le premier de la liste des vainqueurs est le joueur --- */
+    let r = await K.tiles.shifumi(ctxJeu());
+    if (delta(r, a.id) !== 2 || delta(r, b.id) !== -2) {
+      fails.push('shifumi : deplacements inattendus (' + JSON.stringify(r) + ')');
+    } else step('shifumi : le gagnant +2, le perdant -2');
+
+    /* --- dj mix : annee 1990 devinee 1990 --- */
+    r = await K.tiles.djmix(ctxJeu());
+    if (delta(r, a.id) !== 4 || delta(r, b.id) !== 1) {
+      fails.push('dj mix : le joueur devrait gagner 4 et le DJ 1 (' + JSON.stringify(r) + ')');
+    } else step('dj mix : annee trouvee, +4 pour le joueur et +1 pour le DJ');
+
+    /* --- dj mix rate : on repond a cote --- */
+    K.ask = (p, spec) => Promise.resolve(
+      spec.kind === 'list' ? spec.items[0].id :
+      spec.kind === 'nombre' ? spec.max :        /* 2026 contre 1990 */
+      spec.kind === 'secret' ? true : 'a');
+    r = await K.tiles.djmix(ctxJeu());
+    if (r.length) fails.push('dj mix : une annee ratee ne devrait rien rapporter');
+    else step('dj mix : annee ratee, personne ne bouge');
+
+    /* --- a l aveugle : le preparateur valide --- */
+    K.ask = (p, spec) => Promise.resolve(spec.kind === 'list' ? spec.items[0].id : 'a');
+    r = await K.tiles.aveugle(ctxJeu());
+    if (delta(r, a.id) !== 4) fails.push('a l aveugle : trouve devrait rapporter 4 cases');
+    else step('a l aveugle : trouve, +4 cases');
+
+    K.ask = (p, spec) => Promise.resolve(spec.kind === 'list' ? spec.items[0].id : 'b');
+    r = await K.tiles.aveugle(ctxJeu());
+    if (r.length) fails.push('a l aveugle : rate ne devrait rien rapporter');
+    else step('a l aveugle : rate, personne ne bouge');
+
+    /* --- l echelle : les trois niveaux valent 1, on repond 1 --- */
+    K.ask = (p, spec) => Promise.resolve(
+      spec.kind === 'bet' ? 1 : spec.kind === 'secret' ? true : spec.items ? spec.items[0].id : 'a');
+    r = await K.tiles.echelle(ctxJeu());
+    if (delta(r, a.id) !== 6) {
+      fails.push('l echelle : trois numeros trouves valent 6 cases (' + JSON.stringify(r) + ')');
+    } else if (K.state.players.slice(1).some(x => delta(r, x.id) !== 1)) {
+      fails.push('l echelle : chacun des trois devrait gagner 1 case');
+    } else step('l echelle : trois sur trois, +6 pour le devineur et +1 pour chacun');
+
+    /* --- l echelle ratee --- */
+    K.ask = (p, spec) => Promise.resolve(
+      spec.kind === 'bet' ? 10 : spec.kind === 'secret' ? true : spec.items ? spec.items[0].id : 'a');
+    r = await K.tiles.echelle(ctxJeu());
+    if (r.length) fails.push('l echelle : aucun numero trouve ne devrait rien rapporter');
+    else step('l echelle : aucun numero trouve, personne ne bouge');
+
+    c.errors.forEach(e => fails.push('nouvelles epreuves : ' + e));
   }
 
   /* =====================================================
@@ -306,6 +387,8 @@ async function partie(reglages) {
      ===================================================== */
   {
     const GROUPE = ['undercover', 'anecdote', 'dilemme', 'vingtetun'];
+    /* L Echelle demande un devineur et trois joueurs : quatre au minimum */
+    const QUATRE = ['echelle'];
 
     /* --- a deux, les epreuves de groupe disparaissent du chemin --- */
     const c = await boot();
@@ -332,17 +415,36 @@ async function partie(reglages) {
     }
     step('"Kwa a faim" ne tire jamais une epreuve injouable');
 
-    /* --- a trois, tout revient --- */
+    QUATRE.forEach(t => {
+      if (K.rules.tileAllowed(t)) fails.push('"' + t + '" est autorisee a deux joueurs');
+    });
+
+    /* --- a trois, les epreuves de groupe reviennent, pas L Echelle --- */
     K.state.players.push(K.newPlayer('Chloe', 'vert'));
     GROUPE.forEach(t => {
       if (!K.rules.tileAllowed(t)) fails.push('"' + t + '" reste interdite a trois joueurs');
+    });
+    QUATRE.forEach(t => {
+      if (K.rules.tileAllowed(t)) fails.push('"' + t + '" ne devrait pas tomber a trois joueurs');
     });
     K.board.generate(60);
     types = K.board.typeList();
     GROUPE.forEach(t => {
       if (types.indexOf(t) < 0) fails.push('la case "' + t + '" n apparait pas a trois joueurs');
     });
-    step('a trois joueurs : ' + GROUPE.join(', ') + ' reviennent');
+    QUATRE.forEach(t => {
+      if (types.indexOf(t) >= 0) fails.push('la case "' + t + '" tombe a trois joueurs');
+    });
+    step('a trois joueurs : ' + GROUPE.join(', ') + ' reviennent, pas encore ' + QUATRE.join(', '));
+
+    /* --- a quatre, tout est la --- */
+    K.state.players.push(K.newPlayer('David', 'jaune'));
+    QUATRE.forEach(t => {
+      if (!K.rules.tileAllowed(t)) fails.push('"' + t + '" reste interdite a quatre joueurs');
+    });
+    K.board.generate(60);
+    if (K.board.typeList().indexOf('echelle') < 0) fails.push('L Echelle n apparait pas a quatre joueurs');
+    step('a quatre joueurs : L Echelle rejoint le plateau');
 
     /* --- les paris demandent que chacun ait son ecran --- */
     K.state.settings.device = 'multi';
@@ -481,7 +583,7 @@ async function partie(reglages) {
       if (p.pos < 0 || p.pos > last) fails.push(p.name + ' est hors du plateau (case ' + p.pos + ')');
       if (!Number.isFinite(p.pos)) fails.push(p.name + ' a une position invalide');
     });
-    if (K.ranking().length !== 3) fails.push('le classement final ne contient pas 3 joueurs');
+    if (K.ranking().length !== K.state.players.length) fails.push('le classement final ne contient pas tous les joueurs');
     if (K.state.event) fails.push('une regle de foret est encore active apres la fin');
     step('positions finales : ' + K.state.players.map(p => p.name + ' ' + p.pos).join(', '));
 

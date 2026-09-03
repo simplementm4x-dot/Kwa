@@ -37,6 +37,12 @@
     duel:       { icon: '🏓', label: 'Duel',              c1: '#b8452e', c2: '#6e2418', piece: true, img: 'case-duel.png' },
     mime:       { icon: '🤾', label: 'Mime en folie',     c1: '#8a4fb8', c2: '#50276e', piece: true, pari: true },
     motraccord: { icon: '🔤', label: 'Le Mot Raccord',    c1: '#2e9ab8', c2: '#175a6e', pari: true },
+    /* --- les epreuves de la seconde planche --- */
+    shifumi:    { icon: '✊', label: 'Shifumi',            c1: '#2f5fa8', c2: '#17356b', img: 'case-shifumi.png' },
+    djmix:      { icon: '🎧', label: 'DJ Mix',             c1: '#7a3ea8', c2: '#42196b', img: 'case-djmix.png' },
+    echelle:    { icon: '🪜', label: 'L Echelle',          c1: '#3f8f3a', c2: '#1f4d1c', img: 'case-echelle.png', min: 4 },
+    aveugle:    { icon: '🙈', label: 'A l aveugle',        c1: '#c8901a', c2: '#7d5806', img: 'case-aveugle.png', piece: true },
+
     /* --- les cases eclair : elles se resolvent en dix secondes --- */
     echange:    { icon: '🔀', label: 'Echange',            c1: '#2e8f8a', c2: '#154c49', eclair: true, img: 'case-echange.png' },
     peage:      { icon: '🪙', label: 'Le Peage',           c1: '#8a7a2e', c2: '#4c4215', eclair: true, img: 'case-peage.png' },
