@@ -434,6 +434,9 @@
       idx: K.state.idx,
       over: K.state.over,
       ev: K.state.event ? K.state.event.id : null,
+      /* la regle en cours ET ce qu il lui reste a vivre : la pastille
+         affiche un compte a rebours, il doit etre le meme partout */
+      evReste: K.state.event ? (K.state.event.reste || 1) : 0,
       esp: K.esprit.at(),
       /* les poches font partie de la partie : un ecran qui revient doit
          retrouver son objet et savoir qui est maudit */
@@ -657,7 +660,10 @@
     });
     K.state.netLast = d.last;
     /* la regle de foret en cours : on ne transporte que son identifiant */
-    K.state.event = d.ev ? K.events.byId(d.ev) : null;
+    /* une copie, jamais la carte du paquet elle-meme : on lui pose un
+       compteur qui lui est propre, et la carte resservira plus tard */
+    const carte = d.ev ? K.events.byId(d.ev) : null;
+    K.state.event = carte ? Object.assign({}, carte, { reste: d.evReste || 1 }) : null;
     K.events.render();
     /* la case gardee fait partie du plateau : un ecran qui revient
        doit retrouver l esprit exactement la ou il est */

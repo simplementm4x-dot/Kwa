@@ -84,6 +84,18 @@ Au-delà des cases, cinq systèmes tournent en fond :
   meneur détaché de cinq cases lève le vent contraire. Le reste du temps,
   c'est une surprise. L'annonce se fait sur le plateau — la forêt change à
   vue — pendant que Kwa découvre ça en même temps que la table.
+
+  Une règle dure trois tours de joueur, et pendant tout ce temps elle reste
+  lisible sans qu'on ait à s'en souvenir : une **pastille en haut à droite**
+  affiche son icône et le nombre de joueurs qui doivent encore passer avant
+  qu'elle tombe. Elle s'ouvre toute seule quelques secondes quand la règle
+  arrive, au survol ensuite, et au clic elle détaille ce que la règle fait et
+  qui elle vise. Le terrain, lui, garde la trace en continu — des rafales en
+  travers du plateau pour le vent contraire, un voile bleu et des étincelles
+  pour la nuit, des pièces qui montent pour la grosse cote. Et quand la règle
+  s'acharne sur quelqu'un, son pion porte le marqueur : le vent contraire
+  souffle sur le meneur, et le marqueur change de pion dès que le meneur
+  change.
 - **Les pactes de Kwa** — de temps en temps, avant le dé, il prend le joueur à
   part et propose un marché. Refuser ne coûte rien.
 - **L'esprit de la forêt** — une créature occupe une case du chemin. Elle ne

@@ -37,6 +37,8 @@
     {
       id: 'champignons', ico: '🍄', nom: 'MAREE DE CHAMPIGNONS', court: 'Coup de pouce',
       immediat: true,
+      desc: 'Le dernier lance des des — un de plus par palier d ecart — et avance du total. ' +
+            'Tous les autres gagnent une case. Se resout tout de suite et ne dure pas.',
       /* la carte du retardataire : plus l ecart est grand, plus elle appelle */
       poids: c => c.ecart >= 8 ? 100 : (c.ecart >= 5 ? 45 : 8),
       txt: c => 'Les champignons poussent sous ' + c.dernier.name + ' ! La foret n aime pas ' +
@@ -59,6 +61,9 @@
     },
     {
       id: 'vent', ico: '🌬️', nom: 'VENT CONTRAIRE', court: 'Le meneur paie', taxe: true, duree: 3,
+      desc: 'Chaque fois qu un ou plusieurs joueurs gagnent des cases, celui qui mene ' +
+            'en perd autant qu il y a de gagnants. Il ne perd rien quand il gagne lui-meme. ' +
+            'Le vent souffle sur le pion de tete : s il se fait doubler, il change de cible.',
       /* elle sort quand quelqu un s echappe en tete */
       poids: c => c.avance >= 5 ? 85 : (c.avance >= 3 ? 35 : 10),
       txt: c => 'Le vent se leve, et il souffle droit sur ' + c.tete.name + '. ' +
@@ -66,30 +71,40 @@
     },
     {
       id: 'nuit', ico: '🌙', nom: 'LA NUIT TOMBE', court: 'Tout compte double', mult: 2, duree: 3,
+      desc: 'Tous les deplacements sont multiplies par deux, dans les deux sens. ' +
+            'Une bonne reponse rapporte le double, un gadin coute le double.',
       /* la nuit tombe quand la fin approche : c est la que doubler fait mal */
       poids: c => c.finProche ? 75 : 20,
       txt: 'La nuit tombe sur la foret. Tout compte double maintenant : les gains comme les gadins.'
     },
     {
       id: 'inversion', ico: '🔄', nom: 'INVERSION', court: 'Gagner = reculer', invert: true, duree: 3,
+      desc: 'Le signe de chaque deplacement est retourne. Reussir une epreuve vous fait ' +
+            'reculer d autant, et la rater vous fait avancer. Le dé, lui, n est pas touche.',
       poids: () => 25,
       txt: 'Le chemin se retourne. Gagner, c est reculer. Reculer, c est avancer. ' +
            'Reflechissez bien avant de briller.'
     },
     {
       id: 'treve', ico: '🕊️', nom: 'LA TREVE', court: 'Aucun malus', treve: true, duree: 3,
+      desc: 'Aucune perte ne passe : tout deplacement negatif est ramene a zero. ' +
+            'On peut tenter n importe quoi sans rien risquer — sauf le temps.',
       /* une treve juste avant la fin ne ferait que geler le classement */
       poids: c => c.finProche ? 5 : 20,
       txt: 'La foret est de bonne humeur. Aucun malus ne passe : personne ne recule, quoi qu il arrive.'
     },
     {
       id: 'faim', ico: '😋', nom: 'KWA A FAIM', court: 'Epreuve au hasard', wild: true, duree: 3,
+      desc: 'L epreuve jouee n est plus celle de la case ou vous tombez : Kwa en tire une ' +
+            'au hasard parmi celles que votre table peut jouer.',
       poids: () => 18,
       txt: 'J ai faim, et quand j ai faim je choisis. L epreuve que vous jouez ne sera plus ' +
            'celle de votre case. Ce sera la mienne.'
     },
     {
       id: 'cote', ico: '🎰', nom: 'GROSSE COTE', court: 'Paris doubles', betMult: 2, duree: 3,
+      desc: 'Les paris rapportent et coutent deux cases au lieu d une. Ne touche que les ' +
+            'parieurs, pas celui qui est sur scene.',
       poids: c => (!K.bets.enabled() || c.rang.length < 3) ? 0 : 22,
       txt: 'Les paris rapportent double a partir de maintenant. Les mauvais aussi, evidemment.'
     }
@@ -135,7 +150,11 @@
     const ev = K.state.event;
     if (!ev) return;
     ev.reste = (ev.reste || 1) - 1;
-    if (ev.reste <= 0) { K.state.event = null; E.render(); }
+    if (ev.reste <= 0) K.state.event = null;
+    /* on redessine meme quand la regle tient encore : c est le compteur
+       de tours restants qui vient de bouger, et c est la seule chose qui
+       dit quand ca va s arreter */
+    E.render();
   }
 
   /* ---------------------------------------------------------
@@ -236,17 +255,147 @@
   };
 
   /* ---------------------------------------------------------
-     Le bandeau qui rappelle la regle du moment
+     La pastille en haut a droite
+
+     Une regle qui dure trois tours doit rester sous les yeux :
+     l ancien bandeau pleine largeur se faisait oublier des la
+     premiere epreuve. La pastille reste dans le coin, affiche
+     combien de tours de joueur il reste, et s ouvre au clic pour
+     rappeler exactement ce que la regle fait.
      --------------------------------------------------------- */
   E.render = function () {
     const el = U.$('#hudEvent');
     if (!el) return;
     const ev = K.state.event;
-    if (!ev) { el.hidden = true; el.innerHTML = ''; return; }
-    el.innerHTML = '<span class="he-ico">' + ev.ico + '</span>' +
-      '<b>' + U.esc(ev.nom) + '</b><small>' + U.esc(ev.court) + '</small>';
+
+    if (!ev) {
+      el.hidden = true;
+      el.innerHTML = '';
+      el.classList.remove('neuf');
+      delete el.dataset.ouvert;
+      ambiance(null);
+      majCible();
+      return;
+    }
+
+    const reste = ev.reste || 1;
+    el.innerHTML =
+      '<span class="he-ico">' + ev.ico + '</span>' +
+      '<i class="he-reste">' + reste + '</i>' +
+      '<span class="he-bulle"><b>' + U.esc(ev.nom) + '</b>' +
+        '<small>' + U.esc(ev.court) + ' · ' + tours(reste) + '</small></span>';
     el.hidden = false;
+
+    /* une regle qui vient de tomber ouvre sa bulle toute seule quelques
+       secondes : au survol ensuite, et au clic pour le detail. Sur les
+       telephones il n y a pas de survol — c est ce moment-la qui dit ce
+       que la pastille signifie. */
+    if (el.dataset.ouvert !== ev.id) {
+      el.dataset.ouvert = ev.id;
+      el.classList.add('neuf');
+      setTimeout(() => {
+        const x = U.$('#hudEvent');
+        if (x && x.dataset.ouvert === ev.id) x.classList.remove('neuf');
+      }, 4200);
+    }
+    ambiance(ev);
+    majCible();
   };
+
+  /** "encore 2 tours" : des tours de joueur, pas des tours de table */
+  function tours(n) {
+    return n <= 1 ? 'dernier tour' : 'encore ' + n + ' tours';
+  }
+
+  /**
+   * Le panneau de rappel, au clic sur la pastille.
+   * Il dit ce que la regle fait, combien de joueurs doivent encore
+   * passer avant qu elle tombe, et qui elle vise en ce moment.
+   */
+  E.detail = function () {
+    const ev = K.state.event;
+    if (!ev) return;
+    const vise = cibleId();
+    const p = vise ? K.player(vise) : null;
+    const reste = ev.reste || 1;
+
+    K.audio.tap();
+    U.ovShell(ev.ico, ev.nom, ev.court,
+      '<div class="ev-reste"><b>' + reste + '</b>' +
+        '<small>tour' + (reste > 1 ? 's' : '') + ' de joueur avant la fin</small></div>' +
+      '<p class="hint">' + U.esc(ev.desc || ev.court) + '</p>' +
+      (p
+        ? '<div class="rule"><h4><span>' + ev.ico + '</span>Vise en ce moment</h4>' +
+          '<p><b style="color:' + p.hex + '">' + U.esc(p.name) + '</b> — case ' + p.pos +
+          '. Ca change des que le classement change.</p></div>'
+        : ''),
+      '<button class="btn btn-xl btn-primary" id="evOk">Compris</button>');
+    const b = U.$('#evOk');
+    if (b) b.addEventListener('click', U.closeOverlay, { once: true });
+  };
+
+  /* ---------------------------------------------------------
+     L ambiance sur le terrain
+
+     La regle ne se lit pas seulement dans un coin de l ecran :
+     elle se voit sur la foret pendant toute sa duree. Peu
+     d elements, et rien d autre que transform et opacity — il y a
+     deja cent decors qui balancent derriere.
+     --------------------------------------------------------- */
+  const AMBIANCES = {
+    vent:      { cls: 'amb-vent',  emo: ['🍃', '🌿', '🍂'], n: 7 },
+    nuit:      { cls: 'amb-nuit',  emo: ['✨', '⭐', '🌙'], n: 9 },
+    inversion: { cls: 'amb-inv',   emo: ['🔄', '↩️'],       n: 7 },
+    treve:     { cls: 'amb-treve', emo: ['🕊️', '🤍'],       n: 7 },
+    faim:      { cls: 'amb-faim',  emo: ['🍽️', '🍖', '🥄'], n: 7 },
+    cote:      { cls: 'amb-cote',  emo: ['🪙', '💰'],       n: 8 }
+  };
+
+  function ambiance(ev) {
+    const el = U.$('#ambiance');
+    if (!el) return;
+    const deco = ev && AMBIANCES[ev.id];
+    if (!deco) {
+      el.hidden = true;
+      el.innerHTML = '';
+      el.className = 'ambiance';
+      delete el.dataset.ev;
+      return;
+    }
+    /* deja en place : on ne relance pas les animations a chaque tour */
+    if (el.dataset.ev === ev.id) return;
+    el.dataset.ev = ev.id;
+
+    let bits = '';
+    for (let i = 0; i < deco.n; i++) {
+      bits += '<i style="--v:' + i + ';left:' + ((i * 97) % 100) + '%;' +
+        'top:' + (18 + ((i * 61) % 66)) + '%;' +
+        'animation-delay:-' + (i * 0.9).toFixed(2) + 's;' +
+        'font-size:' + (17 + (i % 4) * 6) + 'px">' + deco.emo[i % deco.emo.length] + '</i>';
+    }
+    el.className = 'ambiance ' + deco.cls;
+    el.innerHTML = bits;
+    el.hidden = false;
+  }
+
+  /* ---------------------------------------------------------
+     Qui la regle vise
+     --------------------------------------------------------- */
+  /** l id du joueur sur qui la regle en cours s acharne, ou null */
+  function cibleId() {
+    const ev = K.state.event;
+    if (!ev || !ev.taxe) return null;      /* seul le vent contraire vise */
+    const tete = K.ranking()[0];
+    return tete ? tete.id : null;
+  }
+  E.cible = cibleId;
+
+  /** repose le marqueur sur le bon pion : le meneur peut changer */
+  function majCible() {
+    const ev = K.state.event;
+    K.pawns.setVise(cibleId(), ev ? ev.ico : '');
+  }
+  E.majCible = majCible;
 
   /* ---------------------------------------------------------
      Application aux deplacements

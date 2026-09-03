@@ -90,6 +90,31 @@
     K.state.players.forEach(p => P.setAsleep(p.id, !!p.off));
   };
 
+  /**
+   * Le pion que la regle de foret a dans le viseur.
+   *
+   * Le vent contraire souffle sur celui qui mene, et le meneur change
+   * en cours de route : le marqueur suit le classement plutot que de
+   * rester colle a celui qui menait quand la carte est tombee.
+   */
+  P.setVise = function (id, ico) {
+    for (const k in els) {
+      const el = els[k];
+      const vise = k === id;
+      el.classList.toggle('vise', vise);
+      const bb = el.querySelector('.bb');
+      const marque = bb && bb.querySelector('.vise-marque');
+      if (vise && bb && !marque) {
+        bb.insertAdjacentHTML('beforeend',
+          '<span class="vise-marque">' + (ico || '🎯') + '</span>');
+      } else if (!vise && marque) {
+        marque.remove();
+      } else if (vise && marque && ico && marque.textContent !== ico) {
+        marque.textContent = ico;
+      }
+    }
+  };
+
   /** anime la marche sur les ecrans qui suivent (mode multi) */
   P.setWalking = function (id, on) {
     const el = els[id];

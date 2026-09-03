@@ -385,6 +385,102 @@ async function partie(reglages) {
   }
 
   /* =====================================================
+     3 quater. La regle reste sous les yeux
+     Pastille, compte a rebours, ambiance de terrain et
+     marqueur sur le joueur vise.
+     ===================================================== */
+  {
+    const c = await boot();
+    const K = c.K;
+    K.kwa.say = () => Promise.resolve();
+    K.kwa.setMood = () => {};
+    K.anim.fx = () => Promise.resolve();
+    Object.assign(K.state.settings, {
+      venue: 'irl', device: 'solo', sound: false, esprit: false, evenements: true
+    });
+    K.state.players = ['Alice', 'Bob', 'Chloe'].map((n, i) => K.newPlayer(n, K.COLORS[i].id));
+    K.state.players[0].pos = 12;
+    K.state.players[1].pos = 4;
+    K.state.players[2].pos = 2;
+    K.board.generate(24);
+    K.board.render();
+    K.pawns.renderAll();
+
+    const pastille = () => c.$('#hudEvent');
+    const ambiance = () => c.$('#ambiance');
+
+    if (!pastille().hidden) fails.push('la pastille s affiche alors qu aucune regle ne tourne');
+
+    await K.events.fire(K.events.byId('vent'));
+
+    if (pastille().hidden) fails.push('la regle en cours ne s affiche nulle part');
+    else if (pastille().querySelector('.he-reste').textContent !== '3') {
+      fails.push('la pastille n annonce pas les 3 tours restants');
+    } else if (pastille().textContent.indexOf('VENT CONTRAIRE') < 0) {
+      fails.push('la pastille ne dit pas de quelle regle il s agit');
+    } else {
+      step('pastille : ' + pastille().querySelector('.he-bulle').textContent);
+    }
+
+    /* l ambiance couvre le terrain pendant toute la duree */
+    if (ambiance().hidden || !ambiance().classList.contains('amb-vent')) {
+      fails.push('le terrain ne montre pas la regle en cours');
+    } else if (ambiance().children.length < 4) {
+      fails.push('l ambiance du terrain est vide');
+    } else {
+      step('terrain : ' + ambiance().children.length + ' rafales de vent en travers du plateau');
+    }
+
+    /* le vent souffle sur le meneur, et le marqueur le suit */
+    let vise = c.win.document.querySelector('.pawn.vise');
+    if (!vise || vise.dataset.p !== K.state.players[0].id) {
+      fails.push('le vent ne vise pas le joueur de tete');
+    } else if (!vise.querySelector('.vise-marque')) {
+      fails.push('rien ne marque le pion vise');
+    } else {
+      step('le vent souffle sur ' + K.player(vise.dataset.p).name + ', en tete case 12');
+    }
+
+    /* le meneur change : le marqueur doit changer aussi */
+    K.state.players[1].pos = 20;
+    K.game.hud();
+    vise = c.win.document.querySelector('.pawn.vise');
+    if (!vise || vise.dataset.p !== K.state.players[1].id) {
+      fails.push('le marqueur reste colle a l ancien meneur');
+    } else step('nouveau meneur : le vent change de cible pour ' + K.player(vise.dataset.p).name);
+
+    /* le compte a rebours descend, puis tout disparait */
+    const vus = [];
+    for (let i = 0; i < 3; i++) {
+      await K.events.maybe();
+      const p = pastille();
+      vus.push(p.hidden ? 'fin' : p.querySelector('.he-reste').textContent);
+    }
+    if (vus.join(' ') !== '2 1 fin') {
+      fails.push('le compte a rebours de la pastille ne suit pas : ' + vus.join(' '));
+    } else step('compte a rebours : 3 > ' + vus.join(' > '));
+
+    if (!ambiance().hidden) fails.push('l ambiance reste sur le terrain apres la fin de la regle');
+    if (c.win.document.querySelector('.pawn.vise')) fails.push('le pion reste marque apres la fin de la regle');
+    if (!pastille().hidden) fails.push('la pastille reste affichee apres la fin de la regle');
+    else step('regle terminee : pastille, ambiance et marqueur disparaissent ensemble');
+
+    /* le panneau de rappel : il dit ce que la regle fait et ce qu il reste */
+    await K.events.fire(K.events.byId('nuit'));
+    K.events.detail();
+    const txt = c.$('#overlay').textContent;
+    if (txt.indexOf('LA NUIT TOMBE') < 0) fails.push('le panneau ne nomme pas la regle');
+    if (txt.indexOf('multiplies par deux') < 0) fails.push('le panneau n explique pas ce que la regle fait');
+    if (txt.indexOf('tours de joueur avant la fin') < 0) {
+      fails.push('le panneau ne dit pas combien de joueurs doivent encore passer');
+    }
+    step('panneau de rappel : regle expliquee et tours restants affiches');
+    K.util.closeOverlay();
+
+    c.errors.forEach(e => fails.push('pastille : ' + e));
+  }
+
+  /* =====================================================
      3 ter. Ce qui ne se joue pas a deux, et pas a un ecran
      ===================================================== */
   {

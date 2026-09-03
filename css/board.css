@@ -351,3 +351,110 @@
   background-image:url(../assets/esprit-atk.png);
   animation:espSteps .72s steps(8) 1 both;
 }
+
+/* ==========================================================
+   L ambiance des regles de foret
+
+   L annonce dure deux secondes ; la regle, elle, dure trois
+   tours. Il fallait donc que la foret garde la trace de ce qui
+   se passe pendant toute sa duree — sinon on oublie qu on joue
+   sous inversion et on se demande pourquoi gagner fait reculer.
+
+   Sept a neuf elements, transform et opacity uniquement : le
+   plateau a deja cent decors qui balancent derriere.
+   ========================================================== */
+.ambiance{
+  position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden;
+}
+.ambiance[hidden]{display:none}
+.ambiance i{
+  position:absolute;font-style:normal;line-height:1;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.55));
+  will-change:transform;
+}
+
+/* --- vent contraire : ca souffle en travers du terrain --- */
+.amb-vent::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(-100deg,
+    rgba(200,240,255,.09) 0 2px,transparent 2px 46px);
+  animation:ventNappe 2.4s linear infinite;
+}
+@keyframes ventNappe{from{transform:translateX(0)}to{transform:translateX(46px)}}
+.amb-vent i{animation:ventFile 3.4s linear infinite}
+@keyframes ventFile{
+  0%  {transform:translate(-30vw,0) rotate(0);opacity:0}
+  12% {opacity:.95}
+  80% {opacity:.95}
+  100%{transform:translate(75vw,-38px) rotate(320deg);opacity:0}
+}
+
+/* --- la nuit tombe : voile bleu et etincelles --- */
+.amb-nuit::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(20,10,60,.42),rgba(6,2,26,.22));
+  animation:nuitPulse 5s ease-in-out infinite;
+}
+@keyframes nuitPulse{0%,100%{opacity:.75}50%{opacity:1}}
+.amb-nuit i{animation:nuitScintille 3.2s ease-in-out infinite}
+@keyframes nuitScintille{
+  0%,100%{transform:scale(.6) translateY(0);opacity:.15}
+  50%    {transform:scale(1.15) translateY(-12px);opacity:1}
+}
+
+/* --- inversion : tout redescend --- */
+.amb-inv i{animation:invTombe 4.2s linear infinite}
+@keyframes invTombe{
+  0%  {transform:translateY(-14vh) rotate(0);opacity:0}
+  15% {opacity:.9}
+  85% {opacity:.9}
+  100%{transform:translateY(52vh) rotate(-300deg);opacity:0}
+}
+
+/* --- la treve : ca flotte, doucement --- */
+.amb-treve::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(60% 45% at 50% 45%,rgba(255,255,255,.14),transparent 70%);
+  animation:nuitPulse 6s ease-in-out infinite;
+}
+.amb-treve i{animation:treveFlotte 7s ease-in-out infinite}
+@keyframes treveFlotte{
+  0%  {transform:translate(0,0) rotate(-8deg);opacity:0}
+  20% {opacity:.9}
+  80% {opacity:.9}
+  100%{transform:translate(40px,-26vh) rotate(10deg);opacity:0}
+}
+
+/* --- Kwa a faim : les couverts tournent --- */
+.amb-faim i{animation:faimTourne 4.6s ease-in-out infinite}
+@keyframes faimTourne{
+  0%  {transform:scale(.7) rotate(-14deg);opacity:0}
+  25% {opacity:.95}
+  75% {opacity:.95}
+  100%{transform:scale(1.1) rotate(16deg) translateY(-30px);opacity:0}
+}
+
+/* --- grosse cote : ca pleut des pieces, vers le haut --- */
+.amb-cote i{animation:coteMonte 3.8s linear infinite}
+@keyframes coteMonte{
+  0%  {transform:translateY(26vh) rotate(0);opacity:0}
+  18% {opacity:1}
+  82% {opacity:1}
+  100%{transform:translateY(-30vh) rotate(420deg);opacity:0}
+}
+
+/* ---------- le pion que la regle vise ----------
+   Le vent contraire souffle sur celui qui mene : on doit voir sur QUI,
+   sans aller lire le classement. Le marqueur suit le meneur. */
+.pawn.vise .bb{animation:viseTangue 1.6s ease-in-out infinite}
+@keyframes viseTangue{
+  0%,100%{transform:translateX(-50%) rotateX(calc(-1*var(--rx))) rotate(-3deg)}
+  50%    {transform:translateX(-50%) rotateX(calc(-1*var(--rx))) rotate(3deg)}
+}
+.vise-marque{
+  position:absolute;left:50%;top:-46px;transform:translateX(-50%);
+  font-size:19px;line-height:1;pointer-events:none;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.7));
+  animation:viseFlotte 1.6s ease-in-out infinite;
+}
+@keyframes viseFlotte{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-6px)}}

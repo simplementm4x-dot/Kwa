@@ -15,6 +15,9 @@
 
     U.$('#btnMenu').addEventListener('click', () => { K.audio.tap(); K.game.showPause(); });
     U.$('#btnScores').addEventListener('click', () => { K.audio.tap(); K.game.showScores(); });
+    /* la pastille de la regle en cours : on clique dessus pour relire ce
+       qu elle fait et voir combien de joueurs doivent encore passer */
+    U.$('#hudEvent').addEventListener('click', () => K.events.detail());
 
     /* deverrouillage audio au premier contact (iOS) */
     const unlock = () => { K.audio.unlock(); document.removeEventListener('touchstart', unlock); document.removeEventListener('click', unlock); };

@@ -79,6 +79,7 @@
         '<span class="hp-av">' + K.sprites.avatar(p, 24) + '</span>' +
         '<b>' + U.esc(p.name) + '</b><i>' + p.pos + '</i>' + K.objets.badge(p) + '</div>'
     ).join('');
+    K.events.majCible();
     K.net && K.net.broadcastState();
     const on = U.$('#hudPlayers .hp.on');
     if (on) on.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
