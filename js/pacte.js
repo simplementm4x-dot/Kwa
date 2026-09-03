@@ -1,8 +1,15 @@
 /* =========================================================
    LE PACTE DE KWA
+
    De temps en temps, avant de lancer le de, Kwa propose un
    marche. Il n y a jamais de bonne reponse : c est ce qui rend
    la chose interessante. Refuser ne coute rien, sauf la face.
+
+   Regle d equilibre : un marche qui fait avancer REMPLACE le
+   lancer de de. Sinon le joueur empochait ses cases puis
+   relancait par-dessus, et le pacte devenait un cadeau au lieu
+   d etre un choix. On compare donc toujours l offre a ce qu un
+   de aurait donne — 3,5 cases en moyenne.
    ========================================================= */
 (function (K) {
   'use strict';
@@ -15,46 +22,51 @@
 
   /**
    * Chaque marche renvoie ce qu il change :
-   *   results  : deplacements immediats
+   *   pas      : le joueur avance de tant, sans lancer le de
+   *   results  : ce que le marche fait aux AUTRES joueurs
    *   skipTile : le joueur ne fait pas l epreuve de sa case
-   *   diceMult : multiplicateur sur le deplacement du de
+   *   diceMult : multiplicateur sur le de, quand le de est conserve
+   *
+   * possible() ecarte les marches qui n auraient pas de sens pour ce
+   * joueur-la : offrir au dernier du classement de faire avancer le
+   * dernier, par exemple, revient a lui offrir des cases pour rien.
    */
   const MARCHES = [
     {
       id: 'cadeau',
-      offre: 'Je te donne 3 cases tout de suite. En echange, le joueur suivant en prend 5.',
+      offre: 'Tu avances de 5 cases sans lancer le de. En echange, le joueur suivant en prend 5 aussi.',
       oui: 'MARCHE CONCLU',
       non: 'JE REFUSE',
+      possible: (p, players, idx) => players.length > 1 && players[(idx + 1) % players.length].id !== p.id,
       applique(p, players, idx) {
         const suivant = players[(idx + 1) % players.length];
         return {
-          results: suivant.id === p.id
-            ? [{ id: p.id, delta: 3 }]
-            : [{ id: p.id, delta: 3 }, { id: suivant.id, delta: 5 }],
-          mot: suivant.id === p.id
-            ? 'Tu joues tout seul ou quoi ? Prends tes 3 cases.'
-            : p.name + ' se sert, et ' + suivant.name + ' encaisse 5 cases sans rien faire.'
+          pas: 5,
+          results: [{ id: suivant.id, delta: 5 }],
+          mot: p.name + ' avance de cinq, et ' + suivant.name + ' encaisse autant sans rien faire.'
         };
       }
     },
     {
       id: 'assurance',
-      offre: 'Je t offre 4 cases, mais tu sautes ton epreuve ce tour-ci. Tu ne sauras jamais ce que tu as rate.',
+      offre: 'Tu avances de 4 cases sans lancer le de, mais tu sautes ton epreuve. Tu ne sauras jamais ce que tu as rate.',
       oui: 'JE PRENDS LES 4',
       non: 'JE VEUX MON EPREUVE',
+      possible: () => true,
       applique(p) {
         return {
-          results: [{ id: p.id, delta: 4 }],
+          pas: 4,
           skipTile: true,
-          mot: p.name + ' encaisse et passe son tour d epreuve. La prudence, ce vice.'
+          mot: p.name + ' avance de quatre et passe son tour d epreuve. La prudence, ce vice.'
         };
       }
     },
     {
       id: 'quitte',
-      offre: 'Tu recules de 2 cases maintenant. En echange, je double ton deplacement au de.',
+      offre: 'Tu recules de 2 cases maintenant. En echange, ton de compte double.',
       oui: 'QUITTE OU DOUBLE',
       non: 'TROP RISQUE',
+      possible: p => p.pos > 0,
       applique(p) {
         return {
           results: [{ id: p.id, delta: -2 }],
@@ -65,30 +77,35 @@
     },
     {
       id: 'charite',
-      offre: 'Le dernier du classement avance de 6 cases. Toi, tu en prends 3. Genereux, non ?',
+      offre: 'Le dernier du classement avance de 6 cases. Toi, tu avances de 3 sans lancer le de.',
       oui: 'POUR LA BONNE CAUSE',
       non: 'CHACUN SA ROUTE',
-      applique(p, players) {
+      /* sans ce garde-fou, le dernier se voyait offrir six cases pour
+         avoir accepte de s aider lui-meme */
+      possible: p => {
+        const rang = K.ranking();
+        return rang.length > 1 && rang[rang.length - 1].id !== p.id;
+      },
+      applique(p) {
         const rang = K.ranking();
         const dernier = rang[rang.length - 1];
         return {
-          results: dernier.id === p.id
-            ? [{ id: p.id, delta: 6 }]
-            : [{ id: p.id, delta: 3 }, { id: dernier.id, delta: 6 }],
-          mot: dernier.id === p.id
-            ? 'Le dernier, c est toi. Tu viens de t offrir 6 cases, bravo.'
-            : dernier.name + ' remonte de 6 cases grace a la generosite calculee de ' + p.name + '.'
+          pas: 3,
+          results: [{ id: dernier.id, delta: 6 }],
+          mot: dernier.name + ' remonte de six cases grace a la generosite calculee de ' + p.name + '.'
         };
       }
     },
     {
       id: 'impot',
-      offre: 'Tout le monde recule d une case. Toi, tu avances de 4. Tu vas te faire des amis.',
+      offre: 'Tout le monde recule d une case. Toi, tu avances de 4 sans lancer le de. Tu vas te faire des amis.',
       oui: 'JE SIGNE',
       non: 'JE TIENS A EUX',
+      possible: (p, players) => players.length > 1,
       applique(p, players) {
         return {
-          results: players.map(x => x.id === p.id ? { id: p.id, delta: 4 } : { id: x.id, delta: -1 }),
+          pas: 4,
+          results: players.filter(x => x.id !== p.id).map(x => ({ id: x.id, delta: -1 })),
           mot: 'Signe. ' + p.name + ' avance, la table recule. On s en souviendra.'
         };
       }
@@ -111,8 +128,9 @@
     if (K.state.settings.pactes === false) return null;
     if (U.rnd(100) >= CHANCE) return null;
 
-    const m = U.draw('pacte', MARCHES);
-    if (!m) return null;
+    const offrables = MARCHES.filter(m => m.possible(p, players, idx));
+    if (!offrables.length) return null;
+    const m = offrables[U.rnd(offrables.length)];
 
     await K.kwa.say('Attends, ' + p.name + '. J ai une proposition.', { mood: 'wink' });
 

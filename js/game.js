@@ -83,12 +83,22 @@
     return s;
   }
 
-  async function rollDice() {
-    const v = 1 + U.rnd(6);
-    K.net && K.net.ev('dice', { v });
-    await G.diceAnim(v);
-    return v;
-  }
+  /**
+   * Lance n des l un apres l autre et rend le total. Chaque de est
+   * diffuse : tous les telephones voient la meme chose rouler.
+   */
+  G.des = async function (n) {
+    let total = 0;
+    for (let i = 0; i < (n || 1); i++) {
+      const v = 1 + U.rnd(6);
+      K.net && K.net.ev('dice', { v });
+      await G.diceAnim(v);
+      total += v;
+    }
+    return total;
+  };
+
+  const rollDice = () => G.des(1);
 
   /** l animation du de, identique sur tous les ecrans */
   G.diceAnim = async function (v) {
@@ -184,11 +194,22 @@
     if (pacte && pacte.results) await G.applyResults(pacte.results);
     if (p.pos >= K.board.last() && K.rules.isTerminus()) { await endGame(p); return true; }
 
-    await G.button('🎲 LANCER LE DÉ');
-    const d = await rollDice();
-    const pas = d * ((pacte && pacte.diceMult) || 1);
-    await K.kwa.say(K.kwa.line('dice' + d, { name: p.name }) || (p.name + ' fait ' + d + ' !'), { auto: 800, mood: d >= 5 ? 'oh' : 'happy' });
-    if (pas !== d) await K.kwa.say('Et ca compte double : ' + pas + ' cases. Marche est marche.', { auto: 1200, mood: 'oh' });
+    /* Un marche qui fait avancer REMPLACE le de : sinon le joueur
+       empochait ses cases puis relancait par-dessus, ce qui faisait du
+       pacte un cadeau et non un choix. */
+    let pas;
+    if (pacte && pacte.pas) {
+      pas = pacte.pas;
+      await G.button('🤝 PRENDRE MES ' + pas + ' CASES');
+      await K.kwa.say(p.name + ' avance de ' + U.cases(pas) + ' sans toucher au de. C etait le marche.',
+        { auto: 1400, mood: 'wink' });
+    } else {
+      await G.button('🎲 LANCER LE DÉ');
+      const d = await rollDice();
+      pas = d * ((pacte && pacte.diceMult) || 1);
+      await K.kwa.say(K.kwa.line('dice' + d, { name: p.name }) || (p.name + ' fait ' + d + ' !'), { auto: 800, mood: d >= 5 ? 'oh' : 'happy' });
+      if (pas !== d) await K.kwa.say('Et ca compte double : ' + pas + ' cases. Marche est marche.', { auto: 1200, mood: 'oh' });
+    }
 
     const before = p.pos;
     await K.pawns.moveTo(p, before + pas);

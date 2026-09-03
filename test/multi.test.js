@@ -27,8 +27,14 @@ async function tapThrough(ctx, fn, ms) {
       : null;
     if (bouton) click(ctx.win, bouton, ctx.errors);
     else {
-      const b = ctx.$('#kwaBubble');
-      if (b) click(ctx.win, b, ctx.errors);
+      /* fn() est faux : le bouton d action n est donc pas le de, mais
+         un marche accepte qui remplace le lancer. On le prend. */
+      const act = ctx.$('#actBtn');
+      if (act) click(ctx.win, act, ctx.errors);
+      else {
+        const b = ctx.$('#kwaBubble');
+        if (b) click(ctx.win, b, ctx.errors);
+      }
     }
     await sleep(120);
   }
@@ -44,9 +50,15 @@ async function tapThrough(ctx, fn, ms) {
  */
 function repondPour(ctx) {
   const ov = ctx.$('#overlay');
-  if (!ov || ov.hidden) return;
-  const b = [...ov.querySelectorAll('button')].find(x => !x.disabled);
-  if (b) click(ctx.win, b, ctx.errors);
+  if (ov && !ov.hidden) {
+    const b = [...ov.querySelectorAll('button')].find(x => !x.disabled);
+    if (b) { click(ctx.win, b, ctx.errors); return; }
+  }
+  /* un marche accepte remplace le de : le bouton est alors dans la zone
+     d action et personne ne le cliquerait. On ne touche jamais au de,
+     que le test lance lui-meme au bon moment. */
+  const act = ctx.$('#actBtn');
+  if (act && !/DÉ|DE/.test(act.textContent)) click(ctx.win, act, ctx.errors);
 }
 
 /** fait repondre les invites en fond de tache tant que la partie tourne */

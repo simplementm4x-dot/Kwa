@@ -63,8 +63,29 @@
    * Regle les paris une fois l epreuve terminee.
    * On ne juge que sur un point : la vedette a-t-elle gagne des cases ?
    */
+  /**
+   * Tout le monde a mise pareil : le pari n en etait pas un.
+   * A deux joueurs il n y a qu un parieur : il tranche seul, donc il
+   * prend un vrai risque — ce n est pas une unanimite.
+   */
+  B.unanime = function (mises) {
+    const ids = Object.keys(mises || {});
+    if (ids.length < 2) return false;
+    const oui = ids.filter(id => mises[id] === 'a').length;
+    return oui === 0 || oui === ids.length;
+  };
+
+  /**
+   * Regle les paris une fois l epreuve terminee.
+   * On ne juge que sur un point : la vedette a-t-elle gagne des cases ?
+   *
+   * Quand tout le monde a parie pareil, personne ne bouge : sans cela,
+   * les joueurs miseraient tous sur la reussite — c est le cas le plus
+   * frequent — et le plateau entier deriverait vers le haut sans que
+   * personne n ait rien risque.
+   */
   B.settle = function (mises, gainStar, star) {
-    if (!mises) return [];
+    if (!mises || B.unanime(mises)) return [];
     const reussi = gainStar > 0;
     const m = MISE * B.multiplier();
     return Object.keys(mises).map(id => {
@@ -76,6 +97,11 @@
   /** le tableau des paris, montre avant d appliquer les gains */
   B.recap = function (mises, gainStar, star, results) {
     const reussi = gainStar > 0;
+    if (!results.length) {
+      return U.panel('🎰', 'Les paris', 'Tout le monde a mise pareil',
+        '<p class="hint center">Personne n a pris de risque : personne ne bouge. ' +
+        'Un pari ou tout le monde est d accord n en est pas un.</p>').then(U.closeOverlay);
+    }
     const rows = results.map(r => {
       const p = K.player(r.id);
       if (!p) return '';

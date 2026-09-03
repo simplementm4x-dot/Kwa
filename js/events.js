@@ -41,9 +41,20 @@
       poids: c => c.ecart >= 8 ? 100 : (c.ecart >= 5 ? 45 : 8),
       txt: c => 'Les champignons poussent sous ' + c.dernier.name + ' ! La foret n aime pas ' +
                 'voir quelqu un se faire distancer a ce point.',
-      effet(c) {
-        const pousse = c.ecart >= 12 ? 8 : (c.ecart >= 8 ? 6 : 5);
-        return K.state.players.map(p => ({ id: p.id, delta: p.id === c.dernier.id ? pousse : 2 }));
+      /**
+       * Le dernier ne recoit pas un nombre de cases decide d avance : il
+       * lance des des, un de plus par palier d ecart. Un coup de pouce
+       * qui se joue vaut mieux qu un coup de pouce qui s annonce, et le
+       * hasard evite qu un retard se rattrape mecaniquement.
+       */
+      async effet(c) {
+        const combien = c.ecart >= 12 ? 3 : (c.ecart >= 8 ? 2 : 1);
+        await K.kwa.say(c.dernier.name + ' lance ' + combien + ' de' + (combien > 1 ? 's' : '') +
+          ' : les champignons le portent d autant de cases.', { auto: 1500, mood: 'oh' });
+        const total = await K.game.des(combien);
+        await K.kwa.say(c.dernier.name + ' gagne ' + U.cases(total) + '. Les autres profitent d une case.',
+          { auto: 1600 });
+        return K.state.players.map(p => ({ id: p.id, delta: p.id === c.dernier.id ? total : 1 }));
       }
     },
     {
@@ -166,7 +177,7 @@
 
     if (carte.immediat) {
       /* la maree ne doit pas etre doublee ni inversee par une autre regle */
-      await K.game.applyResults(carte.effet(c), true);
+      await K.game.applyResults(await carte.effet(c), true);
       K.state.event = null;
       E.render();
     }

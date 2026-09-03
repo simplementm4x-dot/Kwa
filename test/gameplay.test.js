@@ -496,6 +496,22 @@ async function partie(reglages) {
     r = K.bets.settle({ [a.id]: 'a' }, -2, { id: 'star' });
     if (r[0].delta !== -1) fails.push('reculer devrait compter comme un echec');
 
+    /* tout le monde d accord : personne ne bouge */
+    K.state.players.push(K.newPlayer('Chloe', 'vert'));
+    const [, , ch] = K.state.players;
+    r = K.bets.settle({ [a.id]: 'a', [b.id]: 'a', [ch.id]: 'a' }, 5, { id: 'star' });
+    if (r.length) fails.push('une mise unanime ne devrait rien rapporter');
+    r = K.bets.settle({ [a.id]: 'b', [b.id]: 'b', [ch.id]: 'b' }, 0, { id: 'star' });
+    if (r.length) fails.push('une mise unanime dans l autre sens ne devrait rien rapporter non plus');
+    step('tout le monde parie pareil : personne ne bouge');
+
+    /* des qu un seul se demarque, les paris comptent */
+    r = K.bets.settle({ [a.id]: 'a', [b.id]: 'a', [ch.id]: 'b' }, 5, { id: 'star' });
+    if (r.length !== 3 || r.find(x => x.id === ch.id).delta !== -1) {
+      fails.push('un avis divergent devrait reactiver les paris');
+    } else step('un seul avis divergent suffit a remettre les paris en jeu');
+    K.state.players.pop();
+
     /* grosse cote : la mise double */
     K.state.event = { id: 'cote', betMult: 2 };
     r = K.bets.settle({ [a.id]: 'a' }, 3, { id: 'star' });
