@@ -1,9 +1,10 @@
 global.window = global;
 const fs=require('fs');
-for(let i=1;i<=10;i++){
-  const f='js/data/cards-'+String(i).padStart(2,'0')+'.js';
-  eval(fs.readFileSync(f,'utf8'));
-}
+/* on charge tous les paquets presents plutot qu un intervalle fixe :
+   ajouter un fichier de cartes ne doit pas demander de toucher au test */
+const paquets = fs.readdirSync('js/data').filter(n => n.indexOf('cards-') === 0 && n.slice(-3) === '.js').sort();
+paquets.forEach(n=>eval(fs.readFileSync('js/data/'+n,'utf8')));
+console.log('Paquets charges :', paquets.length);
 const C = global.KWA.CARDS;
 console.log('Cartes totales :', C.length);
 let errs=[], themes={};
