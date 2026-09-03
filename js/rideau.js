@@ -4,9 +4,9 @@
    Kwa ouvre devant un rideau tire. Ce n est pas qu un effet
    de scene : le plateau est construit derriere pendant les
    presentations, et le navigateur a tout le temps de le
-   dessiner. Quand le rideau s ecarte, la foret est prete —
-   plus de premiere image qui saccade ni de pans de decor qui
-   arrivent en retard.
+   dessiner. Quand le rideau s ecarte, la foret est prete,
+   posee sur la case de depart — plus de premiere image qui
+   saccade ni de pans de decor qui arrivent en retard.
    ========================================================= */
 (function (K) {
   'use strict';

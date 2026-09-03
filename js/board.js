@@ -252,37 +252,6 @@
     if (instant) { void g.offsetWidth; g.style.transition = ''; }
   };
 
-  /**
-   * Travelling d ouverture : on part du bout du chemin et on redescend
-   * lentement jusqu a la case de depart, en suivant le chemin.
-   */
-  B.travelling = function (ms) {
-    K.net && K.net.ev('travel', { ms });
-    return B.travellingLocal(ms);
-  };
-  B.travellingLocal = function (ms) {
-    ms = ms || 3400;
-    const g = U.$('#ground');
-    if (!g || !tiles.length) return Promise.resolve();
-    const fin = tiles[tiles.length - 1];
-    const dep = tiles[0];
-
-    /* On se pose au bout du chemin, sans animation. Pas de recul en
-       profondeur : le translate est applique APRES la rotation du sol,
-       donc un translateZ ne recule pas la camera, il fait glisser tout
-       le plateau de travers. */
-    camIdx = tiles.length - 1;
-    g.style.transition = 'none';
-    g.style.transform = 'rotateX(var(--rx)) translate3d(' + (-fin.gx) + 'px,' + (-fin.gy) + 'px,0)';
-    void g.offsetWidth;
-
-    /* puis on redescend lentement jusqu au depart */
-    g.style.transition = 'transform ' + ms + 'ms cubic-bezier(.42,0,.26,1)';
-    camIdx = 0;
-    g.style.transform = 'rotateX(var(--rx)) translate3d(' + (-dep.gx) + 'px,' + (-dep.gy) + 'px,0)';
-    return U.sleep(ms + 60).then(() => { g.style.transition = ''; });
-  };
-
   B.hit = function (i) {
     K.net && K.net.ev('hit', { i });
     B.hitLocal(i);

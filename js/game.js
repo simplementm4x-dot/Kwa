@@ -312,8 +312,10 @@
     await K.intro.run();
 
     await K.kwa.say('La foret vous attend. Rideau !', { auto: 900, mood: 'oh' });
+    /* la camera attend deja sur la case de depart : le rideau s ouvre
+       sur une image posee, il n y a plus rien a animer derriere */
+    K.board.focus(0, true);
     await K.rideau.ouvrir(1700);
-    await K.board.travelling(3200);
     loop();
   };
 

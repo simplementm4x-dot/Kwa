@@ -543,7 +543,6 @@
 
       /* ouverture */
       case 'rideau': d.ouvre ? K.rideau.ouvrirLocal(d.ms) : K.rideau.fermerLocal(); break;
-      case 'travel': K.board.travellingLocal(d.ms); break;
       case 'kwaIn':  K.kwa.entreeLocal(); break;
 
       /* plateau vivant */

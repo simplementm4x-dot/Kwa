@@ -22,7 +22,7 @@ async function tapThrough(ctx, fn, ms) {
     if (b) click(ctx.win, b, ctx.errors);
     await sleep(120);
   }
-  throw new Error('delai depasse en tapant sur Kwa (ouverture : presentations, rideau, travelling)');
+  throw new Error('delai depasse en tapant sur Kwa (ouverture : presentations puis rideau)');
 }
 
 
