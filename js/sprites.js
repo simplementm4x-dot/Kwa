@@ -134,14 +134,6 @@
   /* ---------------------------------------------------------
      DECOR : arbres, buissons, champignons, rochers, cristaux
      --------------------------------------------------------- */
-  const LEAF = [
-    ['#2f7a4e', '#1f5636', '#153f28'],
-    ['#3d8f5c', '#276b41', '#17492c'],
-    ['#2b6f6a', '#1c4f4c', '#123734'],
-    ['#4a7f3a', '#325c27', '#1e3d17'],
-    ['#5a4b8a', '#3d3163', '#271f45']
-  ];
-
   /* ---------------------------------------------------------
      Decor decoupe dans du papier
      Les arbres et les buissons viennent des planches de src/,
@@ -150,7 +142,12 @@
      sans que l oeil repere la repetition.
      --------------------------------------------------------- */
   const ARBRES = ['arbre-chene.png', 'arbre-bouleau.png', 'sapin.png', 'arbre-pommier.png'];
-  const BUISSONS = ['buisson.png', 'touffe-1.png', 'touffe-2.png', 'touffe-3.png', 'trefle.png'];
+  const BUISSONS = ['buisson.png', 'plante-1.png', 'plante-3.png', 'plante-2.png', 'plante-6.png'];
+  const ROCHERS = ['decor-4.png', 'decor-5.png', 'decor-6.png', 'decor-9.png', 'decor-10.png', 'decor-12.png'];
+  const CHAMPIS = ['plante-5.png', 'plante-7.png', 'plante-8.png', 'decor-11.png'];
+  const FLEURS = ['plante-10.png', 'plante-4.png', 'plante-9.png', 'touffe-1.png', 'touffe-2.png', 'touffe-3.png', 'trefle.png'];
+  /* la foret n a plus de cristaux : a la place, des souches et des troncs */
+  const BOIS = ['decor-2.png', 'decor-1.png', 'decor-7.png', 'decor-3.png', 'decor-8.png'];
 
   function papier(fichier, h, retourne) {
     return '<img class="pc" src="assets/' + fichier + '" height="' + Math.round(h) + '"' +
@@ -165,76 +162,24 @@
     return papier(BUISSONS[variant % BUISSONS.length], h * 1.15, variant % 3 === 1);
   };
 
-  S.treeSvg = function (variant, h) {
-    const c = LEAF[variant % LEAF.length];
-    const W = Math.round(h * 0.72);
-    const sc = h / 160;
-    const blobs =
-      '<ellipse cx="60" cy="66" rx="52" ry="34" fill="' + c[2] + '"/>' +
-      '<ellipse cx="60" cy="52" rx="46" ry="30" fill="' + c[1] + '"/>' +
-      '<ellipse cx="52" cy="40" rx="34" ry="24" fill="' + c[0] + '"/>' +
-      '<ellipse cx="74" cy="44" rx="24" ry="17" fill="' + c[0] + '" opacity=".85"/>' +
-      '<ellipse cx="46" cy="32" rx="16" ry="11" fill="#ffffff" opacity=".10"/>';
-    return '<svg width="' + W + '" height="' + h + '" viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg" style="--sc:' + sc + '">' +
-      '<path d="M52 158 L52 92 q0 -10 8 -10 q8 0 8 10 l0 66 z" fill="#3a2a1c" stroke="#1a1030" stroke-width="3"/>' +
-      '<path d="M56 118 l-16 -14" stroke="#3a2a1c" stroke-width="6" stroke-linecap="round"/>' +
-      '<g stroke="#1a1030" stroke-width="3.5">' + blobs + '</g>' +
-      '</svg>';
-  };
+  S.rockPapier = (variant, h) => papier(ROCHERS[variant % ROCHERS.length], h * 1.1, variant % 2 === 1);
+  S.mushPapier = (variant, h) => papier(CHAMPIS[variant % CHAMPIS.length], h * 1.2, variant % 2 === 0);
+  S.flowerPapier = (variant, h) => papier(FLEURS[variant % FLEURS.length], h * 1.2, variant % 3 === 2);
+  S.boisPapier = (variant, h) => papier(BOIS[variant % BOIS.length], h * 1.1, variant % 2 === 1);
 
-  S.bushSvg = function (variant, h) {
-    const c = LEAF[(variant + 1) % LEAF.length];
-    return '<svg width="' + Math.round(h * 1.5) + '" height="' + h + '" viewBox="0 0 90 60" xmlns="http://www.w3.org/2000/svg">' +
-      '<g stroke="#1a1030" stroke-width="3">' +
-      '<ellipse cx="45" cy="44" rx="42" ry="16" fill="' + c[2] + '"/>' +
-      '<ellipse cx="30" cy="34" rx="22" ry="16" fill="' + c[1] + '"/>' +
-      '<ellipse cx="58" cy="32" rx="24" ry="18" fill="' + c[0] + '"/>' +
-      '</g><ellipse cx="52" cy="26" rx="9" ry="5" fill="#fff" opacity=".12"/></svg>';
-  };
-
-  S.mushroom = function (variant, h) {
-    const caps = ['#e4484f', '#d86bd0', '#f0a83c', '#5fc9e8'];
-    const cap = caps[variant % caps.length];
-    return '<svg width="' + Math.round(h * 0.9) + '" height="' + h + '" viewBox="0 0 54 60" xmlns="http://www.w3.org/2000/svg">' +
-      '<rect x="21" y="28" width="12" height="30" rx="5" fill="#f0e6d2" stroke="#1a1030" stroke-width="3"/>' +
-      '<path d="M4 30 q23 -32 46 0 z" fill="' + cap + '" stroke="#1a1030" stroke-width="3"/>' +
-      '<circle cx="18" cy="20" r="4" fill="#fff" opacity=".85"/><circle cx="34" cy="24" r="3" fill="#fff" opacity=".7"/>' +
-      '</svg>';
-  };
-
-  S.crystal = function (variant, h) {
-    const cols = ['#7ae7ff', '#c58bff', '#8affc0'];
-    const c = cols[variant % cols.length];
-    return '<svg width="' + Math.round(h * 0.6) + '" height="' + h + '" viewBox="0 0 40 66" xmlns="http://www.w3.org/2000/svg">' +
-      '<path d="M20 2 L34 30 L26 62 L14 62 L6 30 Z" fill="' + c + '" opacity=".85" stroke="#1a1030" stroke-width="2.5"/>' +
-      '<path d="M20 2 L26 62 L14 62 Z" fill="#fff" opacity=".25"/></svg>';
-  };
-
-  S.rock = function (variant, h) {
-    return '<svg width="' + Math.round(h * 1.4) + '" height="' + h + '" viewBox="0 0 70 50" xmlns="http://www.w3.org/2000/svg">' +
-      '<path d="M6 46 L14 18 L34 6 L58 20 L64 46 Z" fill="#5a5470" stroke="#1a1030" stroke-width="3"/>' +
-      '<path d="M14 18 L34 6 L38 24 Z" fill="#7a7292"/></svg>';
-  };
-
-  S.flower = function (variant, h) {
-    const cols = ['#ffd6f0', '#ffe9a8', '#c8e8ff'];
-    const c = cols[variant % cols.length];
-    return '<svg width="' + Math.round(h * 0.8) + '" height="' + h + '" viewBox="0 0 32 40" xmlns="http://www.w3.org/2000/svg">' +
-      '<line x1="16" y1="38" x2="16" y2="18" stroke="#2f7a4e" stroke-width="3"/>' +
-      '<circle cx="16" cy="10" r="5" fill="' + c + '" stroke="#1a1030" stroke-width="2"/>' +
-      '<circle cx="9" cy="15" r="4" fill="' + c + '" stroke="#1a1030" stroke-width="2"/>' +
-      '<circle cx="23" cy="15" r="4" fill="' + c + '" stroke="#1a1030" stroke-width="2"/>' +
-      '<circle cx="16" cy="14" r="2.6" fill="#ffcf4d"/></svg>';
-  };
+  /* Les arbres, buissons, rochers, champignons et fleurs etaient
+     dessines en SVG. Ils viennent maintenant des planches papier :
+     le code correspondant a ete retire plutot que garde en reserve,
+     il n aurait fait que diverger du rendu reel. */
 
   S.propByKind = function (kind, variant, h) {
     switch (kind) {
       case 'tree': return S.tree(variant, h);
       case 'bush': return S.bush(variant, h);
-      case 'mush': return S.mushroom(variant, h);
-      case 'crystal': return S.crystal(variant, h);
-      case 'rock': return S.rock(variant, h);
-      default: return S.flower(variant, h);
+      case 'mush': return S.mushPapier(variant, h);
+      case 'crystal': return S.boisPapier(variant, h);
+      case 'rock': return S.rockPapier(variant, h);
+      default: return S.flowerPapier(variant, h);
     }
   };
 

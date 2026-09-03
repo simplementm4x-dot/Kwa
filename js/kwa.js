@@ -34,6 +34,22 @@
     bot.classList.toggle('is-what', m === 'what');
   };
 
+  /** Kwa arrive devant le plateau et attrape son micro */
+  Kw.entree = function () {
+    K.net && K.net.ev('kwaIn', {});
+    return Kw.entreeLocal();
+  };
+  Kw.entreeLocal = function () {
+    if (!zone) Kw.mount();
+    Kw.show();
+    Kw.setMoodLocal('happy');
+    zone.classList.remove('entree');
+    void zone.offsetWidth;
+    zone.classList.add('entree');
+    K.audio.pop();
+    return U.sleep(900).then(() => { zone.classList.remove('entree'); });
+  };
+
   function onTap() {
     if (typing) { typing.skip(); return; }
     if (resolveTap) { const r = resolveTap; resolveTap = null; nextArr.hidden = true; r(); }

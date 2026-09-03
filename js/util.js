@@ -232,6 +232,20 @@ window.KWA = window.KWA || {};
     });
   };
 
+  /**
+   * Un panneau qui se referme tout seul. Le recapitulatif des
+   * deplacements n apprend rien qu on ne verra pas juste apres sur le
+   * plateau : demander un clic a chaque manche hache la partie.
+   */
+  U.panelAuto = function (ico, title, sub, bodyHtml, ms) {
+    K.net && K.net.ev('panel', { ico, title, sub, body: bodyHtml });
+    U.ovShell(ico, title, sub, bodyHtml, '<div class="panel-wait"><i></i></div>');
+    return U.sleep(ms || 1800).then(() => {
+      K.net && K.net.ev('panelClose', {});
+      U.closeOverlay();
+    });
+  };
+
   /** le meme panneau, en lecture seule, sur les telephones qui suivent */
   U.panelMirror = function (ico, title, sub, bodyHtml) {
     U.ovShell(ico, title, sub, bodyHtml,

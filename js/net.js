@@ -538,6 +538,10 @@
         break;
       }
 
+      /* ouverture */
+      case 'travel': K.board.travellingLocal(d.ms); break;
+      case 'kwaIn':  K.kwa.entreeLocal(); break;
+
       /* plateau vivant */
       case 'dice':   K.game.diceAnim(d.v); break;
       case 'cam':    K.board.focusLocal(d.i, d.instant); break;

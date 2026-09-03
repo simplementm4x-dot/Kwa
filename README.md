@@ -12,10 +12,10 @@ Première map : la **Forêt Enchantée**, un chemin en serpentin.
 
 ### Les images du plateau
 
-Le sol, les bordures et le décor viennent de deux planches papercraft
+Le sol, les cases et le décor viennent de cinq planches papercraft
 rangées dans `src/`. Elles pèsent 3 Mo chacune : on ne les sert pas telles
 quelles. `node tools/assets.js` les découpe, les réduit et les écrit dans
-`assets/` — 12 fichiers, 146 Ko en tout.
+`assets/` — 34 fichiers, 232 Ko en tout.
 
 Aucun outil d'image n'est installé sur la machine de développement (ni
 ImageMagick, ni Python utilisable) et le jeu n'a aucune dépendance :

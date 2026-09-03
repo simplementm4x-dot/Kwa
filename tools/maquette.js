@@ -55,13 +55,6 @@ tapisser(vue, A('carton.png'), 0, 0, W, H);
 const GX = 150, GW = 600;
 tapisser(vue, A('herbe.png'), GX, 0, GW, H);
 
-/* la tranche ondulee sur les deux bords de la feuille */
-const tr = A('carton-tranche.png');
-for (let y = 0; y < H; y += tr.h) {
-  fondre(vue, tr, GX - tr.w, y);
-  fondre(vue, tr, GX + GW, y);
-}
-
 /* le decor : arbres sur le carton, touffes sur l herbe */
 const arbres = ['arbre-chene.png', 'arbre-bouleau.png', 'sapin.png', 'arbre-pommier.png'].map(A);
 [[10, 300], [-60, 560], [700, 250], [760, 520]].forEach(([x, y], i) => {

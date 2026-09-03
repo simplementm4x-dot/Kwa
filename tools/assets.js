@@ -84,9 +84,6 @@ sors(P.resize(P.crop(sol, 840, 130, 660, 600), 220, 200), 'carton.png', 96);
    sors(nettoieHalo(P.resize(P.crop(sol, 8, 786, 752, 96), 376, 48), 60), 'feston.png');
 */
 
-/* la tranche du carton, vue de cote : elle borde la feuille d herbe */
-sors(P.resize(P.crop(sol, 1468, 776, 62, 244), 31, 122), 'carton-tranche.png', 64);
-
 /* Touffes et trefles : on les detoure en cherchant les paquets de
    pixels relies entre eux, plutot qu avec des cadres poses a la main —
    ceux-ci coupaient invariablement le bas des brins. Les morceaux sont
@@ -106,7 +103,38 @@ petit(5, 'touffe-3.png', 70);
 petit(1, 'trefle.png', 58, 64);
 
 /* =========================================================
-   2. Les arbres
+   2. Le cadre des cases
+
+   Les six cases de la planche portent chacune une icone qui
+   couvre presque tout l interieur : impossible de l effacer
+   proprement. On ne garde donc que le cadre de carton, et
+   c est le CSS qui pose le papier a la couleur du type de
+   case — un seul fichier habille les treize.
+   ========================================================= */
+console.log('cases :');
+const casesPl = P.decode('src/cases.png');
+
+/** evide l interieur d une case, avec un fondu de quelques pixels */
+function evide(src, marge, fondu) {
+  const o = { w: src.w, h: src.h, px: Buffer.from(src.px) };
+  const mx = Math.round(src.w * marge), my = Math.round(src.h * marge);
+  for (let y = 0; y < o.h; y++) {
+    for (let x = 0; x < o.w; x++) {
+      const dx = Math.max(mx - x, x - (o.w - 1 - mx), 0);
+      const dy = Math.max(my - y, y - (o.h - 1 - my), 0);
+      const dist = (dx > 0 && dy > 0) ? Math.hypot(dx, dy) : Math.max(dx, dy);
+      const a = dist <= 0 ? 0 : Math.min(1, dist / fondu);
+      const i = (y * o.w + x) * 4;
+      o.px[i + 3] = Math.round(o.px[i + 3] * a);
+    }
+  }
+  return o;
+}
+
+sors(P.resize(evide(P.crop(casesPl, 43, 49, 453, 427), 0.035, 4), 144, 136), 'case-cadre.png', 96);
+
+/* =========================================================
+   3. Les arbres
    ========================================================= */
 console.log('arbres :');
 const planche = P.decode('src/lot_arbre.png');
@@ -124,5 +152,32 @@ const ARBRES = [
 for (const [nom, x, y, w, h, ht] of ARBRES) {
   sors(nettoieHalo(hauteur(serre(P.crop(planche, x, y, w, h)), ht)), nom);
 }
+
+/* =========================================================
+   4. Plantes, rochers, souches et champignons
+
+   Deux planches de plus, detourees de la meme facon : on
+   cherche les paquets de pixels relies entre eux, on trie par
+   surface et on prend les plus gros. Les indices sont donc
+   stables tant que les planches ne changent pas.
+   ========================================================= */
+function lot(fichier, prefixe, combien, hauteurs, couleurs) {
+  const pl = P.decode(fichier);
+  const morceaux = P.composantes(pl, 60, 2500)
+    .filter(m => m.w > 40 && m.h > 40)
+    .sort((a, b) => b.aire - a.aire)
+    .slice(0, combien);
+  morceaux.forEach((m, i) => {
+    const h = hauteurs[i % hauteurs.length];
+    sors(nettoieHalo(hauteur(P.crop(pl, m.x, m.y, m.w, m.h), h)), prefixe + '-' + (i + 1) + '.png', couleurs);
+  });
+  return morceaux.length;
+}
+
+console.log('plantes :');
+lot('src/lot_plant.png', 'plante', 10, [92, 86, 80, 74, 96], 96);
+
+console.log('decors :');
+lot('src/lot_decors.png', 'decor', 12, [86, 78, 72, 66, 92], 96);
 
 console.log('\ntotal : ' + (total / 1024).toFixed(1) + ' Ko');

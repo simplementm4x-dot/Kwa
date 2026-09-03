@@ -144,7 +144,7 @@
           gx: (srnd() - 0.5) * (halfPath * 1.9),
           gy: baseY + (srnd() - 0.5) * ROW_H,
           kind,
-          h: kind === 'crystal' ? 40 + srnd() * 34 : 26 + srnd() * 22,
+          h: kind === 'crystal' ? 56 + srnd() * 40 : 36 + srnd() * 26,
           variant: Math.floor(srnd() * 4),
           sway: kind === 'flower'
         });
@@ -179,6 +179,7 @@
       const cls = 'tile' + (t.type === 'start' ? ' is-start' : '') + (t.type === 'finish' ? ' is-finish' : '');
       const el = U.el(
         '<div class="' + cls + '" data-i="' + t.i + '" style="--c1:' + d.c1 + ';--c2:' + d.c2 + '">' +
+          '<i class="t-paper"></i>' +
           '<span class="t-ico">' + d.icon + '</span>' +
           (t.type === 'start' || t.type === 'finish' ? '' : '<span class="t-num">' + t.i + '</span>') +
         '</div>'
@@ -228,6 +229,36 @@
     if (instant) g.style.transition = 'none';
     g.style.transform = 'rotateX(var(--rx)) translate3d(' + (-t.gx) + 'px,' + (-t.gy) + 'px,0)';
     if (instant) { void g.offsetWidth; g.style.transition = ''; }
+  };
+
+  /**
+   * Travelling d ouverture : on part du bout du chemin, vu de loin, et
+   * on redescend jusqu au depart en se rapprochant. Le recul se fait en
+   * profondeur (translateZ) plutot qu en echelle : la perspective du
+   * plateau reste juste, les pions ne s aplatissent pas.
+   */
+  B.travelling = function (ms) {
+    K.net && K.net.ev('travel', { ms });
+    return B.travellingLocal(ms);
+  };
+  B.travellingLocal = function (ms) {
+    ms = ms || 3400;
+    const g = U.$('#ground');
+    if (!g || !tiles.length) return Promise.resolve();
+    const fin = tiles[tiles.length - 1];
+    const dep = tiles[0];
+
+    /* on se pose au bout du chemin, sans animation */
+    camIdx = tiles.length - 1;
+    g.style.transition = 'none';
+    g.style.transform = 'rotateX(var(--rx)) translate3d(' + (-fin.gx) + 'px,' + (-fin.gy) + 'px,-820px)';
+    void g.offsetWidth;
+
+    /* puis on redescend lentement jusqu au depart */
+    g.style.transition = 'transform ' + ms + 'ms cubic-bezier(.42,0,.26,1)';
+    camIdx = 0;
+    g.style.transform = 'rotateX(var(--rx)) translate3d(' + (-dep.gx) + 'px,' + (-dep.gy) + 'px,0)';
+    return U.sleep(ms + 60).then(() => { g.style.transition = ''; });
   };
 
   B.hit = function (i) {

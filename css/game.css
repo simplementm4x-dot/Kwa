@@ -349,3 +349,24 @@
   70%{opacity:1;transform:scale(1.35) translateY(-3px)}
   100%{opacity:1;transform:scale(1) translateY(0)}
 }
+
+/* le panneau qui se referme seul : une barre qui se vide */
+.panel-wait{height:5px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}
+.panel-wait i{display:block;height:100%;background:var(--gold);animation:panelWait 1.8s linear forwards}
+@keyframes panelWait{from{width:100%}to{width:0}}
+
+/* ---------- l entree de Kwa devant le plateau ---------- */
+/* il arrive du bas, depasse legerement, se pose : un presentateur qui
+   entre en scene, pas une boite de dialogue qui apparait */
+.kwa-zone.entree{animation:kwaEntree .9s cubic-bezier(.2,1.5,.35,1) both}
+.kwa-zone.entree .kwa-bot{animation:kwaMicro .9s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes kwaEntree{
+  0%{opacity:0;transform:translateY(70px) scale(.86)}
+  60%{opacity:1;transform:translateY(-10px) scale(1.04)}
+  100%{opacity:1;transform:none}
+}
+@keyframes kwaMicro{
+  0%{transform:translateY(30px) rotate(-14deg)}
+  55%{transform:translateY(-6px) rotate(6deg)}
+  100%{transform:none}
+}

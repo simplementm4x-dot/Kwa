@@ -159,9 +159,10 @@
         '<span class="rank-av" style="--pc:' + p.hex + '">' + K.sprites.avatar(p, 30) + '</span>' +
         '<b>' + U.esc(p.name) + '</b><span class="d ' + cls + '">' + txt + '</span></div>';
     }).join('');
-    return U.panel('📊', 'Resultat de la manche', '',
-      '<div class="res-list">' + rows + '</div>', 'On avance !')
-      .then(U.closeOverlay);
+    /* le temps de lire, pas plus : les pions bougent juste apres */
+    return U.panelAuto('📊', 'Resultat de la manche', '',
+      '<div class="res-list">' + rows + '</div>',
+      1100 + Math.min(4, results.length) * 320);
   }
 
   /* ---------------------------------------------------------
@@ -284,10 +285,16 @@
     K.board.fireflies(20);
     K.board.render();
     K.pawns.renderAll();
-    K.board.focus(0, true);
     hud();
     K.events.render();
     K.audio.unlock();
+
+    /* On montre d abord le terrain, pas l animateur : le plateau defile
+       du terminus jusqu au depart, et Kwa n entre qu ensuite. */
+    K.kwa.hide();
+    await K.board.travelling(3600);
+    await U.sleep(250);
+    await K.kwa.entree();
 
     await K.kwa.say('Bien le bonjour ! Moi c est KWA, votre animateur en 625 lignes.', { mood: 'wink' });
     await K.kwa.say('Bienvenue dans la Foret Enchantee. ' +
