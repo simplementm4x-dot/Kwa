@@ -138,6 +138,9 @@
     duelAllowed() {
       const s = K.state.settings;
       if (s.venue === 'online') return false;
+      /* en jeu libre, tout le monde est deja autour du meme telephone :
+         c est exactement ce que le duel demande */
+      if (s.libre) return true;
       return s.device === 'multi' || s.duelSolo;
     },
 

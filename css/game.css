@@ -411,3 +411,9 @@
   transition:transform var(--rid-ms,1700ms) cubic-bezier(.62,0,.24,1);
 }
 .rideau.ouvert .rid-cantonniere{transform:translateY(-104%)}
+
+/* ---------- jeu libre : l ecran de jeu prete son decor, sans plateau ---------- */
+.screen-game.libre .camera,
+.screen-game.libre .hud-top,
+.screen-game.libre .hud-players,
+.screen-game.libre .hud-event{display:none}

@@ -32,6 +32,23 @@ ceux-ci coupaient invariablement le bas des brins.
 feuille d'herbe, tranche ondulée, décor — pour vérifier les raccords et les
 échelles sans navigateur.
 
+### Le jeu libre
+
+Depuis le titre, **JEU LIBRE** met le plateau de côté : on choisit
+l'épreuve qu'on veut jouer dans une grille, on la joue, et les cases
+gagnées deviennent des points. C'est le mode pour une soirée où personne
+n'a envie de faire le tour d'une forêt, ou pour essayer une épreuve sans
+attendre qu'elle tombe.
+
+Les cases éclair (Échange, Péage, Roue) n'y figurent pas : ce sont des
+mécaniques de plateau — troquer sa position, payer un droit de passage —
+qui n'ont aucun sens hors du chemin. Les épreuves qui demandent du monde
+restent grisées tant que les joueurs manquent, en disant pourquoi.
+
+Le jeu libre se joue **autour d'un seul téléphone**, qui tourne comme dans
+une partie à un écran. Le Duel y est donc toujours disponible : tout le
+monde est déjà devant le même écran, ce que cette épreuve demande.
+
 ### Régler la partie
 
 Le bouton **JOUER** ne mène pas à un formulaire mais à Kwa, qui pose les

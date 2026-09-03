@@ -92,6 +92,8 @@
       '</div>';
     }).join('');
     U.$('#btnAddPlayer').hidden = K.state.players.length >= 8;
+    const depart = U.$('#btnStart');
+    if (depart) depart.textContent = S().libre ? 'CHOISIR UNE EPREUVE ▶' : "C'EST PARTI ▶";
   };
 
   function players() {
@@ -137,7 +139,8 @@
       ps.forEach((p, i) => { if (!p.name.trim()) p.name = 'Joueur ' + (i + 1); });
       K.save();
       K.audio.tap();
-      K.game.start();
+      if (S().libre) K.libre.open();
+      else K.game.start();
     });
   }
 
@@ -177,7 +180,23 @@
      --------------------------------------------------------- */
   /** le titre : Kwa mene la configuration, ou on rejoint directement */
   function title() {
-    U.$('#btnPlay').addEventListener('click', () => { K.audio.tap(); K.setup.run(); });
+    U.$('#btnPlay').addEventListener('click', () => {
+      K.audio.tap();
+      S().libre = false;
+      K.setup.run();
+    });
+
+    /* Le jeu libre n a besoin ni de plateau ni de reglages : juste des
+       joueurs et un telephone qui tourne. On passe donc directement par
+       l ecran des joueurs. */
+    U.$('#btnLibre').addEventListener('click', () => {
+      K.audio.tap();
+      S().libre = true;
+      S().device = 'solo';
+      M.renderPlayers();
+      U.go('players');
+    });
+    U.$('#btnLibreQuit').addEventListener('click', () => { K.audio.tap(); K.libre.quitter(); });
     U.$('#btnJoinQuick').addEventListener('click', () => {
       K.audio.tap();
       /* rejoindre, c est forcement avoir son propre telephone */

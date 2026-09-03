@@ -33,11 +33,18 @@
       <div class="title-btns">
         <button class="btn btn-xl btn-primary" id="btnPlay">▶ JOUER</button>
         <button class="btn btn-xl btn-cyan" id="btnJoinQuick">🔑 REJOINDRE</button>
+        <button class="btn btn-xl btn-gold" id="btnLibre">🎲 JEU LIBRE</button>
         <button class="btn btn-ghost" data-go="rules">Les règles</button>
         <button class="btn btn-ghost" data-go="mode">Réglages détaillés</button>
       </div>
       <p class="title-foot">v1.0 · Forêt Enchantée</p>
     </div>
+  </section>
+
+  <!-- ============ JEU LIBRE ============ -->
+  <section class="screen" id="screen-libre">
+    <header class="topbar"><button class="btn-back" id="btnLibreQuit">‹</button><h2>Jeu libre</h2></header>
+    <div class="scroll" id="libreBody"></div>
   </section>
 
   <!-- ============ CONFIGURATION MENEE PAR KWA ============ -->
@@ -240,6 +247,7 @@
 <script src="js/prompt.js"></script>
 <script src="js/intro.js"></script>
 <script src="js/setup.js"></script>
+<script src="js/libre.js"></script>
 <script src="js/menu.js"></script>
 <script src="js/net.js"></script>
 <script src="js/rideau.js"></script>
