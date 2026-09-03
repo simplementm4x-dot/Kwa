@@ -87,6 +87,8 @@ async function partie(reglages) {
   {
     const c = await boot();
     Object.assign(c.K.state.settings, { venue: 'irl', device: 'multi', duelSolo: false });
+    c.K.state.players = ['Alice', 'Bob', 'Chloe', 'David']
+      .map((n, i) => c.K.newPlayer(n, c.K.COLORS[i].id));
     c.K.board.generate(60);
     const types = c.K.board.typeList();
     const eclairs = types.filter(t => (c.K.TILE_TYPES[t] || {}).eclair).length;
@@ -300,6 +302,73 @@ async function partie(reglages) {
   }
 
   /* =====================================================
+     3 ter. Ce qui ne se joue pas a deux, et pas a un ecran
+     ===================================================== */
+  {
+    const GROUPE = ['undercover', 'anecdote', 'dilemme'];
+
+    /* --- a deux, les epreuves de groupe disparaissent du chemin --- */
+    const c = await boot();
+    const K = c.K;
+    Object.assign(K.state.settings, { venue: 'irl', device: 'multi', duelSolo: false });
+    K.state.players = [K.newPlayer('Alice', 'rouge'), K.newPlayer('Bob', 'bleu')];
+
+    GROUPE.forEach(t => {
+      if (K.rules.tileAllowed(t)) fails.push('"' + t + '" est autorisee a deux joueurs');
+    });
+    K.board.generate(60);
+    let types = K.board.typeList();
+    GROUPE.forEach(t => {
+      if (types.indexOf(t) >= 0) fails.push('la case "' + t + '" tombe sur un plateau a deux joueurs');
+    });
+    const restants = [...new Set(types)].filter(t => t !== 'start' && t !== 'finish');
+    if (restants.length < 4) fails.push('a deux joueurs il ne reste presque rien a jouer');
+    step('a deux joueurs : ' + restants.join(', '));
+
+    /* meme chose quand Kwa choisit l epreuve lui-meme */
+    for (let i = 0; i < 80; i++) {
+      const t = K.board.randomPlayable();
+      if (GROUPE.indexOf(t) >= 0) fails.push('"Kwa a faim" peut tirer "' + t + '" a deux joueurs');
+    }
+    step('"Kwa a faim" ne tire jamais une epreuve injouable');
+
+    /* --- a trois, tout revient --- */
+    K.state.players.push(K.newPlayer('Chloe', 'vert'));
+    GROUPE.forEach(t => {
+      if (!K.rules.tileAllowed(t)) fails.push('"' + t + '" reste interdite a trois joueurs');
+    });
+    K.board.generate(60);
+    types = K.board.typeList();
+    GROUPE.forEach(t => {
+      if (types.indexOf(t) < 0) fails.push('la case "' + t + '" n apparait pas a trois joueurs');
+    });
+    step('a trois joueurs : undercover, anecdote et dilemme reviennent');
+
+    /* --- les paris demandent que chacun ait son ecran --- */
+    K.state.settings.device = 'multi';
+    if (!K.bets.enabled()) fails.push('les paris devraient etre possibles en multi-telephones');
+    K.state.settings.device = 'solo';
+    if (K.bets.enabled()) fails.push('les paris sont proposes avec un seul telephone');
+
+    const mises = await K.bets.collect(K.state.players[0], { type: 'quiz' }, K.state.players);
+    if (mises !== null) fails.push('on recueille des mises avec un seul telephone');
+    step('un seul telephone : aucun pari propose');
+
+    /* et la carte "grosse cote", qui double les mises, ne doit plus sortir */
+    const situation = { rang: K.state.players, ecart: 0, avance: 0, finProche: false };
+    const carteCote = K.events.byId('cote');
+    if (carteCote.poids(situation) !== 0) {
+      fails.push('la carte "grosse cote" peut sortir alors qu aucun pari n est possible');
+    }
+    K.state.settings.device = 'multi';
+    if (!K.bets.enabled()) fails.push('retour en multi : les paris devraient revenir');
+    if (carteCote.poids(situation) <= 0) fails.push('la carte "grosse cote" ne sort jamais en multi');
+    step('la carte "grosse cote" ne sort que la ou les paris existent');
+
+    c.errors.forEach(e => fails.push('petit comite : ' + e));
+  }
+
+  /* =====================================================
      4. Les paris
      ===================================================== */
   {
@@ -347,12 +416,17 @@ async function partie(reglages) {
       return out;
     };
     const vraiCollect = K.bets.collect;
-    K.bets.collect = function () { paris++; return vraiCollect.apply(this, arguments); };
+    K.bets.collect = async function () {
+      const out = await vraiCollect.apply(this, arguments);
+      if (out) paris++;          /* on ne compte que les mises reellement recueillies */
+      return out;
+    };
 
     K.game.start();
     const fini = await joueJusquAuBout(c, 180000);
     if (!fini) fails.push('la partie ne s est pas terminee en 3 minutes');
-    else step('partie terminee : ' + evenements + ' evenements de foret, ' + paris + ' series de paris');
+    else step('partie terminee (un seul telephone) : ' + evenements + ' evenements de foret, ' +
+           paris + ' series de paris');
 
     const last = K.board.last();
     K.state.players.forEach(p => {

@@ -19,13 +19,16 @@
     start:      { icon: '🏠', label: 'Depart',           c1: '#5b4b8a', c2: '#3b2f63' },
     /* pari: true = un seul joueur est sur scene, les autres peuvent miser */
     quiz:       { icon: '❓', label: 'Tu te mets combien ?', c1: '#7b3fb3', c2: '#4a1f78', pari: true },
-    undercover: { icon: '🕵️', label: 'Undercover',       c1: '#2f4f7a', c2: '#1b2f4d' },
-    anecdote:   { icon: '📖', label: 'Anecdote',          c1: '#a86a2e', c2: '#6b3f16' },
+    /* min: nombre de joueurs en dessous duquel l epreuve n a plus de sens.
+       A deux, un vote a la majorite n existe pas et un infiltre se devine
+       tout seul : ces cases ne doivent pas tomber sur le chemin. */
+    undercover: { icon: '🕵️', label: 'Undercover',       c1: '#2f4f7a', c2: '#1b2f4d', min: 3 },
+    anecdote:   { icon: '📖', label: 'Anecdote',          c1: '#a86a2e', c2: '#6b3f16', min: 3 },
     verite:     { icon: '🎭', label: 'Verite ou Mensonge', c1: '#2f7a5a', c2: '#17402f', pari: true },
     /* piece: true = il faut etre dans la meme piece (ou devant le meme
        ecran). Ces epreuves sautent quand la partie se joue a distance. */
     vingtetun:  { icon: '🍻', label: 'Le 21',             c1: '#b83a5e', c2: '#6e1e37', piece: true },
-    dilemme:    { icon: '⚖️', label: 'Le Dilemme',        c1: '#3a6fb8', c2: '#1f3f6e' },
+    dilemme:    { icon: '⚖️', label: 'Le Dilemme',        c1: '#3a6fb8', c2: '#1f3f6e', min: 3 },
     duel:       { icon: '🏓', label: 'Duel',              c1: '#b8452e', c2: '#6e2418', piece: true },
     mime:       { icon: '🤾', label: 'Mime en folie',     c1: '#8a4fb8', c2: '#50276e', piece: true, pari: true },
     motraccord: { icon: '🔤', label: 'Le Mot Raccord',    c1: '#2e9ab8', c2: '#175a6e', pari: true },
@@ -130,8 +133,13 @@
     /** une case peut-elle tomber avec les reglages en cours ? */
     tileAllowed(type) {
       if (type === 'duel') return K.rules.duelAllowed();
-      const info = K.TILE_TYPES[type];
-      return !(info && info.piece && K.rules.isOnline());
+      const info = K.TILE_TYPES[type] || {};
+      if (info.piece && K.rules.isOnline()) return false;
+      /* la table est trop petite pour cette epreuve. Quand aucun joueur
+         n est encore inscrit (apercu du plateau, tests), on ne filtre pas. */
+      const n = K.state.players.length;
+      if (n && info.min && n < info.min) return false;
+      return true;
     },
     isTerminus() { return K.state.settings.mode === 'terminus'; },
     lastIndex() { return K.state.settings.boardLength - 1; }

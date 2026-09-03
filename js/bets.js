@@ -12,12 +12,22 @@
   const MISE = 1;   /* bon pari : +1 case, mauvais : -1 */
 
   /**
+   * Un seul telephone qu il faudrait faire tourner autour de la table
+   * pour recueillir les mises avant chaque epreuve : a dix joueurs
+   * c est interminable, et ca casse justement le rythme qu on cherche.
+   * Les paris demandent donc que chacun ait son ecran.
+   */
+  B.enabled = function () {
+    return K.state.settings.paris !== false && K.state.settings.device === 'multi';
+  };
+
+  /**
    * Demande a tous les autres joueurs s ils croient en celui qui monte
    * sur scene. Renvoie { id du parieur -> 'a' (il gagne) | 'b' (il se plante) }
-   * ou null quand il n y a personne pour parier.
+   * ou null quand personne ne peut parier.
    */
   B.collect = async function (star, tile, players) {
-    if (K.state.settings.paris === false) return null;
+    if (!B.enabled()) return null;
     const autres = players.filter(p => p.id !== star.id);
     if (!autres.length) return null;
 

@@ -59,6 +59,26 @@ async function toLobby(name) {
   return ctx;
 }
 
+
+/**
+ * Un pacte de Kwa ou une prise de paris tombe sur le telephone d un
+ * invite, et l hote attend sa reponse : sans personne pour repondre
+ * la-bas, la partie ne repart jamais. Ce petit automate joue le role
+ * des invites — il ne touche jamais a l ecran de l hote.
+ */
+function repondPour(ctx) {
+  const ov = ctx.$('#overlay');
+  if (!ov || ov.hidden) return;
+  const b = [...ov.querySelectorAll('button')].find(x => !x.disabled);
+  if (b) click(ctx.win, b, ctx.errors);
+}
+
+/** fait repondre les invites en fond de tache tant que la partie tourne */
+function autoInvites(ctxs) {
+  const t = setInterval(() => ctxs.forEach(repondPour), 200);
+  return () => clearInterval(t);
+}
+
 /** l etat des pions vu par un ecran, pour comparer deux telephones */
 const pions = ctx => ctx.K.state.players.map(p => p.id + ':' + p.pos).sort().join(',');
 
@@ -90,6 +110,7 @@ const banniere = ctx => {
   await until(() => host.K.state.players.length === 3, 4000, 'les 3 joueurs');
   click(host.win, host.$('#netStart'), host.errors);
   await until(() => guests.every(g => g.$('#screen-game').classList.contains('is-active')), 8000, 'plateau partout');
+  const stop = autoInvites(guests);
   await tapThrough(host, () => host.$('#actionZone').textContent.includes('DÉ') ||
                                host.$('#actionZone').textContent.includes('DE'), 60000);
   step('partie a 3 lancee, ordre : ' + host.K.state.players.map(p => p.name).join(' > '));
@@ -253,6 +274,7 @@ const banniere = ctx => {
     try { ws.close(); } catch (e) {}
   }
 
+  stop();
   tous.forEach((c, i) => c.errors.forEach(e => fails.push('ecran ' + i + ' : ' + e)));
 
   console.log('');

@@ -79,7 +79,7 @@
     },
     {
       id: 'cote', ico: '🎰', nom: 'GROSSE COTE', court: 'Paris doubles', betMult: 2, duree: 3,
-      poids: c => (K.state.settings.paris === false || c.rang.length < 3) ? 0 : 22,
+      poids: c => (!K.bets.enabled() || c.rang.length < 3) ? 0 : 22,
       txt: 'Les paris rapportent double a partir de maintenant. Les mauvais aussi, evidemment.'
     }
   ];
