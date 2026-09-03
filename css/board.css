@@ -86,29 +86,36 @@
    pour donner l epaisseur. Tout est a plat sur le meme plan incline : pas
    de parois dressees en 3D, qui se verraient de travers des que la camera
    suit un pion. */
+/* Le sol est dimensionne sur le chemin reellement tire (--sol-top et
+   --sol-h, poses par board.js). Une nappe fixe de 8000 px de haut
+   depasse la taille maximale des textures sur beaucoup de telephones,
+   et le navigateur renonce alors a dessiner des pans entiers de la
+   scene : c est ce qui faisait disparaitre le decor et l animateur.
+
+   Le voile sombre est fondu dans le fond plutot que pose en calque
+   par-dessus, pour la meme raison : une couche geante de moins. */
 .ground-carton{
-  position:absolute;left:-1200px;right:-1200px;top:-4600px;bottom:-3000px;
-  background:url('../assets/carton.png') repeat;
-  background-size:220px 200px;
-  box-shadow:inset 0 0 260px rgba(0,0,0,.75);
+  position:absolute;width:820px;
+  top:var(--sol-top,-4600px);height:var(--sol-h,8000px);
+  background:linear-gradient(rgba(8,14,22,.42),rgba(8,14,22,.42)),
+             url('../assets/carton.png') repeat;
+  background-size:auto,220px 200px;
 }
+/* le carton ne sert que sur les cotes : sous la feuille d herbe, il ne
+   se verrait pas et coutait la moitie de la surface a peindre */
+.ground-carton.g{left:-1180px}
+.ground-carton.d{left:1280px}
+
 .ground-tex{
   /* la feuille d herbe : plus etroite que le carton, qui depasse donc */
-  position:absolute;left:-400px;right:-400px;top:-4600px;bottom:-3000px;
-  background:url('../assets/herbe.png') repeat;
-  background-size:256px 256px;
+  position:absolute;left:-400px;right:-400px;
+  top:var(--sol-top,-4600px);height:var(--sol-h,8000px);
+  /* le voile garde le contraste des cases et la nuit de la foret :
+     c est le seul reglage a toucher pour eclaircir ou assombrir le sol */
+  background:linear-gradient(180deg,rgba(8,22,16,.34),rgba(8,22,16,.16)),
+             url('../assets/herbe.png') repeat;
+  background-size:auto,256px 256px;
   box-shadow:0 0 34px rgba(0,0,0,.55);
-}
-/* La planche d herbe est tres lumineuse : sans ce voile, les cases et les
-   pions perdent leur contraste et la foret perd sa nuit. C est le seul
-   reglage a toucher pour rendre le sol plus clair ou plus sombre. */
-.ground-tex::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(8,22,16,.34),rgba(8,22,16,.16));
-}
-.ground-carton::after{
-  content:'';position:absolute;inset:0;
-  background:rgba(8,14,22,.42);
 }
 
 .layer{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d}

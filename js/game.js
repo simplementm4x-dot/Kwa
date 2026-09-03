@@ -292,9 +292,14 @@
     /* On montre d abord le terrain, pas l animateur : le plateau defile
        du terminus jusqu au depart, et Kwa n entre qu ensuite. */
     K.kwa.hide();
-    await K.board.travelling(3600);
-    await U.sleep(250);
-    await K.kwa.entree();
+    /* quoi qu il arrive pendant le travelling, l animateur revient :
+       le laisser cache serait la panne la plus difficile a comprendre */
+    try {
+      await K.board.travelling(3400);
+      await U.sleep(200);
+    } finally {
+      await K.kwa.entree();
+    }
 
     await K.kwa.say('Bien le bonjour ! Moi c est KWA, votre animateur en 625 lignes.', { mood: 'wink' });
     await K.kwa.say('Bienvenue dans la Foret Enchantee. ' +

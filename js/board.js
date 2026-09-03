@@ -160,8 +160,29 @@
   /* ---------------------------------------------------------
      Rendu
      --------------------------------------------------------- */
+  /**
+   * Le sol ne couvre que ce qui existe. Un chemin de 20 cases n a pas
+   * besoin de la meme feuille qu un chemin de 80, et une couche trop
+   * grande finit par ne plus etre dessinee du tout sur telephone.
+   */
+  function dimensionneSol() {
+    const g = U.$('#ground');
+    if (!g || !tiles.length) return;
+    let hautY = Infinity, basY = -Infinity;
+    const voir = o => { if (o.gy < hautY) hautY = o.gy; if (o.gy > basY) basY = o.gy; };
+    tiles.forEach(voir);
+    props.forEach(voir);
+    /* juste ce qu il faut autour du chemin : la camera ne montre
+       jamais plus d un millier de pixels de sol a la fois */
+    const haut = Math.round(hautY - 420);
+    const bas = Math.round(basY + 520);
+    g.style.setProperty('--sol-top', haut + 'px');
+    g.style.setProperty('--sol-h', (bas - haut) + 'px');
+  }
+
   B.render = function () {
     const tl = U.$('#tiles'), pr = U.$('#props'), svg = U.$('#pathSvg');
+    dimensionneSol();
 
     /* --- chemin --- */
     const pts = tiles.map(t => (t.gx + SVG_OX) + ',' + (t.gy + SVG_OY)).join(' ');
@@ -232,10 +253,8 @@
   };
 
   /**
-   * Travelling d ouverture : on part du bout du chemin, vu de loin, et
-   * on redescend jusqu au depart en se rapprochant. Le recul se fait en
-   * profondeur (translateZ) plutot qu en echelle : la perspective du
-   * plateau reste juste, les pions ne s aplatissent pas.
+   * Travelling d ouverture : on part du bout du chemin et on redescend
+   * lentement jusqu a la case de depart, en suivant le chemin.
    */
   B.travelling = function (ms) {
     K.net && K.net.ev('travel', { ms });
@@ -248,10 +267,13 @@
     const fin = tiles[tiles.length - 1];
     const dep = tiles[0];
 
-    /* on se pose au bout du chemin, sans animation */
+    /* On se pose au bout du chemin, sans animation. Pas de recul en
+       profondeur : le translate est applique APRES la rotation du sol,
+       donc un translateZ ne recule pas la camera, il fait glisser tout
+       le plateau de travers. */
     camIdx = tiles.length - 1;
     g.style.transition = 'none';
-    g.style.transform = 'rotateX(var(--rx)) translate3d(' + (-fin.gx) + 'px,' + (-fin.gy) + 'px,-820px)';
+    g.style.transform = 'rotateX(var(--rx)) translate3d(' + (-fin.gx) + 'px,' + (-fin.gy) + 'px,0)';
     void g.offsetWidth;
 
     /* puis on redescend lentement jusqu au depart */
