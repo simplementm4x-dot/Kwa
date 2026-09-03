@@ -247,6 +247,10 @@
       const finished = await playTurn();
       if (finished) return;
 
+      /* la foret reagit a ce qui vient de se passer, pas au calendrier */
+      await K.events.maybe();
+      if (s.over) return;
+
       s.idx++;
       if (s.idx >= s.players.length) {
         s.idx = 0; s.turn++;
@@ -255,8 +259,6 @@
           return;
         }
         await K.kwa.say('Tour ' + s.turn + ' ! On rembobine pas, on avance.', { auto: 900 });
-        await K.events.draw();
-        if (s.over) return;
       }
       hud();
     }
@@ -268,7 +270,7 @@
   G.start = async function () {
     const s = K.state;
     s.turn = 1; s.idx = 0; s.over = false; s.started = true;
-    s.event = null;
+    K.events.reset();
     s.players.forEach(p => { p.pos = 0; p.stats = { correct: 0, wrong: 0, gained: 0, lost: 0 }; });
     U.resetBags();
     if (K.net.isActive()) K.net.markStarted();

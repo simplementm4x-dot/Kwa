@@ -85,11 +85,24 @@
     const eye = mood === 'wink'
       ? '<path d="M30 44 q6 -6 12 0" stroke="#39e7ff" stroke-width="4" fill="none" stroke-linecap="round"/>' +
         '<circle cx="64" cy="43" r="6" fill="#39e7ff"/><circle cx="66" cy="41" r="2" fill="#fff"/>'
+      /* "what" : les yeux se dilatent, l ecran vire au blanc autour */
+      : mood === 'what'
+      ? '<circle cx="36" cy="43" r="9.5" fill="#fff"/><circle cx="36" cy="43" r="5" fill="#39e7ff"/>' +
+        '<circle cx="64" cy="43" r="9.5" fill="#fff"/><circle cx="64" cy="43" r="5" fill="#39e7ff"/>'
       : '<circle cx="36" cy="43" r="6.5" fill="#39e7ff"/><circle cx="38" cy="41" r="2.2" fill="#fff"/>' +
         '<circle cx="64" cy="43" r="6.5" fill="#39e7ff"/><circle cx="66" cy="41" r="2.2" fill="#fff"/>';
-    const mouth = mood === 'oh'
+    const mouth = mood === 'what'
+      ? '<ellipse cx="50" cy="63" rx="10" ry="11" fill="#ff3fa4" stroke="#0a0418" stroke-width="2.5"/>'
+      : mood === 'oh'
       ? '<ellipse cx="50" cy="62" rx="8" ry="9" fill="#ff3fa4" stroke="#0a0418" stroke-width="2"/>'
       : '<path d="M36 58 q14 14 28 0" stroke="#ff3fa4" stroke-width="4.5" fill="none" stroke-linecap="round"/>';
+    /* le point d exclamation qui jaillit a cote de la tete */
+    const bang = mood === 'what'
+      ? '<g class="kbang">' +
+          '<rect x="1" y="0" width="10" height="19" rx="4.5" fill="#ffcf4d" stroke="#1a1030" stroke-width="2.5"/>' +
+          '<circle cx="6" cy="26" r="5.2" fill="#ffcf4d" stroke="#1a1030" stroke-width="2.5"/>' +
+        '</g>'
+      : '';
     return '<svg width="' + (100 * s) + '" height="' + (118 * s) + '" viewBox="0 0 100 118" xmlns="http://www.w3.org/2000/svg">' +
       '<defs><linearGradient id="kcab" x1="0" y1="0" x2="0" y2="1">' +
         '<stop offset="0%" stop-color="#7d7a90"/><stop offset="55%" stop-color="#4e4b64"/>' +
@@ -114,6 +127,7 @@
       '<rect x="65" y="86" width="5" height="20" rx="2.5" fill="#e9e4f5" stroke="#1a1030" stroke-width="1.8"/>' +
       '<ellipse cx="31" cy="108" rx="12" ry="6" fill="#ffcf4d" stroke="#1a1030" stroke-width="2.2"/>' +
       '<ellipse cx="69" cy="108" rx="12" ry="6" fill="#ffcf4d" stroke="#1a1030" stroke-width="2.2"/>' +
+      bang +
       '</svg>';
   };
 

@@ -183,6 +183,81 @@ async function partie(reglages) {
   }
 
   /* =====================================================
+     3 bis. Quand les evenements se declenchent
+     ===================================================== */
+  {
+    const c = await boot();
+    const K = c.K;
+    /* on coupe la mise en scene : ici on ne teste que le declenchement */
+    K.kwa.say = () => Promise.resolve();
+    K.kwa.setMood = () => {};
+    K.anim.fx = () => Promise.resolve();
+    let applique = null;
+    K.game.applyResults = async r => { applique = r; return r; };
+
+    Object.assign(K.state.settings, {
+      venue: 'irl', device: 'solo', mode: 'tours', maxTurns: 5,
+      evenements: true, paris: true
+    });
+    K.state.turn = 1;
+    K.board.generate(40);
+    K.state.players = [
+      K.newPlayer('Alice', 'rouge'), K.newPlayer('Bob', 'bleu'), K.newPlayer('Chloe', 'vert')
+    ];
+    const [a, b, ch] = K.state.players;
+
+    /* --- un gros ecart avec le dernier appelle la maree --- */
+    a.pos = 14; b.pos = 12; ch.pos = 2;      /* ecart 12, meneur peu detache */
+    K.events.reset();
+    const calme = [];
+    for (let i = 0; i < 3; i++) calme.push(await K.events.maybe());
+    if (calme.some(Boolean)) fails.push('un evenement tombe avant le temps de repos');
+    const t3 = await K.events.maybe();
+    if (!t3 || t3.id !== 'champignons') {
+      fails.push('un ecart de 12 cases devrait appeler la maree de champignons, pas ' +
+                 (t3 ? t3.id : 'rien'));
+    } else {
+      const dCh = (applique || []).find(x => x.id === ch.id);
+      const dA = (applique || []).find(x => x.id === a.id);
+      if (!dCh || !dA || dCh.delta <= dA.delta) {
+        fails.push('la maree ne pousse pas davantage le dernier');
+      } else {
+        step('ecart de 12 cases -> maree de champignons : ' + ch.name + ' +' + dCh.delta +
+             ', les autres +' + dA.delta);
+      }
+      if (K.state.event) fails.push('un effet immediat ne devrait pas rester actif');
+    }
+    if (await K.events.maybe()) fails.push('deux evenements s enchainent sans repos');
+    step('apres un evenement, la foret se tait pendant plusieurs tours');
+
+    /* --- un meneur qui s echappe appelle le vent --- */
+    a.pos = 14; b.pos = 9; ch.pos = 9;       /* avance 5, ecart 5 */
+    K.events.reset();
+    await K.events.maybe(); await K.events.maybe(); await K.events.maybe();
+    const vent = await K.events.maybe();
+    if (!vent || vent.id !== 'vent') {
+      fails.push('un meneur detache de 5 cases devrait lever le vent contraire, pas ' +
+                 (vent ? vent.id : 'rien'));
+    } else {
+      if (!K.state.event || K.state.event.id !== 'vent') fails.push('le vent ne reste pas actif');
+      step('meneur detache de 5 cases -> vent contraire, actif ' + K.state.event.reste + ' tours');
+    }
+
+    /* --- la regle expire toute seule --- */
+    await K.events.maybe(); await K.events.maybe(); await K.events.maybe();
+    if (K.state.event) fails.push('la regle ne s efface pas apres sa duree');
+    else step('la regle s efface toute seule au bout de sa duree');
+
+    /* --- coupee dans les reglages, il ne se passe rien --- */
+    K.state.settings.evenements = false;
+    K.events.reset();
+    let rien = true;
+    for (let i = 0; i < 12; i++) if (await K.events.maybe()) rien = false;
+    if (!rien) fails.push('les evenements se declenchent alors qu ils sont coupes');
+    step('coupes dans les reglages : plus aucun evenement');
+  }
+
+  /* =====================================================
      4. Les paris
      ===================================================== */
   {
@@ -223,8 +298,12 @@ async function partie(reglages) {
     const c = await partie();
     const K = c.K;
     let evenements = 0, paris = 0;
-    const vraiDraw = K.events.draw;
-    K.events.draw = function () { evenements++; return vraiDraw.apply(this, arguments); };
+    const vraiMaybe = K.events.maybe;
+    K.events.maybe = async function () {
+      const out = await vraiMaybe.apply(this, arguments);
+      if (out) evenements++;
+      return out;
+    };
     const vraiCollect = K.bets.collect;
     K.bets.collect = function () { paris++; return vraiCollect.apply(this, arguments); };
 

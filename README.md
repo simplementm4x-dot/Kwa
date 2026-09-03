@@ -36,9 +36,14 @@ Au-delà des cases, quatre systèmes tournent en fond :
 - **Les paris** — quand un joueur monte seul sur scène, les autres misent sur
   lui avant qu'il commence. Bon pari +1 case, mauvais -1. C'est ce qui occupe
   ceux qui, sinon, regarderaient.
-- **Les événements de forêt** — à chaque nouvelle manche, Kwa annonce une
-  règle qui vaut pour tout le tour : tout compte double, gagner veut dire
-  reculer, aucun malus ne passe, le leader paie pour les autres.
+- **Les événements de forêt** — une règle qui change la manche : tout compte
+  double, gagner veut dire reculer, aucun malus ne passe, le meneur paie pour
+  les autres. Ils ne tombent pas au métronome : chaque carte est pesée selon
+  la situation, et c'est la partie qui les appelle. Un écart de huit cases
+  avec le dernier fait pousser la marée de champignons sous ses pieds ; un
+  meneur détaché de cinq cases lève le vent contraire. Le reste du temps,
+  c'est une surprise. L'annonce se fait sur le plateau — la forêt change à
+  vue — pendant que Kwa découvre ça en même temps que la table.
 - **Les pactes de Kwa** — de temps en temps, avant le dé, il prend le joueur à
   part et propose un marché. Refuser ne coûte rien.
 

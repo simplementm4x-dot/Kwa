@@ -28,7 +28,10 @@
   };
   Kw.setMoodLocal = function (m) {
     mood = m;
-    if (bot) bot.innerHTML = K.sprites.kwa(0.86, m);
+    if (!bot) return;
+    bot.innerHTML = K.sprites.kwa(0.86, m);
+    /* la surprise se voit aussi dans le corps, pas seulement dans les yeux */
+    bot.classList.toggle('is-what', m === 'what');
   };
 
   function onTap() {
