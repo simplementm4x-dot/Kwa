@@ -11,6 +11,11 @@
    l autre entre les tours, et on peut la surveiller du coin
    de l oeil pendant qu on choisit d avancer ou pas.
 
+   Et elle ne rode pas n importe ou : elle colle au peloton, du
+   dernier joueur a quelques cases devant le premier. Un esprit
+   qui traine a l autre bout d un chemin de quarante cases ne
+   croise personne, et on l oublie en trois tours.
+
    Comme tout le reste, c est l hote qui decide et les autres
    telephones rejouent : la position de l esprit voyage dans
    l etat de la partie, jamais tiree au sort deux fois.
@@ -26,6 +31,10 @@
   const RONDE = 2;
   /* de combien de cases il se decale quand il rode */
   const PORTEE = 4;
+  /* jusqu ou il ose se poster devant le premier joueur */
+  const DEVANT = 5;
+  /* et de combien il court quand le peloton lui a echappe */
+  const BOND = 8;
 
   /* ---------------------------------------------------------
      Ou il se trouve
@@ -33,25 +42,58 @@
   E.actif = () => K.state.settings.esprit !== false;
   E.at = () => (K.state.esprit ? K.state.esprit.i : -1);
 
-  /** les cases ou il a le droit de se poser */
-  function terrain() {
+  /**
+   * La zone qui l interesse : celle ou sont les joueurs.
+   *
+   * Un esprit qui rode au hasard sur quarante cases ne croise
+   * personne — on l oublie en trois tours. Il colle donc au peloton :
+   * du dernier jusqu a quelques cases devant le premier, c est-a-dire
+   * exactement la ou les pions vont passer.
+   */
+  function zone() {
     const last = K.board.last();
+    const pos = K.state.players.map(p => p.pos);
+    const dernier = pos.length ? Math.min.apply(null, pos) : 0;
+    const tete = pos.length ? Math.max.apply(null, pos) : 0;
+    const a = U.clamp(dernier, 2, Math.max(2, last - 2));
+    const b = U.clamp(tete + DEVANT, 2, Math.max(2, last - 2));
     const out = [];
     /* ni le depart ni le terminus : on ne campe pas les extremites,
        sinon il devient un peage a l arrivee ou un mur au depart */
-    for (let i = 2; i <= last - 2; i++) out.push(i);
+    for (let i = Math.min(a, b); i <= Math.max(a, b); i++) {
+      if (!K.state.players.some(p => p.pos === i)) out.push(i);
+    }
     return out;
   }
 
-  /** une case libre, aussi loin que possible des pions */
+  /**
+   * Ou il va.
+   *
+   * Tant qu il est dans le peloton, il flane : PORTEE cases au plus,
+   * pour qu on le voie venir. Si le groupe lui a echappe, il court —
+   * BOND cases par ronde, dans leur direction, jusqu a recoller. Il ne
+   * se teleporte jamais : perdre l esprit de vue en avancant vite ne
+   * doit pas etre possible, mais le voir foncer sur soi pendant deux
+   * tours vaut mieux que de le retrouver la sans prevenir.
+   */
   function choisit(depuis) {
-    const zone = terrain().filter(i => !K.state.players.some(p => p.pos === i));
-    if (!zone.length) return -1;
-    const proches = depuis >= 0
-      ? zone.filter(i => Math.abs(i - depuis) <= PORTEE && i !== depuis)
-      : zone;
-    const pool = proches.length ? proches : zone;
-    return pool[U.rnd(pool.length)];
+    const dispo = zone();
+    if (!dispo.length) return -1;
+    if (depuis < 0) return dispo[U.rnd(dispo.length)];
+
+    const portee = dispo.filter(i => i !== depuis && Math.abs(i - depuis) <= PORTEE);
+    if (portee.length) return portee[U.rnd(portee.length)];
+
+    /* la course : on avance vers la case atteignable la plus proche */
+    const cible = dispo.reduce((meilleur, i) =>
+      Math.abs(i - depuis) < Math.abs(meilleur - depuis) ? i : meilleur, dispo[0]);
+    const sens = cible > depuis ? 1 : -1;
+    const last = K.board.last();
+    for (let pas = Math.min(BOND, Math.abs(cible - depuis)); pas > 0; pas--) {
+      const arrivee = U.clamp(depuis + sens * pas, 2, Math.max(2, last - 2));
+      if (arrivee !== depuis && !K.state.players.some(p => p.pos === arrivee)) return arrivee;
+    }
+    return -1;
   }
 
   /* ---------------------------------------------------------
@@ -159,7 +201,7 @@
 
     /* le coup de baton passe avant tout : ni double, ni inverse, ni treve.
        Une regle de foret ne protege pas de ce qui garde le chemin. */
-    await K.game.applyResults([{ id: p.id, delta: -MALUS, why: 'esprit de la foret' }], true);
+    await K.game.applyResults([{ id: p.id, delta: -MALUS, why: 'l esprit de la foret' }], true);
     await K.kwa.say('Et pas d epreuve : on ne joue pas quand on se fait sortir du chemin.',
       { auto: 1400, mood: 'wink' });
 

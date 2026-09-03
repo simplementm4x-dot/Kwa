@@ -167,15 +167,19 @@
 
 /* ---------- decor (arbres, buissons, champignons) redresses ---------- */
 .prop{position:absolute;width:0;height:0;transform-style:preserve-3d}
+/* Pas de will-change ici : il y a plus de cent decors a l ecran, et
+   demander une couche graphique pour chacun sature la memoire video du
+   telephone. Le navigateur jette alors des couches et les redessine —
+   c est exactement ce qui faisait clignoter les arbres. */
 .prop .bb{
   position:absolute;left:0;bottom:0;
   transform:translateX(-50%) rotateX(calc(-1 * var(--rx)));
   transform-origin:50% 100%;
-  will-change:transform;
+  backface-visibility:hidden;
 }
 .prop .bb svg,.prop .bb img.pc{display:block;filter:drop-shadow(0 6px 10px rgba(0,0,0,.55))}
 .prop .bb img.pc{width:auto;image-rendering:auto}
-.prop.sway .bb{animation:sway 4.5s ease-in-out infinite}
+.prop.sway .bb{animation:sway var(--swd,4.5s) ease-in-out var(--swl,0s) infinite}
 @keyframes sway{0%,100%{transform:translateX(-50%) rotateX(calc(-1*var(--rx))) rotate(-1.2deg)}50%{transform:translateX(-50%) rotateX(calc(-1*var(--rx))) rotate(1.2deg)}}
 .prop .shadow{
   position:absolute;left:0;top:0;width:var(--sw,60px);height:calc(var(--sw,60px)*.42);

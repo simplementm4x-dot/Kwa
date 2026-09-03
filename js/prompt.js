@@ -25,6 +25,8 @@
       case 'raccord': return raccord(spec);
       case 'counter': return counter(spec);
       case 'nombre': return nombre(spec);
+      case 'photo':  return photo(spec);
+      case 'pacte':  return pacte(spec);
       default:       return Promise.resolve(null);
     }
   };
@@ -173,6 +175,100 @@
     });
   }
 
+  /**
+   * Une photo qui se devoile.
+   *
+   * L image part completement floue et se resout en quelques secondes.
+   * Ce n est pas un effet : c est la mecanique. Repondre tot rapporte
+   * plus, donc il faut se decider avant d etre sur — et c est la que
+   * la table hurle.
+   */
+  function photo(spec) {
+    return new Promise(res => {
+      const letters = 'ABCD';
+      const paliers = spec.paliers || [3200, 6400];
+      const gains = spec.gains || [4, 3, 2];
+      const t0 = Date.now();
+      const phase = () => {
+        const d = Date.now() - t0;
+        return d < paliers[0] ? 0 : (d < paliers[1] ? 1 : 2);
+      };
+
+      head(spec,
+        '<div class="ph-wrap">' +
+          '<img class="ph-img" id="phImg" src="' + U.esc(spec.url) + '" alt="">' +
+          '<span class="ph-gain" id="phGain">+' + gains[0] + '</span>' +
+        '</div>' +
+        '<div class="q-choices">' + spec.choices.map((txt, k) =>
+          '<button class="choice" data-k="' + k + '"><span class="k">' + letters[k] + '</span>' +
+          U.esc(txt) + '</button>').join('') + '</div>');
+
+      /* la nettete est une transition css : on l amorce a la frame
+         suivante, sinon le navigateur part deja de l image nette */
+      const img = U.$('#phImg');
+      requestAnimationFrame(() => { const i = U.$('#phImg'); if (i) i.classList.add('nette'); });
+
+      const compteur = setInterval(() => {
+        const g = U.$('#phGain');
+        if (!g) { clearInterval(compteur); return; }
+        g.textContent = '+' + gains[phase()];
+        g.className = 'ph-gain p' + phase();
+      }, 200);
+
+      U.on(U.$('#overlay'), 'click', '.choice', (e, t) => {
+        if (t.dataset.done) return;
+        U.$$('.choice').forEach(c => { c.dataset.done = '1'; });
+        clearInterval(compteur);
+        const k = +t.dataset.k;
+        const ok = k === spec.good;
+        const quand = phase();
+        if (img) img.classList.add('revelee');
+        t.classList.add(ok ? 'good' : 'bad');
+        if (!ok) {
+          const g = U.$$('.choice').find(c => +c.dataset.k === spec.good);
+          g && g.classList.add('good');
+        }
+        ok ? K.audio.good() : K.audio.bad();
+        U.buzz(ok ? 30 : [40, 60, 40]);
+        setTimeout(() => res({ k, phase: quand }), 1500);
+      });
+    });
+  }
+
+  /**
+   * Le pacte : Kwa s avance, et c est tout.
+   *
+   * Pas de panneau plein ecran ici. Un marche propose en douce ne doit
+   * pas ressembler a une epreuve : le fond s assombrit a peine, Kwa
+   * entre au milieu avec son regard en coin, et il n y a que deux
+   * boutons. On voit encore le plateau derriere — c est ce qu on est en
+   * train de vendre.
+   */
+  function pacte(spec) {
+    return new Promise(res => {
+      const o = U.overlay(
+        '<div class="pk">' +
+          '<div class="pk-kwa">' + K.sprites.kwa(1.2, 'louche') + '</div>' +
+          '<div class="pk-bulle">' +
+            '<small>' + U.esc(spec.sub || 'Le pacte de Kwa') + '</small>' +
+            '<p>' + U.esc(spec.intro || '') + '</p>' +
+          '</div>' +
+          '<div class="pk-choix">' +
+            '<button class="pk-btn oui" data-v="a">' + U.esc(spec.a) + '</button>' +
+            '<button class="pk-btn non" data-v="b">' + U.esc(spec.b) + '</button>' +
+          '</div>' +
+        '</div>');
+      o.classList.add('sombre');
+      U.on(o, 'click', '.pk-btn', (e, t) => {
+        if (t.dataset.done) return;
+        U.$$('.pk-btn').forEach(b => { b.dataset.done = '1'; });
+        K.audio.blip(); U.buzz(20);
+        t.classList.add('pris');
+        setTimeout(() => res(t.dataset.v), 280);
+      });
+    });
+  }
+
   /* --- question ouverte : le joueur juge lui-meme --- */
   function reveal(spec) {
     return new Promise(res => {
@@ -266,7 +362,10 @@
           '<div style="margin-top:16px">' + spec.items.map((it, k) =>
             '<div class="mr-item" data-i="' + k + '"><span class="mr-q">' + U.esc(it) + '</span>' +
             '<button class="mr-ok">✓</button></div>').join('') + '</div>' +
-          '<p class="hint" style="margin-top:10px">Le groupe valide ou refuse chaque mot. On coche au fur et a mesure.</p>' +
+          '<p class="hint" style="margin-top:10px">' + (spec.jury
+            ? 'C est toi qui coches. ' + U.esc(spec.jury) + ' parle, le groupe tranche, ' +
+              'et tu valides au fur et a mesure.'
+            : 'Le groupe valide ou refuse chaque mot. On coche au fur et a mesure.') + '</p>' +
         '</div>' +
         '<div class="ov-foot"><button class="btn btn-ghost" id="rEarly">J ai fini avant la fin</button></div>');
 

@@ -195,3 +195,61 @@
 .obj-carte b{font-size:19px;color:#1a1030}
 .obj-carte small{font-family:var(--pix);font-size:8px;color:#7b3fb3;letter-spacing:.5px}
 .obj-carte p{margin:8px 2px 0;font-size:13px;line-height:1.5;color:#3a2a52;text-align:center}
+
+/* ==========================================================
+   Le Cliche
+   La photo part floue et se resout : la transition EST la
+   mecanique, pas une decoration. Six secondes, c est le temps
+   qu il faut pour hesiter deux fois.
+   ========================================================== */
+/* Toutes les photos passent par le meme cadre 4/3, quelle que soit leur
+   taille d origine : une image plus haute que les autres decalerait les
+   quatre reponses d un tour a l autre, et on repond au jugé sur la
+   position du bouton. La hauteur est plafonnee pour que la photo ET les
+   reponses tiennent sur un telephone sans faire defiler. */
+.ph-wrap{
+  position:relative;border-radius:14px;overflow:hidden;
+  border:3px solid #1a1030;background:#0a0418;
+  box-shadow:0 10px 0 rgba(0,0,0,.35);
+  aspect-ratio:4/3;display:grid;place-items:center;
+  width:100%;max-width:min(100%,calc(38vh * 4 / 3));max-height:38vh;
+  margin:0 auto;
+}
+.ph-img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  filter:blur(26px) saturate(1.3);transform:scale(1.12);
+  transition:filter 6.4s linear,transform 6.4s linear;
+}
+.ph-img.nette{filter:blur(0) saturate(1);transform:scale(1)}
+.ph-img.revelee{transition:filter .35s ease,transform .35s ease}
+.ph-gain{
+  position:absolute;top:10px;right:10px;
+  font-family:var(--pix);font-size:15px;color:#0a0418;
+  background:var(--gold);border:2px solid #1a1030;border-radius:8px;
+  padding:5px 9px;box-shadow:0 3px 0 rgba(0,0,0,.4);
+}
+.ph-gain.p1{background:#57e08a}
+.ph-gain.p2{background:#8fa8c9}
+
+.ph-verdict{display:grid;justify-items:center;gap:8px;margin-bottom:14px}
+.ph-verdict img{
+  width:100%;max-width:340px;aspect-ratio:4/3;object-fit:cover;
+  border-radius:12px;border:3px solid #1a1030;
+  box-shadow:0 8px 0 rgba(0,0,0,.35);
+}
+.ph-verdict b{font-size:18px;color:var(--gold)}
+
+/* le Mot Raccord quand le carnet est chez le voisin : la lettre et les
+   consignes s affichent sur tous les ecrans, le joueur cherche a voix
+   haute et n a rien a toucher */
+.mr-public{
+  background:rgba(12,5,26,.92);border:3px solid var(--gold);border-radius:16px;
+  padding:14px 18px;max-width:420px;text-align:center;
+  box-shadow:0 10px 0 rgba(0,0,0,.45);
+}
+.mr-public ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.mr-public li{
+  font-size:14px;font-weight:700;color:#fff;
+  background:rgba(255,255,255,.08);border-radius:8px;padding:6px 10px;
+}
+.mr-public small{display:block;margin-top:10px;font-family:var(--pix);font-size:8px;color:var(--gold)}

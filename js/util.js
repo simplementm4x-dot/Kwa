@@ -181,6 +181,27 @@ window.KWA = window.KWA || {};
     });
   };
 
+  /**
+   * Charge une image a l avance et dit si elle est arrivee.
+   *
+   * Le Cliche montre des photos qui viennent d internet : une case ne
+   * doit pas se lancer sur une image qui ne viendra jamais. On attend
+   * donc, mais pas indefiniment — un reseau lent ne bloque pas une
+   * partie, il annule une case.
+   */
+  U.precharge = function (url, ms) {
+    return new Promise(res => {
+      let fini = false;
+      const fin = ok => { if (!fini) { fini = true; res(ok); } };
+      const img = new Image();
+      img.onload = () => fin(true);
+      img.onerror = () => fin(false);
+      img.src = url;
+      if (img.complete && img.naturalWidth) return fin(true);
+      setTimeout(() => fin(false), ms || 6000);
+    });
+  };
+
   /* --- confettis --- */
   U.confetti = function (colors, n) {
     const box = U.el('<div class="confetti"></div>');

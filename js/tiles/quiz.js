@@ -7,12 +7,50 @@
   'use strict';
   const U = K.util;
 
+  /**
+   * L ouverture : la carte se tire au milieu de l ecran.
+   *
+   * Elle passe avant les paris, et c est tout l interet : on ne mise
+   * pas sur quelqu un, on mise sur quelqu un SUR UN THEME. Savoir que
+   * la carte est "les dinosaures" vaut tous les discours.
+   *
+   * Le projecteur est diffuse tel quel : l animation est en CSS et part
+   * a l affichage, donc elle se joue pareil sur tous les telephones
+   * sans un seul message de plus.
+   */
+  K.registerIntro('quiz', async function () {
+    const card = U.draw('cards', K.CARDS);
+    if (!card) return null;
+
+    U.spotlight(
+      '<div class="tirage">' +
+        '<div class="tir-pile"><i></i><i></i><i></i></div>' +
+        '<div class="tir-carte">' +
+          '<div class="tir-dos">?</div>' +
+          '<div class="tir-face">' +
+            '<small>THEME</small><b>' + U.esc(card.t) + '</b>' +
+            '<i>' + U.esc(card.c) + '</i>' +
+          '</div>' +
+        '</div>' +
+      '</div>');
+    K.audio.blip();
+    await U.sleep(900);
+    K.audio.pop();
+    U.buzz(25);
+    await U.sleep(1900);
+    U.clearSpotlight();
+    return { card, sujet: card.t };
+  });
+
   K.registerTile('quiz', async function (ctx) {
     const p = ctx.player;
-    const card = U.draw('cards', K.CARDS);
+    /* la carte a deja ete tiree par l ouverture ; en jeu libre ou en
+       secours, on en tire une ici */
+    const card = (ctx.avant && ctx.avant.card) || U.draw('cards', K.CARDS);
     if (!card) return [];
 
-    await K.kwa.say('Theme : ' + card.t + '. ' + (K.kwa.line('quiz') || 'Tu te mets combien ?'), { auto: 1100 });
+    await K.kwa.say('Theme : ' + card.t + '. ' + (K.kwa.line('quiz') || 'Tu te mets combien ?'),
+      { auto: 1100 });
 
     /* --- la mise --- */
     const n = await K.ask(p, {

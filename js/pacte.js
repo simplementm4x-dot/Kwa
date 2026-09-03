@@ -135,7 +135,7 @@
     await K.kwa.say('Attends, ' + p.name + '. J ai une proposition.', { mood: 'wink' });
 
     const rep = await K.ask(p, {
-      kind: 'choice', icon: '🤝',
+      kind: 'pacte', icon: '🤝',
       title: 'Le pacte de Kwa',
       sub: 'Rien que pour toi, ' + p.name,
       intro: m.offre,

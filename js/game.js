@@ -10,6 +10,18 @@
   K.tiles = {};
   K.registerTile = (type, fn) => { K.tiles[type] = fn; };
 
+  /**
+   * Ce qu une epreuve annonce AVANT les paris.
+   *
+   * On ne mise pas a l aveugle : savoir que le theme est "les
+   * dinosaures" change tout quand on connait le joueur. Une epreuve
+   * peut donc s ouvrir en deux temps — ce que tout le monde apprend
+   * d abord, puis l epreuve elle-meme — et ce qu elle a tire dans son
+   * ouverture lui revient dans ctx.avant.
+   */
+  K.tileIntro = {};
+  K.registerIntro = (type, fn) => { K.tileIntro[type] = fn; };
+
   /* ---------------------------------------------------------
      Zone d action
      --------------------------------------------------------- */
@@ -136,11 +148,9 @@
     results = brut ? results : K.events.apply(results);
     const real = results.filter(r => r && r.delta);
     if (!real.length) {
-      await K.kwa.say('Personne ne bouge. La foret retient son souffle.', { auto: 900 });
+      await K.kwa.say("Personne ne bouge. La foret retient son souffle.", { auto: 900 });
       return results;
     }
-    /* recapitulatif */
-    await showRecap(results);
     for (const r of real) {
       const p = K.player(r.id);
       if (!p) continue;
@@ -149,31 +159,43 @@
       if (!eff) continue;
       K.board.focus(p.pos);
       K.pawns.setActive(p.id);
-      K.board.floatDelta(p.pos, (eff > 0 ? '+' : '') + eff, eff > 0 ? '#57e08a' : '#ff5757');
-      K.pawns.react(p.id, eff > 0 ? 'gain' : 'perte');
+      /* Kwa raconte pendant que le pion bouge : le bordereau chiffre
+         qui s ouvrait ici arretait la partie le temps qu on le lise, et
+         un tableau de +2/-3 n a jamais fait rire personne. */
+      await K.kwa.say(raconte(p, eff, r.why), { auto: 950, mood: eff > 0 ? "happy" : "oh" });
+      K.board.floatDelta(p.pos, (eff > 0 ? "+" : "") + eff, eff > 0 ? "#57e08a" : "#ff5757");
+      K.pawns.react(p.id, eff > 0 ? "gain" : "perte");
       eff > 0 ? K.audio.up() : K.audio.down();
       if (eff > 0) p.stats.gained += eff; else p.stats.lost += -eff;
-      await U.sleep(280);
+      await U.sleep(180);
       await K.pawns.moveTo(p, target);
       hud();
     }
     return results;
   };
 
-  function showRecap(results) {
-    const rows = results.map(r => {
-      const p = K.player(r.id); if (!p) return '';
-      const d = r.delta;
-      const cls = d > 0 ? 'up' : (d < 0 ? 'down' : 'zero');
-      const txt = d > 0 ? '+' + d : (d < 0 ? String(d) : '=');
-      return '<div class="res" style="border-left-color:' + p.hex + '">' +
-        '<span class="rank-av" style="--pc:' + p.hex + '">' + K.sprites.avatar(p, 30) + '</span>' +
-        '<b>' + U.esc(p.name) + '</b><span class="d ' + cls + '">' + txt + '</span></div>';
-    }).join('');
-    /* le temps de lire, pas plus : les pions bougent juste apres */
-    return U.panelAuto('📊', 'Resultat de la manche', '',
-      '<div class="res-list">' + rows + '</div>',
-      1100 + Math.min(4, results.length) * 320);
+  /* Ce que Kwa dit quand un pion bouge. Le "pourquoi" vient de la case
+     ou de la regle en cours quand il y en a un : "recule de 3 cases" ne
+     dit rien, "repousse par l esprit de la foret" raconte le tour. */
+  const GAGNE = [
+    "{n} rafle {c} !",
+    "Et {c} pour {n}. Merci qui ?",
+    "{n} avance de {c}. Ca se voit d ici.",
+    "Belle affaire : {c} pour {n}.",
+    "{c} de plus pour {n}. Le chemin se raccourcit."
+  ];
+  const PERD = [
+    "Oh non... {n} recule de {c}.",
+    "Aie. {n} redescend de {c}.",
+    "{c} en arriere pour {n}. La foret n oublie rien.",
+    "Et {n} se fait repousser de {c}. Douloureux.",
+    "{n} perd {c}. Ca arrive aux meilleurs. Aux autres aussi."
+  ];
+
+  function raconte(p, eff, why) {
+    const modele = U.pick(eff > 0 ? GAGNE : PERD);
+    const phrase = modele.split("{n}").join(p.name).split("{c}").join(U.cases(eff));
+    return why ? phrase.replace(/[.!]$/, "") + ", a cause de " + why + "." : phrase;
   }
 
   /* ---------------------------------------------------------
@@ -256,10 +278,17 @@
       const info = K.TILE_TYPES[type];
       await U.jingle(info.label, type !== tile.type ? 'Choisie par Kwa' : '', 1200);
 
-      /* un seul joueur sur scene : les autres misent sur lui */
-      const mises = info.pari ? await K.bets.collect(p, { type }, s.players) : null;
+      /* l ouverture de l epreuve, s il y en a une : elle passe avant les
+         paris, sinon on miserait sans savoir sur quoi */
+      const ouverture = K.tileIntro[type];
+      const avant = ouverture ? await ouverture({ player: p, tile, players: s.players }) : null;
 
-      const results = await handler({ player: p, tile, players: s.players });
+      /* un seul joueur sur scene : les autres misent sur lui */
+      const mises = info.pari
+        ? await K.bets.collect(p, { type }, s.players, avant && avant.sujet)
+        : null;
+
+      const results = await handler({ player: p, tile, players: s.players, avant });
       const faits = await G.applyResults(results);
 
       if (mises) {

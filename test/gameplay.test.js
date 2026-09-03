@@ -388,7 +388,9 @@ async function partie(reglages) {
      3 ter. Ce qui ne se joue pas a deux, et pas a un ecran
      ===================================================== */
   {
-    const GROUPE = ['undercover', 'anecdote', 'dilemme', 'vingtetun'];
+    /* l anecdote est mise de cote pour le moment : elle ne compte plus
+       parmi les epreuves qui reviennent a trois joueurs */
+    const GROUPE = ['undercover', 'dilemme', 'vingtetun'];
     /* L Echelle demande un devineur et trois joueurs : quatre au minimum */
     const QUATRE = ['echelle'];
 

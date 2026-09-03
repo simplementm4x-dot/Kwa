@@ -99,10 +99,15 @@ input,textarea{user-select:text;-webkit-user-select:text;font-family:inherit}
 .hint{color:var(--txt-dim);font-size:14px;margin:2px 0 14px;line-height:1.45}
 
 /* ---------- CRT / vieux poste ---------- */
+/* Les lignes de balayage sont dessinees en transparence simple et NON en
+   mix-blend-mode : un fondu multiplicatif plein ecran force le navigateur
+   a refabriquer toute l image des qu un pixel bouge dessous. Avec une
+   foret qui balance et une machine a ecrire qui tourne, ca faisait
+   clignoter les arbres et sauter la bulle de Kwa. */
 .crt-scan{
   position:absolute;inset:0;pointer-events:none;z-index:60;
-  background:repeating-linear-gradient(180deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);
-  mix-blend-mode:multiply;opacity:.55;
+  background:repeating-linear-gradient(180deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px);
+  opacity:.72;
 }
 .vignette{
   position:absolute;inset:0;pointer-events:none;z-index:55;

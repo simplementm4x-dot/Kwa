@@ -425,3 +425,117 @@
 .screen-game.libre .hud-top,
 .screen-game.libre .hud-players,
 .screen-game.libre .hud-event{display:none}
+
+/* ==========================================================
+   Le tirage de la carte
+   Le theme sort de la pioche et se retourne au milieu de
+   l ecran, avant que les paris s ouvrent. Tout est en CSS et
+   demarre a l affichage : les autres telephones rejouent la
+   meme chose sans recevoir un seul message de plus.
+   ========================================================== */
+.tirage{
+  position:relative;width:100%;height:280px;
+  display:grid;place-items:center;
+}
+.tir-pile{position:absolute;left:6%;top:24%;width:64px;height:88px}
+.tir-pile i{
+  position:absolute;inset:0;border-radius:10px;
+  background:linear-gradient(160deg,#3b2a63,#241844);
+  border:3px solid #12081f;box-shadow:0 4px 0 rgba(0,0,0,.5);
+}
+.tir-pile i:nth-child(2){transform:translate(3px,-4px) rotate(-4deg)}
+.tir-pile i:nth-child(3){transform:translate(6px,-8px) rotate(3deg)}
+
+/* La carte ne se retourne PAS en 3D : une rotation sur Y demande un
+   contexte 3D qui se comporte differemment d un navigateur mobile a
+   l autre, et la face arrivait parfois cachee — on voyait le dos
+   pendant trois secondes et jamais le theme. Ici la carte s ecrase sur
+   sa largeur et se rouvre, le dos disparait au moment ou elle est
+   plate : ca se lit comme un retournement, et ca marche partout.
+   Voir js/tiles/quiz.js pour la duree. */
+.tir-carte{
+  position:relative;width:min(72vw,268px);aspect-ratio:3/4;
+  animation:tirVole 1.75s cubic-bezier(.25,1.05,.35,1) both;
+}
+.tir-dos,.tir-face{
+  position:absolute;inset:0;border-radius:16px;
+  border:4px solid #12081f;box-shadow:0 12px 0 rgba(0,0,0,.45);
+  display:grid;place-items:center;gap:6px;padding:16px;text-align:center;
+}
+.tir-dos{
+  background:linear-gradient(160deg,#3b2a63,#241844);
+  color:var(--gold);font-family:var(--pix);font-size:44px;
+  animation:tirDos 1.75s steps(1,end) both;
+}
+.tir-face{
+  background:linear-gradient(180deg,#fffdf4,#ffe9c4);
+  align-content:center;
+  animation:tirFace 1.75s steps(1,end) both;
+}
+.tir-face small{font-family:var(--pix);font-size:8px;color:#7b3fb3;letter-spacing:2px}
+.tir-face b{font-size:clamp(19px,6.4vw,28px);color:#1a1030;line-height:1.2}
+.tir-face i{
+  font-style:normal;font-size:12px;font-weight:800;color:#150a24;
+  background:var(--gold);padding:5px 12px;border-radius:999px;
+  box-shadow:0 3px 0 rgba(0,0,0,.35);
+}
+@keyframes tirVole{
+  0%  {opacity:0;transform:translate(-38vw,42px) rotate(-16deg) scale(.34)}
+  18% {opacity:1}
+  52% {transform:translate(0,0) rotate(0) scale(1) scaleX(1)}
+  68% {transform:translate(0,0) rotate(0) scale(1) scaleX(.04)}
+  84% {transform:translate(0,0) rotate(0) scale(1) scaleX(1)}
+  100%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}
+}
+/* le dos tient jusqu au moment ou la carte est sur la tranche */
+@keyframes tirDos{0%{opacity:1}68%{opacity:1}69%{opacity:0}100%{opacity:0}}
+@keyframes tirFace{0%{opacity:0}68%{opacity:0}69%{opacity:1}100%{opacity:1}}
+
+/* ==========================================================
+   Le pacte de Kwa
+   Un marche propose en douce ne doit pas ressembler a une
+   epreuve : pas de panneau plein ecran, juste le plateau qui
+   s assombrit et Kwa qui s avance au milieu.
+   ========================================================== */
+.overlay.sombre{
+  background:rgba(6,2,14,.74);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  justify-content:center;align-items:center;padding:20px;
+}
+.pk{
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  width:100%;max-width:420px;
+  animation:pkIn .42s cubic-bezier(.2,1.4,.4,1) both;
+}
+@keyframes pkIn{from{opacity:0;transform:translateY(34px) scale(.92)}to{opacity:1;transform:none}}
+.pk-kwa{
+  filter:drop-shadow(0 14px 20px rgba(0,0,0,.65)) drop-shadow(0 0 34px rgba(57,231,255,.28));
+  animation:hostFloat 3s ease-in-out infinite;
+}
+.pk-bulle{
+  position:relative;width:100%;
+  background:linear-gradient(180deg,#fffdf4,#ffeec9);
+  color:#22103a;border:4px solid #22103a;border-radius:16px;
+  padding:14px 16px;box-shadow:0 8px 0 rgba(0,0,0,.45);
+}
+.pk-bulle::before{
+  content:'';position:absolute;left:50%;top:-16px;margin-left:-9px;
+  border:9px solid transparent;border-bottom-color:#22103a;
+}
+.pk-bulle small{
+  display:block;font-family:var(--pix);font-size:8px;color:#7b3fb3;
+  letter-spacing:1.5px;margin-bottom:6px;
+}
+.pk-bulle p{margin:0;font-size:15px;font-weight:700;line-height:1.45}
+
+.pk-choix{display:grid;gap:10px;width:100%}
+.pk-btn{
+  font:inherit;font-weight:800;font-size:16px;cursor:pointer;
+  padding:15px 14px;border-radius:14px;border:4px solid #22103a;
+  box-shadow:0 6px 0 rgba(0,0,0,.5);
+  transition:transform .12s ease,box-shadow .12s ease,filter .12s ease;
+}
+.pk-btn.oui{background:linear-gradient(180deg,#7be08a,#2f9c52);color:#0c2415}
+.pk-btn.non{background:linear-gradient(180deg,#3b2a63,#241844);color:#efe7ff}
+.pk-btn:hover{transform:translateY(-3px);filter:brightness(1.12);box-shadow:0 9px 0 rgba(0,0,0,.5)}
+.pk-btn:active,.pk-btn.pris{transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.5)}

@@ -89,9 +89,16 @@
       : mood === 'what'
       ? '<circle cx="36" cy="43" r="9.5" fill="#fff"/><circle cx="36" cy="43" r="5" fill="#39e7ff"/>' +
         '<circle cx="64" cy="43" r="9.5" fill="#fff"/><circle cx="64" cy="43" r="5" fill="#39e7ff"/>'
+      /* "louche" : les deux pupilles glissent du meme cote. Le regard de
+         celui qui propose un marche en regardant ailleurs. */
+      : mood === 'louche'
+      ? '<circle cx="33" cy="44" r="6.5" fill="#39e7ff"/><circle cx="30" cy="42" r="2.2" fill="#fff"/>' +
+        '<circle cx="61" cy="44" r="6.5" fill="#39e7ff"/><circle cx="58" cy="42" r="2.2" fill="#fff"/>'
       : '<circle cx="36" cy="43" r="6.5" fill="#39e7ff"/><circle cx="38" cy="41" r="2.2" fill="#fff"/>' +
         '<circle cx="64" cy="43" r="6.5" fill="#39e7ff"/><circle cx="66" cy="41" r="2.2" fill="#fff"/>';
-    const mouth = mood === 'what'
+    const mouth = mood === 'louche'
+      ? '<path d="M34 58 q15 12 26 -3" stroke="#ff3fa4" stroke-width="4.5" fill="none" stroke-linecap="round"/>'
+      : mood === 'what'
       ? '<ellipse cx="50" cy="63" rx="10" ry="11" fill="#ff3fa4" stroke="#0a0418" stroke-width="2.5"/>'
       : mood === 'oh'
       ? '<ellipse cx="50" cy="62" rx="8" ry="9" fill="#ff3fa4" stroke="#0a0418" stroke-width="2"/>'

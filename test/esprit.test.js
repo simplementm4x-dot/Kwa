@@ -45,7 +45,11 @@ async function plateau(reglages) {
     const K = c.K;
     const last = K.board.last();
 
-    /* cent tirages : aucune place interdite ne doit sortir une seule fois */
+    /* cent tirages : aucune place interdite ne doit sortir une seule fois,
+       et il apparait la ou sont les joueurs, pas a l autre bout du chemin */
+    K.state.players[0].pos = 8;
+    K.state.players[1].pos = 11;
+    K.state.players[2].pos = 12;
     let mini = Infinity, maxi = -Infinity, surJoueur = 0;
     for (let n = 0; n < 100; n++) {
       K.esprit.reset();
@@ -57,7 +61,11 @@ async function plateau(reglages) {
     if (mini < 2) fails.push('l esprit se pose sur le depart ou juste apres (case ' + mini + ')');
     if (maxi > last - 2) fails.push('l esprit campe la ligne d arrivee (case ' + maxi + ')');
     if (surJoueur) fails.push('l esprit apparait sur un joueur ' + surJoueur + ' fois sur 100');
-    step('cent apparitions entre les cases ' + mini + ' et ' + maxi + ', jamais sur un pion');
+    if (mini < 8) fails.push('il apparait derriere le dernier joueur (case ' + mini + ')');
+    if (maxi > 17) fails.push('il apparait trop loin devant le premier (case ' + maxi + ')');
+    step('cent apparitions entre les cases ' + mini + ' et ' + maxi +
+         ' pour un peloton etale de 8 a 12, jamais sur un pion');
+    K.state.players.forEach(p => { p.pos = 0; });
 
     if (!c.$('#esprits .esprit')) fails.push('rien ne le represente sur le plateau');
     else step('sa silhouette est bien posee sur le chemin');
@@ -76,12 +84,14 @@ async function plateau(reglages) {
     p.pos = garde;
     K.pawns.layoutLocal();
 
+    /* on ne recule pas avant le depart : le malus est rogne pres du debut */
+    const attendu = Math.max(0, garde - 3);
     const t0 = Date.now();
     const touche = await K.esprit.garde(p);
     if (!touche) fails.push('l esprit laisse passer celui qui s arrete sur lui');
-    if (p.pos !== garde - 3) {
+    if (p.pos !== attendu) {
       fails.push('le coup de baton ne fait pas reculer de 3 cases (case ' + p.pos +
-                 ' au lieu de ' + (garde - 3) + ')');
+                 ' au lieu de ' + attendu + ')');
     } else {
       step('Alice tombe case ' + garde + ' et se retrouve case ' + p.pos +
            ' (' + Math.round((Date.now() - t0) / 100) / 10 + 's d animation)');
@@ -174,6 +184,41 @@ async function plateau(reglages) {
     } else {
       step('il rode un tour sur deux, de ' + depart + ' a ' + arrivee);
     }
+  }
+
+  /* =====================================================
+     4 bis. Il suit le groupe
+     ===================================================== */
+  {
+    const cx = await plateau();
+    const K = cx.K;
+    K.esprit.reset();
+
+    /* le peloton s en va a l autre bout du chemin : l esprit doit
+       revenir dessus, sinon il ne croise plus personne de la partie */
+    K.state.players.forEach((p, i) => { p.pos = 18 + i; });
+
+    const suivi = [];
+    for (let n = 0; n < 12; n++) { await K.esprit.rode(); suivi.push(K.esprit.at()); }
+    const fin = K.esprit.at();
+    const dernier = Math.min.apply(null, K.state.players.map(p => p.pos));
+    const tete = Math.max.apply(null, K.state.players.map(p => p.pos));
+
+    if (fin < dernier || fin > tete + 5) {
+      fails.push('l esprit reste a la traine : case ' + fin + ' pour un peloton de ' +
+                 dernier + ' a ' + tete);
+    } else {
+      step('le peloton file case ' + dernier + '-' + tete + ', l esprit recolle case ' + fin +
+           ' (trajet : ' + suivi.slice(0, 5).join(' > ') + '...)');
+    }
+
+    /* et il n avance jamais de plus de quatre cases d un coup, sinon
+       personne ne peut l anticiper */
+    let bond = 0, prec = suivi[0];
+    suivi.slice(1).forEach(i => { bond = Math.max(bond, Math.abs(i - prec)); prec = i; });
+    if (bond > 8) {
+      fails.push('il se teleporte de ' + bond + ' cases : on ne peut plus l anticiper');
+    } else step('il court apres le groupe sans jamais depasser ' + bond + ' cases par ronde');
   }
 
   /* =====================================================

@@ -26,7 +26,7 @@
    * sur scene. Renvoie { id du parieur -> 'a' (il gagne) | 'b' (il se plante) }
    * ou null quand personne ne peut parier.
    */
-  B.collect = async function (star, tile, players) {
+  B.collect = async function (star, tile, players, sujet) {
     if (!B.enabled()) return null;
     const autres = players.filter(p => p.id !== star.id);
     if (!autres.length) return null;
@@ -34,7 +34,10 @@
     const info = K.TILE_TYPES[tile.type] || {};
     const gros = B.multiplier() > 1;
 
-    await K.kwa.say('Les paris sont ouverts ! ' + star.name + ' s attaque a ' + (info.label || 'l epreuve') +
+    /* On mise apres avoir vu le sujet, jamais avant : parier sur
+       quelqu un n a de sens que si on sait sur quoi il tombe. */
+    await K.kwa.say('Les paris sont ouverts ! ' + star.name + ' s attaque a ' +
+      (sujet ? '"' + sujet + '"' : (info.label || 'l epreuve')) +
       '.' + (gros ? ' Et ce tour-ci, ca rapporte double.' : ''), { mood: 'wink' });
 
     const mises = {};
@@ -42,7 +45,7 @@
       mises[p.id] = await K.ask(p, {
         kind: 'choice', icon: '🎰',
         title: 'Il s en sort ?',
-        sub: 'Pari sur ' + star.name,
+        sub: sujet ? star.name + ' · ' + sujet : 'Pari sur ' + star.name,
         intro: 'Bon pari : +' + (MISE * B.multiplier()) + ' case(s). Mauvais pari : autant en moins. ' +
                'Tu paries sur le fait qu il gagne des cases, pas sur sa dignite.',
         passMsg: 'Ton pari reste secret jusqu au resultat.',

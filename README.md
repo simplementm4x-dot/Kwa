@@ -89,9 +89,12 @@ Au-delà des cases, cinq systèmes tournent en fond :
 - **L'esprit de la forêt** — une créature occupe une case du chemin. Elle ne
   joue à rien : elle attend. Celui qui s'arrête sur sa case prend un coup de
   bâton, recule de 3 cases et ne joue **pas** l'épreuve. Puis elle rode vers
-  une autre case, un tour sur deux, à quatre cases de portée. C'est la seule
-  chose du plateau qui bouge sans qu'on lance le dé, et c'est fait pour : on
-  la voit venir, on peut choisir de ne pas avancer jusqu'à elle.
+  une autre case, un tour sur deux, à quatre cases de portée — et toujours
+  dans vos pattes : elle reste collée au peloton, du dernier joueur à cinq
+  cases devant le premier. Un esprit qui traîne à l'autre bout d'un chemin de
+  quarante cases ne croise personne, et on l'oublie en trois tours. C'est la
+  seule chose du plateau qui bouge sans qu'on lance le dé, et c'est fait pour :
+  on la voit venir, on peut choisir de ne pas avancer jusqu'à elle.
 
 Chacun se coupe séparément dans « Réglages détaillés ».
 
@@ -158,7 +161,7 @@ du salon en mode multi.
 
 | Case | Ce qui se passe | Gains |
 |---|---|---|
-| ❓ **Tu te mets combien ?** | 1 thème, 10 niveaux de difficulté. Tu paries ton niveau. | +niveau si juste ; −1 si raté à partir de 8 |
+| ❓ **Tu te mets combien ?** | La carte du thème se retourne au centre, les paris s'ouvrent, puis le joueur choisit son niveau | +niveau si juste ; −1 si raté à partir de 8 |
 | 🕵️ **Undercover** | Mots distribués en secret, puis débat et vote à la voix ; l'écran ne sert qu'à désigner l'éliminé | équipe gagnante +2, l'autre −2 |
 | 📖 **Anecdote** | Chacun écrit, tout le monde vote | le plus voté +5 |
 | 🎭 **Vérité ou Mensonge** | Consigne secrète, il faut berner le groupe | +3 / −2 |
@@ -166,11 +169,12 @@ du salon en mode multi.
 | ⚖️ **Le Dilemme** | A ou B, vote secret | majorité +2, minorité −2 |
 | 🏓 **Duel** | Pong en un contre un | +3 / −3 |
 | 🤾 **Mime en folie** | 30 s, les autres miment | +1 case par mime trouvé |
-| 🔤 **Le Mot Raccord** | Une lettre, 5 consignes, 30 s | +1 par mot validé, +1 si carton plein |
+| 🔤 **Le Mot Raccord** | Une lettre, 5 consignes, 30 s ; en multi c'est le voisin qui coche | +1 par mot validé, +1 si carton plein |
 | ✊ **Shifumi** | Duel à la main dans la même pièce, à l'écran et en simultané à distance | +2 / −2 |
 | 🎧 **DJ Mix** | Le DJ reçoit une année en secret et la fait deviner en musique | joueur +4, DJ +1 |
 | 🪜 **L'Échelle** | Trois joueurs reçoivent un chiffre secret de 1 à 10 sur un thème | +2 par chiffre exact, +1 pour l'exemple compris |
 | 🙈 **À l'aveugle** | Yeux fermés, toucher ou goûter (même pièce uniquement) | +4 s'il reconnaît |
+| 📷 **Le Cliché** | Une photo part floue et se résout en six secondes, 4 réponses | +4 / +3 / +2 selon le moment, −1 si raté |
 | 📦 **La Caisse** | Un objet au hasard, gardé en poche | rien tout de suite |
 | 🎡 **La Roue de Kwa** | Douze quartiers, aucun talent requis | de −3 à +5 |
 
@@ -203,6 +207,7 @@ n'est pas gaspillé, il reste en poche.
   — séries, cinéma, animés, musique, géo, histoire, sport, sciences, bouffe,
   jeux vidéo, marques, décennies, culture générale.
 - 121 dilemmes, 80 paires Undercover, 202 mots à mimer, 85 consignes de Mot Raccord.
+- 182 photos pour Le Cliché, tirées de Wikimedia Commons.
 - Une banque de répliques pour Kwa (une pioche sans répétition : il ne se
   répète pas tant qu'il n'a pas tout dit).
 
@@ -239,6 +244,7 @@ js/
   objets.js           la Caisse, l inventaire à une poche et les cinq objets
   game.js             moteur : tours, dé, résolution, fin de partie
   tiles/*.js          une case = un fichier
+  data/cliche.js      les photos du Cliché, figées par tools/cliche.js
   data/*.js           tout le contenu
 server/server.js      serveur statique + relais WebSocket, zéro dépendance
 ```

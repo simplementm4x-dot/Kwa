@@ -26,7 +26,10 @@
        A deux, un vote a la majorite n existe pas et un infiltre se devine
        tout seul : ces cases ne doivent pas tomber sur le chemin. */
     undercover: { icon: '🕵️', label: 'Undercover',       c1: '#2f4f7a', c2: '#1b2f4d', min: 3 },
-    anecdote:   { icon: '📖', label: 'Anecdote',          c1: '#a86a2e', c2: '#6b3f16', min: 3 },
+    /* pause: true = l epreuve existe toujours (code, contenu, tests) mais
+       ne tombe plus sur le chemin et ne se propose plus en jeu libre.
+       Un seul drapeau a enlever pour la remettre en circulation. */
+    anecdote:   { icon: '📖', label: 'Anecdote',          c1: '#a86a2e', c2: '#6b3f16', min: 3, pause: true },
     verite:     { icon: '🎭', label: 'Verite ou Mensonge', c1: '#2f7a5a', c2: '#17402f', pari: true, img: 'case-verite.png' },
     /* piece: true = il faut etre dans la meme piece (ou devant le meme
        ecran). Ces epreuves sautent quand la partie se joue a distance. */
@@ -42,6 +45,7 @@
     djmix:      { icon: '🎧', label: 'DJ Mix',             c1: '#7a3ea8', c2: '#42196b', img: 'case-djmix.png' },
     echelle:    { icon: '🪜', label: 'L Echelle',          c1: '#3f8f3a', c2: '#1f4d1c', img: 'case-echelle.png', min: 4 },
     aveugle:    { icon: '🙈', label: 'A l aveugle',        c1: '#c8901a', c2: '#7d5806', img: 'case-aveugle.png', piece: true },
+    cliche:     { icon: '📷', label: 'Le Cliche',          c1: '#3a6f8f', c2: '#1c3a4d', pari: true },
 
     /* --- les cases eclair : elles se resolvent en dix secondes --- */
     /* la case objet a remplace l Echange et le Peage : leurs effets sont
@@ -151,6 +155,7 @@
     tileAllowed(type) {
       if (type === 'duel') return K.rules.duelAllowed();
       const info = K.TILE_TYPES[type] || {};
+      if (info.pause) return false;
       if (info.piece && K.rules.isOnline()) return false;
       /* la table est trop petite pour cette epreuve. Quand aucun joueur
          n est encore inscrit (apercu du plateau, tests), on ne filtre pas. */

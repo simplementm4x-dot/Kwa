@@ -35,7 +35,7 @@
      --------------------------------------------------------- */
   const GROSSES = ['undercover', 'anecdote', 'verite', 'vingtetun',
                    'dilemme', 'mime', 'motraccord', 'duel',
-                   'shifumi', 'djmix', 'echelle', 'aveugle'];
+                   'shifumi', 'djmix', 'echelle', 'aveugle', 'cliche'];
   const ECLAIRS = ['objet', 'roue'];
 
   /** une epreuve au hasard parmi celles jouables : sert a "Kwa a faim" */
@@ -113,10 +113,57 @@
   /* ---------------------------------------------------------
      Decor : on garnit les cotes du chemin
      --------------------------------------------------------- */
+  /* la moitie de la largeur du platelage, plus de quoi ne pas froler
+     les planches : un champignon pose la se retrouve au milieu du
+     chemin, et on croit a une case */
+  const DEMI_CHEMIN = 61;
+  const GARDE = 30;
+
+  /** distance d un point au segment AB, dans le repere du sol */
+  function distanceSegment(px, py, ax, ay, bx, by) {
+    const vx = bx - ax, vy = by - ay;
+    const long2 = vx * vx + vy * vy;
+    let t = long2 ? ((px - ax) * vx + (py - ay) * vy) / long2 : 0;
+    t = t < 0 ? 0 : (t > 1 ? 1 : t);
+    const dx = px - (ax + t * vx), dy = py - (ay + t * vy);
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  /**
+   * Le chemin n est pas une bande droite mais un serpentin : savoir si
+   * un decor tombe dessus demande de mesurer la distance a chacun de
+   * ses troncons. On mesure aussi la distance aux cases elles-memes,
+   * plus larges que le platelage aux extremites (le depart et le
+   * terminus font 104 px la ou les autres en font 86).
+   */
+  function surLeChemin(gx, gy) {
+    for (let i = 0; i < tiles.length; i++) {
+      const t = tiles[i];
+      const bord = (t.type === "start" || t.type === "finish") ? 74 : 61;
+      const dx = gx - t.gx, dy = gy - t.gy;
+      if (Math.sqrt(dx * dx + dy * dy) < bord + GARDE) return true;
+      if (i && distanceSegment(gx, gy, tiles[i - 1].gx, tiles[i - 1].gy, t.gx, t.gy)
+          < DEMI_CHEMIN + GARDE) return true;
+    }
+    return false;
+  }
+
   function buildProps(len) {
     props = [];
     const rows = Math.ceil(len / COLS) + 2;
     const halfPath = (COLS - 1) / 2 * COL_W + 120;
+
+    /* On tire une place, et on la refuse si elle tombe sur le chemin.
+       Dix essais suffisent largement pour les cotes ; entre les rangees,
+       la place est parfois introuvable et le decor saute — un trou dans
+       l herbe vaut mieux qu un champignon au milieu des planches. */
+    const pose = (fabrique, essais) => {
+      for (let n = 0; n < (essais || 10); n++) {
+        const o = fabrique();
+        if (!surLeChemin(o.gx, o.gy)) { props.push(o); return true; }
+      }
+      return false;
+    };
 
     for (let r = -1; r < rows; r++) {
       const baseY = START_Y - r * ROW_H;
@@ -124,37 +171,48 @@
       for (let side = -1; side <= 1; side += 2) {
         const n = 2 + Math.floor(srnd() * 2);
         for (let k = 0; k < n; k++) {
-          const dist = halfPath + 40 + srnd() * 340;
-          const kind = srnd() < 0.74 ? 'tree' : (srnd() < 0.5 ? 'bush' : 'rock');
-          const h = kind === 'tree' ? 150 + srnd() * 130 : 46 + srnd() * 34;
-          props.push({
-            gx: side * dist,
-            gy: baseY + (srnd() - 0.5) * ROW_H,
-            kind, h,
-            variant: Math.floor(srnd() * 5),
-            sway: kind !== 'rock'
+          pose(() => {
+            const dist = halfPath + 40 + srnd() * 340;
+            const kind = srnd() < 0.74 ? "tree" : (srnd() < 0.5 ? "bush" : "rock");
+            const h = kind === "tree" ? 150 + srnd() * 130 : 46 + srnd() * 34;
+            return {
+              gx: side * dist,
+              gy: baseY + (srnd() - 0.5) * ROW_H,
+              kind, h,
+              variant: Math.floor(srnd() * 5),
+              sway: kind !== "rock",
+              ph: srnd()
+            };
           });
         }
       }
       /* petit decor entre les cases */
       const n2 = 2 + Math.floor(srnd() * 3);
       for (let k = 0; k < n2; k++) {
-        const r2 = srnd();
-        const kind = r2 < 0.4 ? 'mush' : (r2 < 0.72 ? 'flower' : 'crystal');
-        props.push({
-          gx: (srnd() - 0.5) * (halfPath * 1.9),
-          gy: baseY + (srnd() - 0.5) * ROW_H,
-          kind,
-          h: kind === 'crystal' ? 56 + srnd() * 40 : 36 + srnd() * 26,
-          variant: Math.floor(srnd() * 4),
-          sway: kind === 'flower'
+        pose(() => {
+          const r2 = srnd();
+          const kind = r2 < 0.4 ? "mush" : (r2 < 0.72 ? "flower" : "crystal");
+          return {
+            gx: (srnd() - 0.5) * (halfPath * 1.9),
+            gy: baseY + (srnd() - 0.5) * ROW_H,
+            kind,
+            h: kind === "crystal" ? 56 + srnd() * 40 : 36 + srnd() * 26,
+            variant: Math.floor(srnd() * 4),
+            sway: kind === "flower",
+            ph: srnd()
+          };
         });
       }
     }
     /* rangee d arbres tres lointaine derriere le terminus */
     const farY = START_Y - rows * ROW_H;
     for (let k = -6; k <= 6; k++) {
-      props.push({ gx: k * 150 + (srnd() - .5) * 60, gy: farY - srnd() * 300, kind: 'tree', h: 200 + srnd() * 90, variant: Math.floor(srnd() * 5), sway: true });
+      pose(() => ({
+        gx: k * 150 + (srnd() - .5) * 60,
+        gy: farY - srnd() * 300,
+        kind: "tree", h: 200 + srnd() * 90,
+        variant: Math.floor(srnd() * 5), sway: true, ph: srnd()
+      }));
     }
   }
 
@@ -220,7 +278,14 @@
     /* --- decor --- */
     pr.innerHTML = '';
     props.forEach(p => {
-      const el = U.el('<div class="prop' + (p.sway ? ' sway' : '') + '" style="--sw:' + Math.round(p.h * .8) + 'px">' +
+      /* chaque decor balance a son rythme et a son heure : quand cent
+         arbres partagent la meme animation, le navigateur les recalcule
+         tous dans la meme image et l ecran saute une fois par cycle */
+      const ph = p.ph === undefined ? 0.5 : p.ph;
+      const el = U.el('<div class="prop' + (p.sway ? ' sway' : '') +
+        '" style="--sw:' + Math.round(p.h * .8) + 'px' +
+        ';--swd:' + (3.4 + ph * 3.2).toFixed(2) + 's' +
+        ';--swl:' + (-ph * 6).toFixed(2) + 's">' +
         '<div class="shadow"></div><div class="bb">' + K.sprites.propByKind(p.kind, p.variant, p.h) + '</div></div>');
       place(el, p.gx, p.gy);
       pr.appendChild(el);

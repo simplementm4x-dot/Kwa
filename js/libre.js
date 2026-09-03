@@ -20,7 +20,7 @@
      tourner la roue — et n ont aucun sens hors du chemin. */
   const CATALOGUE = [
     'quiz', 'undercover', 'anecdote', 'verite', 'dilemme',
-    'shifumi', 'djmix', 'echelle', 'mime', 'motraccord',
+    'shifumi', 'djmix', 'echelle', 'mime', 'motraccord', 'cliche',
     'vingtetun', 'duel', 'aveugle'
   ];
 
@@ -40,6 +40,7 @@
   function jouable(type) {
     const info = K.TILE_TYPES[type];
     if (!info || !K.tiles[type]) return 'Pas encore disponible';
+    if (info.pause) return 'Mise de cote pour le moment';
     const n = K.state.players.length;
     if (info.min && n < info.min) return 'Il faut ' + info.min + ' joueurs';
     if (type === 'duel' && n < 2) return 'Il faut 2 joueurs';
@@ -132,7 +133,12 @@
 
     let resultats = [];
     try {
-      resultats = await handler({ player: vedette, tile: { type }, players: K.state.players }) || [];
+      /* meme ouverture qu en partie : le theme se decouvre avant l epreuve */
+      const ouverture = K.tileIntro[type];
+      const avant = ouverture
+        ? await ouverture({ player: vedette, tile: { type }, players: K.state.players })
+        : null;
+      resultats = await handler({ player: vedette, tile: { type }, players: K.state.players, avant }) || [];
     } catch (e) {
       U.toast('Cette epreuve s est interrompue');
       resultats = [];

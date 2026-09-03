@@ -268,7 +268,7 @@
       if (gagnants.length && leader && !gagnants.some(r => r.id === leader.id)) {
         const deja = out.find(r => r.id === leader.id);
         if (deja) deja.delta -= gagnants.length;
-        else out.push({ id: leader.id, delta: -gagnants.length, why: 'vent contraire' });
+        else out.push({ id: leader.id, delta: -gagnants.length, why: 'du vent contraire' });
       }
     }
     return out;

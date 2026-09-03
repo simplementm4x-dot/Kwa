@@ -62,6 +62,16 @@
     if (typing) typing.stop();
     return new Promise(res => {
       let i = 0, dead = false, handle;
+
+      /* On reserve la hauteur de la phrase entiere AVANT de l ecrire.
+         Sans ca, la bulle grandit d une ligne a chaque fois que la
+         machine a ecrire en depasse une : le texte, le pion de Kwa et
+         toute la zone sautent d un cran en plein milieu d une phrase. */
+      txt.style.minHeight = '';
+      txt.textContent = text;
+      const hauteur = txt.offsetHeight;
+      if (hauteur) txt.style.minHeight = hauteur + 'px';
+
       txt.textContent = '';
       nextArr.hidden = true;
 
