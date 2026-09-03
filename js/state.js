@@ -27,7 +27,9 @@
     verite:     { icon: '🎭', label: 'Verite ou Mensonge', c1: '#2f7a5a', c2: '#17402f', pari: true },
     /* piece: true = il faut etre dans la meme piece (ou devant le meme
        ecran). Ces epreuves sautent quand la partie se joue a distance. */
-    vingtetun:  { icon: '🍻', label: 'Le 21',             c1: '#b83a5e', c2: '#6e1e37', piece: true },
+    /* le 21 se compte en tournant autour d une table : a deux, celui qui
+       commence gagne a tous les coups, il n y a plus de jeu */
+    vingtetun:  { icon: '🍻', label: 'Le 21',             c1: '#b83a5e', c2: '#6e1e37', piece: true, min: 3 },
     dilemme:    { icon: '⚖️', label: 'Le Dilemme',        c1: '#3a6fb8', c2: '#1f3f6e', min: 3 },
     duel:       { icon: '🏓', label: 'Duel',              c1: '#b8452e', c2: '#6e2418', piece: true },
     mime:       { icon: '🤾', label: 'Mime en folie',     c1: '#8a4fb8', c2: '#50276e', piece: true, pari: true },

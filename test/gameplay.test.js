@@ -305,7 +305,7 @@ async function partie(reglages) {
      3 ter. Ce qui ne se joue pas a deux, et pas a un ecran
      ===================================================== */
   {
-    const GROUPE = ['undercover', 'anecdote', 'dilemme'];
+    const GROUPE = ['undercover', 'anecdote', 'dilemme', 'vingtetun'];
 
     /* --- a deux, les epreuves de groupe disparaissent du chemin --- */
     const c = await boot();
@@ -342,7 +342,7 @@ async function partie(reglages) {
     GROUPE.forEach(t => {
       if (types.indexOf(t) < 0) fails.push('la case "' + t + '" n apparait pas a trois joueurs');
     });
-    step('a trois joueurs : undercover, anecdote et dilemme reviennent');
+    step('a trois joueurs : ' + GROUPE.join(', ') + ' reviennent');
 
     /* --- les paris demandent que chacun ait son ecran --- */
     K.state.settings.device = 'multi';
