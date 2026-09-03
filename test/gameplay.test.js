@@ -144,6 +144,48 @@ async function partie(reglages) {
   }
 
   /* =====================================================
+     2 bis. La roue est un vrai disque
+     ===================================================== */
+  {
+    const c = await boot();
+    const K = c.K;
+    K.state.players = [K.newPlayer('Alice', 'rouge')];
+
+    const QUARTIER = 3;                 /* on demande explicitement ce quartier */
+    const promesse = K.anim.roue({ i: QUARTIER, name: 'Alice' });
+    await sleep(400);
+
+    const disc = c.$('#roueDisc');
+    const svg = disc && disc.querySelector('svg');
+    if (!svg) fails.push('la roue ne dessine aucun disque');
+    else {
+      const quartiers = svg.querySelectorAll('path').length;
+      if (quartiers !== 12) fails.push('le disque n a pas 12 quartiers (' + quartiers + ')');
+      if (svg.querySelectorAll('text').length !== 12) fails.push('les quartiers ne sont pas chiffres');
+      if (!c.$('.roue-fleche')) fails.push('pas de fleche pour designer le quartier gagnant');
+
+      /* le disque doit s arreter en amenant le centre du quartier sous la fleche */
+      const m = (disc.style.transform || '').match(/rotate\(([-\d.]+)deg\)/);
+      if (!m) fails.push('le disque ne recoit aucune rotation');
+      else {
+        const rot = parseFloat(m[1]);
+        if (rot < 360 * 3) fails.push('la roue ne fait presque pas de tours (' + rot + ')');
+        const sous = ((360 - (rot % 360)) % 360);
+        const attendu = QUARTIER * 30 + 15;
+        if (Math.abs(sous - attendu) > 0.05) {
+          fails.push('la roue s arrete a ' + sous.toFixed(1) + 'deg au lieu de ' + attendu);
+        } else {
+          step('roue : 12 quartiers, ' + Math.round(rot / 360) + ' tours, arret pile sur le quartier ' +
+               QUARTIER + ' (' + attendu + 'deg sous la fleche)');
+        }
+      }
+    }
+    await promesse;
+    if (c.$('#roueDisc')) fails.push('la roue reste affichee apres le tirage');
+    step('la roue se referme toute seule');
+  }
+
+  /* =====================================================
      3. Les evenements de foret
      ===================================================== */
   {

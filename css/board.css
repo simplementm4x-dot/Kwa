@@ -173,3 +173,44 @@
   animation:floatUp 1.1s ease-out forwards;
 }
 @keyframes floatUp{0%{opacity:0;transform:translate(-50%,0) scale(.6)}20%{opacity:1;transform:translate(-50%,-18px) scale(1.15)}100%{opacity:0;transform:translate(-50%,-70px) scale(1)}}
+
+
+/* ---------- deconnecte : la television tombe et s endort ---------- */
+.pawn.asleep .bb svg{
+  transform:rotate(74deg) translate(10px,-4px);
+  transform-origin:50% 88%;
+  animation:tombe .7s cubic-bezier(.3,1.5,.5,1) both;
+  filter:grayscale(.7) brightness(.7);
+}
+.pawn.asleep .nametag{opacity:.4;filter:grayscale(1)}
+.pawn.asleep .nametag::after{opacity:.4}
+.pawn.asleep .shadow{transform:scaleX(1.35)}
+@keyframes tombe{
+  0%{transform:rotate(0) translate(0,0)}
+  55%{transform:rotate(88deg) translate(12px,-4px)}
+  100%{transform:rotate(74deg) translate(10px,-4px)}
+}
+
+/* les z qui montent */
+.pawn .zzz{
+  position:absolute;left:26px;top:-16px;
+  font-family:var(--pix);font-size:9px;color:#9fd8ff;
+  text-shadow:0 2px 0 #000;pointer-events:none;
+}
+.pawn .zzz i,.pawn .zzz b{font-style:normal;font-weight:400;position:absolute}
+.pawn .zzz{animation:zfloat 2.4s ease-in-out infinite}
+.pawn .zzz i{left:9px;top:-9px;font-size:11px;animation:zfloat 2.4s ease-in-out .5s infinite}
+.pawn .zzz b{left:20px;top:-20px;font-size:13px;animation:zfloat 2.4s ease-in-out 1s infinite}
+@keyframes zfloat{
+  0%{opacity:0;transform:translateY(6px) scale(.7)}
+  25%{opacity:1}
+  100%{opacity:0;transform:translateY(-18px) scale(1.15)}
+}
+
+/* le reveil : la television se redresse d un coup */
+.pawn.reveil .bb svg{animation:reveil .55s cubic-bezier(.2,1.8,.4,1) both}
+@keyframes reveil{
+  0%{transform:rotate(74deg) translate(10px,-4px)}
+  60%{transform:rotate(-10deg)}
+  100%{transform:none}
+}

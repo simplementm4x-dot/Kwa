@@ -195,7 +195,8 @@
     clearTimeout(retryT);
     if (!session) return;
     if (tries > 24) {
-      banner('error', 'Impossible de te rebrancher pour le moment.', 'Reessayer');
+      /* on lui redonne le code : il pourra rejoindre a la main */
+      banner('error', 'Impossible de te rebrancher. Salon ' + session.code + '.', 'Reessayer');
       return;
     }
     const wait = Math.min(8000, 800 * Math.pow(2, Math.min(tries, 4)));
@@ -390,6 +391,7 @@
                           (rank[b.id] === undefined ? 99 : rank[b.id]));
     }
     K.state.players = next;
+    K.pawns.refreshSleep();
   }
 
   /* ---------------------------------------------------------
@@ -451,6 +453,7 @@
   function resyncTo(id) {
     const p = K.player(id);
     if (p) p.off = false;
+    K.pawns.setAsleep(id, false);
     if (!N.isHost() || !started) return;
     U.toast((p ? p.name : 'Un joueur') + ' est revenu');
     K.game.hud();
@@ -476,6 +479,7 @@
   function onPlayerGone(id) {
     const p = K.player(id);
     if (p) p.off = true;
+    K.pawns.setAsleep(id, true);
     if (!N.isHost()) return;
     U.toast((p ? p.name : 'Un joueur') + ' a perdu la connexion');
     K.game.hud();

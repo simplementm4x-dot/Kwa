@@ -366,8 +366,29 @@
   };
 
   G.showPause = function () {
+    const net = K.net && K.net.isActive() ? K.net : null;
+    const absents = K.state.players.filter(p => p.off);
+
+    /* Le code du salon disparaissait avec l ecran de salon. C est
+       pourtant la qu on en a besoin : quelqu un a saute, il faut
+       pouvoir le lui redonner sans relancer la partie. */
+    const codeBloc = net
+      ? '<div class="lobby-code" style="margin-bottom:12px"><small>Code du salon</small>' +
+        '<div class="code">' + net.code() + '</div>' +
+        '<div class="lobby-url">' + U.esc(location.host) + '</div></div>'
+      : '';
+
+    const absentsBloc = absents.length
+      ? '<div class="rule"><h4><span>😴</span>' +
+        (absents.length > 1 ? absents.length + ' joueurs deconnectes' : 'Un joueur deconnecte') + '</h4>' +
+        '<p>' + absents.map(p => U.esc(p.name)).join(', ') + ' — leur television dort sur le plateau. ' +
+        'Leur place est gardee : ils reviennent tout seuls des que le reseau revient, ou en ' +
+        'retapant le code ci-dessus.</p></div>'
+      : '';
+
     U.ovShell('⏸️', 'Pause', '',
       '<p class="hint">La foret ne bouge pas sans toi.</p>' +
+      codeBloc + absentsBloc +
       '<div class="rule"><h4><span>' + (K.rules.isTerminus() ? '🏁' : '⏱️') + '</span>' +
       (K.rules.isTerminus() ? 'Mode Terminus' : 'Mode ' + K.state.settings.maxTurns + ' tours') + '</h4>' +
       '<p>Chemin de ' + K.board.length() + ' cases · ' + K.state.players.length + ' joueurs</p></div>',

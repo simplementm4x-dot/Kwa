@@ -25,6 +25,7 @@
       box.appendChild(el);
       els[p.id] = el;
     });
+    P.refreshSleep();
     P.layout();
   };
 
@@ -57,6 +58,36 @@
   };
   P.setActiveLocal = function (id) {
     for (const k in els) els[k].classList.toggle('active', k === id);
+  };
+
+  /**
+   * Un joueur qui perd le reseau ne disparait pas du plateau : sa
+   * television bascule et s endort sur place. Le retour se voit
+   * aussi, ce qui evite d avoir a le demander a voix haute.
+   */
+  P.setAsleep = function (id, on) {
+    const el = els[id];
+    if (!el) return;
+    const deja = el.classList.contains('asleep');
+    if (deja === !!on) return;
+    el.classList.toggle('asleep', !!on);
+    const bb = el.querySelector('.bb');
+    if (on) {
+      if (bb && !bb.querySelector('.zzz')) {
+        bb.insertAdjacentHTML('beforeend', '<span class="zzz">z<i>z</i><b>z</b></span>');
+      }
+    } else {
+      const z = bb && bb.querySelector('.zzz');
+      if (z) z.remove();
+      el.classList.remove('reveil');
+      void el.offsetWidth;
+      el.classList.add('reveil');
+    }
+  };
+
+  /** aligne tous les pions sur l etat reseau des joueurs */
+  P.refreshSleep = function () {
+    K.state.players.forEach(p => P.setAsleep(p.id, !!p.off));
   };
 
   /** anime la marche sur les ecrans qui suivent (mode multi) */

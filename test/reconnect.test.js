@@ -117,6 +117,26 @@ const banniere = ctx => {
 
   if (!host.$('#hudPlayers .hp.off')) fails.push('rien ne signale le joueur hors ligne sur le plateau de l hote');
 
+  /* sa television tombe et s endort sur place */
+  const pion = host.K.pawns.el(vid);
+  if (!pion || !pion.classList.contains('asleep')) {
+    fails.push('la television du joueur deconnecte ne s endort pas');
+  } else if (!pion.querySelector('.zzz')) {
+    fails.push('pas de z qui montent au-dessus du pion endormi');
+  } else {
+    step('sa television est tombee et dort sur le plateau');
+  }
+
+  /* le code du salon doit rester lisible pendant la partie */
+  host.K.game.showPause();
+  {
+    const menu = host.$('#overlay').textContent;
+    if (menu.indexOf(code) < 0) fails.push('le code du salon n est pas affiche dans le menu de pause');
+    if (menu.indexOf(vnom) < 0) fails.push('le menu ne dit pas qui est deconnecte');
+    step('menu de pause : code ' + code + ' affiche, ' + vnom + ' signale absent');
+  }
+  host.K.util.closeOverlay();
+
   /* la partie continue sans lui : le joueur actif lance le de */
   if (porteur && porteur !== victime && porteur.$('#actBtn')) {
     click(porteur.win, porteur.$('#actBtn'), porteur.errors);
@@ -154,6 +174,15 @@ const banniere = ctx => {
     fails.push('l ordre de passage a change pour le joueur revenu');
   }
   step('plateau reconstruit (' + victime.$('#tiles').children.length + ' cases) et ordre de passage intact');
+
+  const pionReveille = host.K.pawns.el(vid);
+  if (pionReveille && pionReveille.classList.contains('asleep')) {
+    fails.push('la television ne se redresse pas quand le joueur revient');
+  } else if (pionReveille && pionReveille.querySelector('.zzz')) {
+    fails.push('les z restent affiches apres le retour du joueur');
+  } else {
+    step('sa television s est redressee toute seule');
+  }
 
   /* =====================================================
      3. Le bouton de secours quand un joueur ne revient pas

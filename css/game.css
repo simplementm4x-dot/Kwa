@@ -208,23 +208,41 @@
 @keyframes evIn{from{opacity:0;transform:translateY(-12px) scale(.94)}to{opacity:1;transform:none}}
 
 /* ---------- la roue de Kwa ---------- */
-.roue{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
-  min-height:190px;
-  background:radial-gradient(circle at 50% 40%,#3b1d5e,#150a26);
-  border:3px solid var(--line);border-radius:18px;
+.roue-wrap{
+  position:relative;width:min(78vw,300px);aspect-ratio:1;margin:6px auto 0;
+  display:flex;align-items:center;justify-content:center;
+  filter:drop-shadow(0 10px 22px rgba(0,0,0,.6));
 }
-.roue-val{
-  font-family:var(--pix);font-size:clamp(40px,16vw,72px);
-  text-shadow:0 4px 0 #000,0 0 26px currentColor;
-  animation:roueSpin .09s linear infinite;
+.roue-disc{
+  width:100%;height:100%;
+  /* la courbe part vite et s eteint tres progressivement :
+     c est ce qui donne l impression que la roue hesite a la fin */
+  transition:transform 3.2s cubic-bezier(.12,.72,.12,1);
+  will-change:transform;
 }
-.roue-lbl{font-size:13px;font-weight:700;color:var(--txt-dim);letter-spacing:1px}
-.roue.fini .roue-val{animation:rouePop .45s cubic-bezier(.2,1.7,.4,1) both}
-.roue.fini .roue-lbl{color:var(--txt)}
-@keyframes roueSpin{50%{transform:translateY(-3px) scale(1.04)}}
-@keyframes rouePop{0%{transform:scale(.5) rotate(-10deg)}70%{transform:scale(1.25)}100%{transform:none}}
+.roue-disc svg{display:block;width:100%;height:100%}
 
+/* la fleche qui designe le quartier gagnant */
+.roue-fleche{
+  position:absolute;top:-6px;left:50%;transform:translateX(-50%);z-index:2;
+  width:0;height:0;
+  border-left:15px solid transparent;border-right:15px solid transparent;
+  border-top:26px solid var(--gold);
+  filter:drop-shadow(0 3px 4px rgba(0,0,0,.8));
+}
+.roue-fleche::after{
+  content:'';position:absolute;left:50%;top:-32px;transform:translateX(-50%);
+  width:14px;height:14px;border-radius:50%;
+  background:var(--gold);box-shadow:0 0 12px var(--gold);
+}
+
+.roue-out{
+  margin-top:16px;text-align:center;
+  font-family:var(--pix);font-size:clamp(14px,5.5vw,24px);
+  color:var(--txt-dim);text-shadow:0 3px 0 #000;min-height:1.4em;
+}
+.roue-out.fini{animation:rouePop .5s cubic-bezier(.2,1.7,.4,1) both}
+@keyframes rouePop{0%{transform:scale(.4) rotate(-8deg);opacity:0}70%{transform:scale(1.2)}100%{transform:none;opacity:1}}
 
 /* =========================================================
    Annonce d un evenement : la foret elle-meme change
