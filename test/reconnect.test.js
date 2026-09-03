@@ -22,8 +22,18 @@ async function tapThrough(ctx, fn, ms) {
   const t0 = Date.now();
   while (Date.now() - t0 < (ms || 30000)) {
     if (fn()) return true;
-    const b = ctx.$('#kwaBubble');
-    if (b) click(ctx.win, b, ctx.errors);
+    /* Kwa peut proposer un pacte a l hote lui-meme : un panneau s ouvre
+       alors sur SON ecran, et taper sur la bulle derriere ne sert a
+       rien. On repond d abord a ce qui est ouvert. */
+    const ov = ctx.$('#overlay');
+    const bouton = ov && !ov.hidden
+      ? [...ov.querySelectorAll('button')].find(x => !x.disabled)
+      : null;
+    if (bouton) click(ctx.win, bouton, ctx.errors);
+    else {
+      const b = ctx.$('#kwaBubble');
+      if (b) click(ctx.win, b, ctx.errors);
+    }
     await sleep(120);
   }
   throw new Error('delai depasse en tapant sur Kwa (ouverture : presentations puis rideau)');

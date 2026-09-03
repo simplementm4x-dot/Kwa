@@ -133,8 +133,39 @@ function evide(src, marge, fondu) {
 
 sors(P.resize(evide(P.crop(casesPl, 43, 49, 453, 427), 0.035, 4), 144, 136), 'case-cadre.png', 96);
 
+/* Quatre des six cases de la planche portent une icone qui correspond
+   exactement a une epreuve du jeu : le point d interrogation pour le
+   quiz, les masques pour Verite ou Mensonge, les fleches croisees pour
+   l Echange, la piece pour le Peage. On les sort entieres, cadre et
+   papier compris — c est plus beau que du papier colore et un emoji.
+   Les deux autres servent a la Roue et au Duel. */
+const CASES_ENTIERES = [
+  ['case-quiz.png',    43, 49, 453, 427],
+  ['case-roue.png',   550, 50, 435, 426],
+  ['case-duel.png',  1037, 47, 453, 429],
+  ['case-verite.png',  44, 512, 453, 435],
+  ['case-echange.png', 550, 512, 439, 434],
+  ['case-peage.png', 1037, 512, 454, 435]
+];
+for (const [nom, x, y, w, h] of CASES_ENTIERES) {
+  sors(P.resize(P.crop(casesPl, x, y, w, h), 152, 144), nom, 128);
+}
+
 /* =========================================================
-   3. Les arbres
+   3. La route
+
+   Le chemin etait trace a coups de traits epais. Il devient un
+   platelage de planches, applique en motif sur le trace SVG.
+   La planche d origine ne se raccorde pas d elle-meme : on la
+   retourne en miroir, comme l herbe, pour que la repetition ne
+   laisse aucune couture.
+   ========================================================= */
+console.log('route :');
+const route = P.decode('src/road.png');
+sors(P.miroir(P.resize(P.crop(route, 80, 80, 1094, 1094), 96, 96)), 'route.png', 128);
+
+/* =========================================================
+   4. Les arbres
    ========================================================= */
 console.log('arbres :');
 const planche = P.decode('src/lot_arbre.png');
@@ -154,7 +185,7 @@ for (const [nom, x, y, w, h, ht] of ARBRES) {
 }
 
 /* =========================================================
-   4. Plantes, rochers, souches et champignons
+   5. Plantes, rochers, souches et champignons
 
    Deux planches de plus, detourees de la meme facon : on
    cherche les paquets de pixels relies entre eux, on trie par

@@ -285,3 +285,14 @@
   60%{transform:translateX(-2px);filter:saturate(.4)}
   100%{transform:none;filter:none}
 }
+
+/* ---------- les cases qui ont leur propre visuel ---------- */
+/* cadre, papier et icone sont deja dans l image : on efface tout ce que
+   le CSS ajoutait par-dessus */
+.tile.pleine .t-paper{
+  inset:0;border-radius:0;box-shadow:none;
+  background-repeat:no-repeat;background-position:center;background-size:100% 100%;
+}
+.tile.pleine .t-paper::after{display:none}
+.tile.pleine::after{display:none}
+.tile.pleine .t-ico{display:none}

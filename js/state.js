@@ -18,26 +18,29 @@
   K.TILE_TYPES = {
     start:      { icon: '🏠', label: 'Depart',           c1: '#5b4b8a', c2: '#3b2f63' },
     /* pari: true = un seul joueur est sur scene, les autres peuvent miser */
-    quiz:       { icon: '❓', label: 'Tu te mets combien ?', c1: '#7b3fb3', c2: '#4a1f78', pari: true },
+    /* img : la case est dessinee entierement dans la planche, cadre et
+       icone compris. Les autres se contentent du cadre de carton, du
+       papier a leur couleur et de leur emoji. */
+    quiz:       { icon: '❓', label: 'Tu te mets combien ?', c1: '#7b3fb3', c2: '#4a1f78', pari: true, img: 'case-quiz.png' },
     /* min: nombre de joueurs en dessous duquel l epreuve n a plus de sens.
        A deux, un vote a la majorite n existe pas et un infiltre se devine
        tout seul : ces cases ne doivent pas tomber sur le chemin. */
     undercover: { icon: '🕵️', label: 'Undercover',       c1: '#2f4f7a', c2: '#1b2f4d', min: 3 },
     anecdote:   { icon: '📖', label: 'Anecdote',          c1: '#a86a2e', c2: '#6b3f16', min: 3 },
-    verite:     { icon: '🎭', label: 'Verite ou Mensonge', c1: '#2f7a5a', c2: '#17402f', pari: true },
+    verite:     { icon: '🎭', label: 'Verite ou Mensonge', c1: '#2f7a5a', c2: '#17402f', pari: true, img: 'case-verite.png' },
     /* piece: true = il faut etre dans la meme piece (ou devant le meme
        ecran). Ces epreuves sautent quand la partie se joue a distance. */
     /* le 21 se compte en tournant autour d une table : a deux, celui qui
        commence gagne a tous les coups, il n y a plus de jeu */
     vingtetun:  { icon: '🍻', label: 'Le 21',             c1: '#b83a5e', c2: '#6e1e37', piece: true, min: 3 },
     dilemme:    { icon: '⚖️', label: 'Le Dilemme',        c1: '#3a6fb8', c2: '#1f3f6e', min: 3 },
-    duel:       { icon: '🏓', label: 'Duel',              c1: '#b8452e', c2: '#6e2418', piece: true },
+    duel:       { icon: '🏓', label: 'Duel',              c1: '#b8452e', c2: '#6e2418', piece: true, img: 'case-duel.png' },
     mime:       { icon: '🤾', label: 'Mime en folie',     c1: '#8a4fb8', c2: '#50276e', piece: true, pari: true },
     motraccord: { icon: '🔤', label: 'Le Mot Raccord',    c1: '#2e9ab8', c2: '#175a6e', pari: true },
     /* --- les cases eclair : elles se resolvent en dix secondes --- */
-    echange:    { icon: '🔀', label: 'Echange',            c1: '#2e8f8a', c2: '#154c49', eclair: true },
-    peage:      { icon: '🪙', label: 'Le Peage',           c1: '#8a7a2e', c2: '#4c4215', eclair: true },
-    roue:       { icon: '🎡', label: 'La Roue de Kwa',     c1: '#7a3ea8', c2: '#42196b', eclair: true },
+    echange:    { icon: '🔀', label: 'Echange',            c1: '#2e8f8a', c2: '#154c49', eclair: true, img: 'case-echange.png' },
+    peage:      { icon: '🪙', label: 'Le Peage',           c1: '#8a7a2e', c2: '#4c4215', eclair: true, img: 'case-peage.png' },
+    roue:       { icon: '🎡', label: 'La Roue de Kwa',     c1: '#7a3ea8', c2: '#42196b', eclair: true, img: 'case-roue.png' },
     finish:     { icon: '🏁', label: 'Terminus',          c1: '#d4a017', c2: '#8a6400' }
   };
 

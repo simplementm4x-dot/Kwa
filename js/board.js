@@ -187,20 +187,27 @@
     /* --- chemin --- */
     const pts = tiles.map(t => (t.gx + SVG_OX) + ',' + (t.gy + SVG_OY)).join(' ');
     svg.setAttribute('viewBox', '0 0 1800 5600');
+    /* Le chemin n est plus un trait epais mais un platelage de planches :
+       le trace est peint avec un motif, ce qui donne une passerelle de
+       bois posee sur l herbe plutot qu une bande marron. */
     svg.innerHTML =
-      '<polyline points="' + pts + '" fill="none" stroke="#22180f" stroke-width="118" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>' +
-      '<polyline points="' + pts + '" fill="none" stroke="#4a3a29" stroke-width="98" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '<polyline points="' + pts + '" fill="none" stroke="#67523a" stroke-width="76" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '<polyline points="' + pts + '" fill="none" stroke="#8b7052" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity=".5" stroke-dasharray="18 26"/>';
+      '<defs><pattern id="planches" patternUnits="userSpaceOnUse" width="192" height="192">' +
+        '<image href="assets/route.png" x="0" y="0" width="192" height="192"/>' +
+      '</pattern></defs>' +
+      '<polyline points="' + pts + '" fill="none" stroke="#160e07" stroke-width="122" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>' +
+      '<polyline points="' + pts + '" fill="none" stroke="#3a2a18" stroke-width="106" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<polyline points="' + pts + '" fill="none" stroke="url(#planches)" stroke-width="92" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<polyline points="' + pts + '" fill="none" stroke="#000" stroke-width="92" stroke-linecap="round" stroke-linejoin="round" opacity=".22"/>';
 
     /* --- cases --- */
     tl.innerHTML = '';
     tiles.forEach(t => {
       const d = K.TILE_TYPES[t.type];
-      const cls = 'tile' + (t.type === 'start' ? ' is-start' : '') + (t.type === 'finish' ? ' is-finish' : '');
+      const cls = 'tile' + (t.type === 'start' ? ' is-start' : '') + (t.type === 'finish' ? ' is-finish' : '') +
+        (d.img ? ' pleine' : '');
       const el = U.el(
         '<div class="' + cls + '" data-i="' + t.i + '" style="--c1:' + d.c1 + ';--c2:' + d.c2 + '">' +
-          '<i class="t-paper"></i>' +
+          '<i class="t-paper"' + (d.img ? ' style="background-image:url(assets/' + d.img + ')"' : '') + '></i>' +
           '<span class="t-ico">' + d.icon + '</span>' +
           (t.type === 'start' || t.type === 'finish' ? '' : '<span class="t-num">' + t.i + '</span>') +
         '</div>'
