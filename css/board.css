@@ -80,16 +80,45 @@
   transform-origin:50% 0;
   transition:transform .7s cubic-bezier(.3,.9,.25,1);
 }
-.ground-tex{
-  /* le sol doit couvrir jusqu au bout d un chemin de 80 cases */
+/* ---------- le sol : une feuille d herbe posee sur du carton ----------
+   Meme principe que la planche d origine : un aplat d herbe decoupe, le
+   carton qui depasse de chaque cote, et la tranche ondulee entre les deux
+   pour donner l epaisseur. Tout est a plat sur le meme plan incline : pas
+   de parois dressees en 3D, qui se verraient de travers des que la camera
+   suit un pion. */
+.ground-carton{
   position:absolute;left:-1200px;right:-1200px;top:-4600px;bottom:-3000px;
-  background:
-    radial-gradient(60% 40% at 50% 50%,rgba(120,255,190,.07),transparent 70%),
-    repeating-linear-gradient(90deg,rgba(0,0,0,.10) 0 2px,transparent 2px 48px),
-    repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 2px,transparent 2px 48px),
-    linear-gradient(180deg,#1d3b2b,#16302a 40%,#122a26 100%);
-  box-shadow:inset 0 0 200px rgba(0,0,0,.7);
+  background:url('../assets/carton.png') repeat;
+  background-size:220px 200px;
+  box-shadow:inset 0 0 260px rgba(0,0,0,.75);
 }
+.ground-tex{
+  /* la feuille d herbe : plus etroite que le carton, qui depasse donc */
+  position:absolute;left:-400px;right:-400px;top:-4600px;bottom:-3000px;
+  background:url('../assets/herbe.png') repeat;
+  background-size:256px 256px;
+  box-shadow:0 0 34px rgba(0,0,0,.55);
+}
+/* La planche d herbe est tres lumineuse : sans ce voile, les cases et les
+   pions perdent leur contraste et la foret perd sa nuit. C est le seul
+   reglage a toucher pour rendre le sol plus clair ou plus sombre. */
+.ground-tex::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(8,22,16,.34),rgba(8,22,16,.16));
+}
+.ground-carton::after{
+  content:'';position:absolute;inset:0;
+  background:rgba(8,14,22,.42);
+}
+/* la tranche ondulee, sur les deux bords de la feuille */
+.ground-tranche{
+  position:absolute;top:-4600px;bottom:-3000px;width:26px;
+  background:url('../assets/carton-tranche.png') repeat-y;
+  background-size:26px 102px;
+  filter:brightness(.86);
+}
+.ground-tranche.g{left:-400px;transform:translateX(-100%)}
+.ground-tranche.d{right:-400px;transform:translateX(100%)}
 .layer{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d}
 .path-svg{position:absolute;left:-450px;top:-2600px;width:1800px;height:5600px;overflow:visible;pointer-events:none}
 
@@ -122,7 +151,8 @@
   transform-origin:50% 100%;
   will-change:transform;
 }
-.prop .bb svg{display:block;filter:drop-shadow(0 6px 10px rgba(0,0,0,.55))}
+.prop .bb svg,.prop .bb img.pc{display:block;filter:drop-shadow(0 6px 10px rgba(0,0,0,.55))}
+.prop .bb img.pc{width:auto;image-rendering:auto}
 .prop.sway .bb{animation:sway 4.5s ease-in-out infinite}
 @keyframes sway{0%,100%{transform:translateX(-50%) rotateX(calc(-1*var(--rx))) rotate(-1.2deg)}50%{transform:translateX(-50%) rotateX(calc(-1*var(--rx))) rotate(1.2deg)}}
 .prop .shadow{

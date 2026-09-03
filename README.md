@@ -10,6 +10,28 @@ Première map : la **Forêt Enchantée**, un chemin en serpentin.
 
 ## Lancer le jeu
 
+### Les images du plateau
+
+Le sol, les bordures et le décor viennent de deux planches papercraft
+rangées dans `src/`. Elles pèsent 3 Mo chacune : on ne les sert pas telles
+quelles. `node tools/assets.js` les découpe, les réduit et les écrit dans
+`assets/` — 12 fichiers, 146 Ko en tout.
+
+Aucun outil d'image n'est installé sur la machine de développement (ni
+ImageMagick, ni Python utilisable) et le jeu n'a aucune dépendance :
+`tools/png.js` lit et écrit donc le PNG à la main, avec `zlib` pour la
+compression. Il fait aussi la quantification en palette — ces planches sont
+des aplats, 128 teintes les rendent sans différence visible et divisent le
+poids par quatre.
+
+Les éléments détachés (arbres, touffes) sont détourés en cherchant les
+paquets de pixels reliés entre eux, pas avec des cadres posés à la main :
+ceux-ci coupaient invariablement le bas des brins.
+
+`node tools/maquette.js sortie.png` recompose le sol à plat — carton,
+feuille d'herbe, tranche ondulée, décor — pour vérifier les raccords et les
+échelles sans navigateur.
+
 ### Régler la partie
 
 Le bouton **JOUER** ne mène pas à un formulaire mais à Kwa, qui pose les

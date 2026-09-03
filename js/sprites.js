@@ -142,7 +142,30 @@
     ['#5a4b8a', '#3d3163', '#271f45']
   ];
 
+  /* ---------------------------------------------------------
+     Decor decoupe dans du papier
+     Les arbres et les buissons viennent des planches de src/,
+     decoupees par tools/assets.js. Un arbre sur deux est
+     retourne : quatre fichiers suffisent a peupler une foret
+     sans que l oeil repere la repetition.
+     --------------------------------------------------------- */
+  const ARBRES = ['arbre-chene.png', 'arbre-bouleau.png', 'sapin.png', 'arbre-pommier.png'];
+  const BUISSONS = ['buisson.png', 'touffe-1.png', 'touffe-2.png', 'touffe-3.png', 'trefle.png'];
+
+  function papier(fichier, h, retourne) {
+    return '<img class="pc" src="assets/' + fichier + '" height="' + Math.round(h) + '"' +
+      (retourne ? ' style="transform:scaleX(-1)"' : '') + ' alt="">';
+  }
+
   S.tree = function (variant, h) {
+    return papier(ARBRES[variant % ARBRES.length], h, variant % 2 === 1);
+  };
+
+  S.bush = function (variant, h) {
+    return papier(BUISSONS[variant % BUISSONS.length], h * 1.15, variant % 3 === 1);
+  };
+
+  S.treeSvg = function (variant, h) {
     const c = LEAF[variant % LEAF.length];
     const W = Math.round(h * 0.72);
     const sc = h / 160;
@@ -159,7 +182,7 @@
       '</svg>';
   };
 
-  S.bush = function (variant, h) {
+  S.bushSvg = function (variant, h) {
     const c = LEAF[(variant + 1) % LEAF.length];
     return '<svg width="' + Math.round(h * 1.5) + '" height="' + h + '" viewBox="0 0 90 60" xmlns="http://www.w3.org/2000/svg">' +
       '<g stroke="#1a1030" stroke-width="3">' +
