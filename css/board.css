@@ -296,3 +296,54 @@
 .tile.pleine .t-paper::after{display:none}
 .tile.pleine::after{display:none}
 .tile.pleine .t-ico{display:none}
+
+/* ==========================================================
+   L esprit de la foret
+   Trois bandes d images, un seul personnage : on ne change que
+   la planche et le nombre de vignettes. Les trois bandes sont
+   decoupees a la meme largeur de cellule, donc l esprit garde
+   sa taille en passant de l attente a la marche ou au baton.
+   ========================================================== */
+.esprit{
+  position:absolute;width:0;height:0;transform-style:preserve-3d;z-index:4;
+  transition:left .42s cubic-bezier(.4,.1,.3,1),top .42s cubic-bezier(.4,.1,.3,1);
+}
+.esprit .bb{
+  position:absolute;left:0;bottom:0;
+  transform:translateX(-50%) rotateX(calc(-1 * var(--rx)));
+  transform-origin:50% 100%;
+}
+.esprit .shadow{
+  position:absolute;left:-30px;top:-13px;width:60px;height:26px;
+  background:radial-gradient(closest-side,rgba(20,0,40,.65),transparent 72%);
+}
+/* --ew/--eh : la vignette · --en : combien il y en a · --es : l echelle */
+.esprit .sp{
+  --ew:100; --eh:133; --en:8; --es:.8;
+  width:calc(var(--ew) * var(--es) * 1px);
+  height:calc(var(--eh) * var(--es) * 1px);
+  background-image:url(../assets/esprit-idle.png);
+  background-repeat:no-repeat;
+  background-size:calc(var(--ew) * var(--en) * var(--es) * 1px) calc(var(--eh) * var(--es) * 1px);
+  image-rendering:auto;
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.55)) drop-shadow(0 0 12px rgba(190,120,255,.35));
+  animation:espSteps 1.1s steps(8) infinite;
+}
+/* steps(n) s arrete a la derniere vignette : la valeur finale n est
+   jamais atteinte, la bande ne montre donc pas de vide */
+@keyframes espSteps{
+  from{background-position-x:0}
+  to  {background-position-x:calc(var(--ew) * var(--en) * var(--es) * -1px)}
+}
+.esprit.mire .sp{transform:scaleX(-1)}
+
+.esprit.marche .sp{
+  --eh:117; --en:7;
+  background-image:url(../assets/esprit-walk.png);
+  animation:espSteps .62s steps(7) infinite;
+}
+.esprit.frappe .sp{
+  --eh:201; --en:8;
+  background-image:url(../assets/esprit-atk.png);
+  animation:espSteps .72s steps(8) 1 both;
+}

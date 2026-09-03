@@ -434,6 +434,7 @@
       idx: K.state.idx,
       over: K.state.over,
       ev: K.state.event ? K.state.event.id : null,
+      esp: K.esprit.at(),
       last: K.board.last(),
       order: K.state.players.map(p => p.id),
       pos: K.state.players.map(p => ({ id: p.id, pos: p.pos }))
@@ -511,6 +512,7 @@
         K.board.fireflies(18);
         K.board.render();
         K.pawns.renderAll();
+        K.esprit.render();
         K.board.focusLocal(0, true);
         K.game.hud();
         mirrorReady = true;
@@ -553,6 +555,7 @@
       case 'active': K.pawns.setActiveLocal(d.id); break;
       case 'walk':   K.pawns.setWalking(d.id, d.on); break;
       case 'react':  K.pawns.reactLocal(d.id, d.k); break;
+      case 'esprit': K.esprit.mirror(d); break;
       case 'pos':
         (d.pos || []).forEach(x => { const p = K.player(x.id); if (p) p.pos = x.pos; });
         K.pawns.layoutLocal();
@@ -649,6 +652,9 @@
     /* la regle de foret en cours : on ne transporte que son identifiant */
     K.state.event = d.ev ? K.events.byId(d.ev) : null;
     K.events.render();
+    /* la case gardee fait partie du plateau : un ecran qui revient
+       doit retrouver l esprit exactement la ou il est */
+    if (d.esp !== undefined) K.esprit.mirror({ i: d.esp });
     if (d.over) clearSession();
     if (mirrorReady) { K.game.hud(); K.pawns.layoutLocal(); }
     else companion();

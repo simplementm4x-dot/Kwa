@@ -34,6 +34,7 @@
     U.$('#optEvents').checked = S().evenements !== false;
     U.$('#optBets').checked = S().paris !== false;
     U.$('#optPacts').checked = S().pactes !== false;
+    U.$('#optEsprit').checked = S().esprit !== false;
     U.$('#optSound').checked = !!S().sound;
     U.$('#optDuelSolo').closest('.switch-row').style.opacity = S().device === 'multi' ? '.45' : '1';
   }
@@ -55,6 +56,7 @@
     U.$('#optEvents').addEventListener('change', e => { S().evenements = e.target.checked; });
     U.$('#optBets').addEventListener('change', e => { S().paris = e.target.checked; });
     U.$('#optPacts').addEventListener('change', e => { S().pactes = e.target.checked; });
+    U.$('#optEsprit').addEventListener('change', e => { S().esprit = e.target.checked; });
     U.$('#optSound').addEventListener('change', e => {
       S().sound = e.target.checked; K.audio.setEnabled(e.target.checked);
     });
@@ -166,6 +168,7 @@
     ['🔀', 'Les cases eclair', "Echange, Peage et Roue de Kwa se resolvent en dix secondes, sans mini-jeu. L Echange vous fait troquer votre position avec le joueur de votre choix. Le Peage vous donne 4 cases mais vous oblige a en offrir 2 a quelqu un. La Roue, elle, ne demande aucun talent : entre -3 et +5, et bon courage."],
     ['🎰', 'Les paris', "Quand un joueur monte seul sur scene (quiz, mime, verite, mot raccord), les autres misent sur lui avant qu il commence : il gagne des cases, ou il se plante. Bon pari : +1 case. Mauvais : -1. Plus personne ne regarde passer le train. Reserve au multi-telephones : faire tourner un seul appareil pour recueillir dix mises casserait justement le rythme qu on cherche."],
     ['🌙', 'Les evenements de foret', "A chaque nouvelle manche, la foret change une regle et Kwa l annonce avant que vous jouiez : tout compte double, gagner veut dire reculer, aucun malus ne passe, le leader paie pour les autres, ou c est Kwa qui choisit votre epreuve."],
+    ['👻', 'L esprit de la foret', "Une creature squatte une case du chemin. Elle ne joue a rien : elle attend. Celui qui s arrete sur sa case prend un coup de baton, recule de 3 cases et ne joue PAS l epreuve. Elle rode ensuite vers une autre case, alors surveillez-la : c est la seule chose du plateau qui bouge sans qu on lance le de."],
     ['🤝', 'Le pacte de Kwa', "De temps en temps, avant le de, Kwa vous prend a part et propose un marche : des cases tout de suite contre un cadeau au suivant, un de qui compte double contre deux cases en arriere, votre epreuve sautee contre 4 cases. Refuser ne coute rien. Sauf la face."],
     ['🔤', 'Le Mot Raccord', "Une lettre, 30 secondes, une liste de trucs a completer. Chaque mot valide par le groupe = 1 case, et si vous faites carton plein, 1 case bonus."]
   ];

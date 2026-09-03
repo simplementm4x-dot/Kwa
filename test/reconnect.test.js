@@ -193,13 +193,19 @@ const banniere = ctx => {
     const t0 = Date.now();
     while (Date.now() - t0 < 90000) {
       if (pions(host) !== gele) return true;
+      /* Un panneau ouvert chez l hote bloque tout le reste : on y repond
+         d abord. Et on ne le cherche que s il est VISIBLE — l overlay
+         garde le contenu du dernier panneau une fois referme, et taper
+         sur ces boutons fantomes fait tourner la boucle dans le vide
+         pendant que la partie, elle, attend une tape sur Kwa. */
+      const ov = host.$('#overlay');
+      const foot = ov && !ov.hidden
+        ? [...ov.querySelectorAll('button')].find(x => !x.disabled)
+        : null;
       const act = porteur && porteur !== victime ? porteur.$('#actBtn') : null;
-      if (act) click(porteur.win, act, porteur.errors);
-      else {
-        const foot = host.win.document.querySelector('#overlay button:not([disabled])');
-        if (foot) click(host.win, foot, host.errors);
-        else { const k = host.$('#kwaBubble'); if (k) click(host.win, k, host.errors); }
-      }
+      if (foot) click(host.win, foot, host.errors);
+      else if (act) click(porteur.win, act, porteur.errors);
+      else { const k = host.$('#kwaBubble'); if (k) click(host.win, k, host.errors); }
       await sleep(90);
     }
     return false;

@@ -218,6 +218,10 @@
     /* arrivee au bout */
     if (p.pos >= K.board.last() && K.rules.isTerminus()) { await endGame(p); return true; }
 
+    /* la case est peut-etre gardee : le coup de baton passe avant tout,
+       et celui qui le prend ne joue pas l epreuve */
+    const cueilli = await K.esprit.garde(p);
+
     const tile = K.board.at(p.pos);
     /* "Kwa a faim" : l epreuve jouee n est pas celle de la case */
     const ev = K.state.event;
@@ -225,7 +229,9 @@
     if (ev && ev.wild && type !== 'start' && type !== 'finish') type = K.board.randomPlayable();
 
     const handler = K.tiles[type];
-    if (pacte && pacte.skipTile) {
+    if (cueilli) {
+      /* l esprit a deja tout dit et tout applique */
+    } else if (pacte && pacte.skipTile) {
       await K.kwa.say('Marche conclu : ' + p.name + ' saute son epreuve. On ne saura jamais.',
         { auto: 1400, mood: 'wink' });
     } else if (handler && type !== 'start' && type !== 'finish') {
@@ -274,6 +280,9 @@
       await K.events.maybe();
       if (s.over) return;
 
+      /* l esprit change de case pendant que les autres regardent */
+      await K.esprit.rode();
+
       s.idx++;
       if (s.idx >= s.players.length) {
         s.idx = 0; s.turn++;
@@ -303,6 +312,9 @@
        Le rideau part avec l evenement du plateau : sur les autres
        ecrans il doit etre en place AVANT que la foret s affiche. */
     K.net.ev('board', { types: K.board.typeList(), settings: s.settings, rideau: true });
+    /* l esprit choisit sa case une fois le plateau connu de tous :
+       sa position part ensuite dans son propre message */
+    K.esprit.reset();
     U.clearSpotlight();
     K.rideau.fermerLocal();
     U.go('game');
@@ -310,6 +322,7 @@
     K.board.fireflies(20);
     K.board.render();
     K.pawns.renderAll();
+    K.esprit.render();
     hud();
     K.events.render();
     K.audio.unlock();

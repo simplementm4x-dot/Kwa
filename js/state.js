@@ -63,6 +63,7 @@
       evenements: true,      // la foret change une regle a chaque manche
       paris: true,           // les autres misent sur celui qui est sur scene
       pactes: true,          // Kwa propose parfois un marche avant le de
+      esprit: true,          // une creature squatte une case du chemin
       sound: true
     },
     players: [],             // {id,name,color,hex,img,pos,stats}
@@ -70,6 +71,7 @@
     turn: 1,
     idx: 0,                  // index du joueur courant
     event: null,             // la regle de foret en cours, ou null
+    esprit: null,            // {i, depuis} : la case gardee par la creature
     started: false,
     over: false,
     net: null                // etat reseau (mode multi)

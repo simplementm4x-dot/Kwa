@@ -195,7 +195,58 @@ for (const [nom, x, y, w, h] of NOUVELLES) {
 }
 
 /* =========================================================
-   3. La route
+   3. L esprit de la foret
+
+   Trois planches de 8 par 2 frames. On n en garde qu une
+   rangee : huit images suffisent a une boucle, et le poids
+   compte plus que la fluidite pour un sprite de 90 pixels.
+
+   Toutes les frames sont recadrees sur la MEME boite —
+   l union du contenu de la rangee — et non chacune au plus
+   juste : recadrer image par image ferait sautiller le
+   personnage a chaque changement de frame.
+   ========================================================= */
+console.log('esprit de la foret :');
+
+/**
+ * Une bande d animation, decoupee cellule par cellule.
+ *
+ * La cellule EST le cadre : on ne recadre pas sur le contenu, sinon le
+ * personnage sautille d une frame a l autre. Et toutes les planches
+ * dessinent l esprit dans une cellule d environ 220 pixels : ramener
+ * chaque cellule a la meme largeur donne donc la meme echelle partout,
+ * quelle que soit la taille de la planche.
+ */
+function bande(fichier, y0, y1, colonnes, largeurCellule, nom) {
+  const pl = nettoieHalo(P.decode(fichier), 60);
+  const cw = pl.w / colonnes;
+  const ech = largeurCellule / cw;
+  const fh = Math.round((y1 - y0 + 1) * ech);
+
+  const strip = P.vide(largeurCellule * colonnes, fh, 0, 0, 0, 0);
+  for (let i = 0; i < colonnes; i++) {
+    const cell = P.crop(pl, Math.round(i * cw), y0, Math.round(cw), y1 - y0 + 1);
+    P.coller(strip, P.resize(cell, largeurCellule, fh), i * largeurCellule, 0);
+  }
+  const poids = sors(strip, nom, 128);
+  console.log('    ' + colonnes + ' frames de ' + largeurCellule + 'x' + fh);
+  return { n: colonnes, w: largeurCellule, h: fh, poids };
+}
+
+const CELLULE = 100;
+const ESPRIT = {
+  idle: bande('src/soul_idle.png', 97, 390, 8, CELLULE, 'esprit-idle.png'),
+  walk: bande('src/soul_walk.png', 172, 428, 7, CELLULE, 'esprit-walk.png'),
+  atk:  bande('src/soul_atk.png', 34, 478, 8, CELLULE, 'esprit-atk.png')
+};
+console.log('  a reporter dans le CSS :');
+for (const k of Object.keys(ESPRIT)) {
+  const e = ESPRIT[k];
+  console.log('    .esprit.' + k + ' -> ' + e.w + 'x' + e.h + ', ' + e.n + ' frames, bande ' + (e.w * e.n) + 'px');
+}
+
+/* =========================================================
+   4. La route
 
    Le chemin etait trace a coups de traits epais. Il devient un
    platelage de planches, applique en motif sur le trace SVG.
@@ -208,7 +259,7 @@ const route = P.decode('src/road.png');
 sors(P.miroir(P.resize(P.crop(route, 80, 80, 1094, 1094), 96, 96)), 'route.png', 128);
 
 /* =========================================================
-   4. Les arbres
+   5. Les arbres
    ========================================================= */
 console.log('arbres :');
 const planche = P.decode('src/lot_arbre.png');
@@ -228,7 +279,7 @@ for (const [nom, x, y, w, h, ht] of ARBRES) {
 }
 
 /* =========================================================
-   5. Plantes, rochers, souches et champignons
+   6. Plantes, rochers, souches et champignons
 
    Deux planches de plus, detourees de la meme facon : on
    cherche les paquets de pixels relies entre eux, on trie par

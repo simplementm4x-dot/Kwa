@@ -66,7 +66,7 @@ et le duel en écran partagé.
 
 ### Ce qui rythme une partie
 
-Au-delà des cases, quatre systèmes tournent en fond :
+Au-delà des cases, cinq systèmes tournent en fond :
 
 - **Les cases éclair** (Échange, Péage, Roue de Kwa) se résolvent en dix
   secondes, sans mini-jeu. Elles représentent une case sur cinq et existent
@@ -85,6 +85,12 @@ Au-delà des cases, quatre systèmes tournent en fond :
   vue — pendant que Kwa découvre ça en même temps que la table.
 - **Les pactes de Kwa** — de temps en temps, avant le dé, il prend le joueur à
   part et propose un marché. Refuser ne coûte rien.
+- **L'esprit de la forêt** — une créature occupe une case du chemin. Elle ne
+  joue à rien : elle attend. Celui qui s'arrête sur sa case prend un coup de
+  bâton, recule de 3 cases et ne joue **pas** l'épreuve. Puis elle rode vers
+  une autre case, un tour sur deux, à quatre cases de portée. C'est la seule
+  chose du plateau qui bouge sans qu'on lance le dé, et c'est fait pour : on
+  la voit venir, on peut choisir de ne pas avancer jusqu'à elle.
 
 Chacun se coupe séparément dans « Réglages détaillés ».
 
@@ -201,6 +207,8 @@ js/
   intro.js            présentation des candidats + tirage de l ordre
   menu.js             écrans de réglages et de joueurs
   net.js              salon, code à 3 chiffres, routage des questions
+  events.js           les règles de forêt : quand elles tombent, ce qu elles font
+  esprit.js           la créature qui garde une case et frappe qui s y arrête
   game.js             moteur : tours, dé, résolution, fin de partie
   tiles/*.js          une case = un fichier
   data/*.js           tout le contenu
