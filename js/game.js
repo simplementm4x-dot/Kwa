@@ -140,6 +140,7 @@
       K.board.focus(p.pos);
       K.pawns.setActive(p.id);
       K.board.floatDelta(p.pos, (eff > 0 ? '+' : '') + eff, eff > 0 ? '#57e08a' : '#ff5757');
+      K.pawns.react(p.id, eff > 0 ? 'gain' : 'perte');
       eff > 0 ? K.audio.up() : K.audio.down();
       if (eff > 0) p.stats.gained += eff; else p.stats.lost += -eff;
       await U.sleep(280);

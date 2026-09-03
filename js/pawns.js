@@ -104,6 +104,25 @@
     bb.innerHTML = '<div class="nametag">' + U.esc(p.name || '?') + '</div>' + K.sprites.tvPawn(p, 0.92);
   };
 
+  /**
+   * Un pion qui gagne ou perd des cases le montre : l ecran s illumine
+   * ou se met a gresiller. Rien de fonctionnel — mais un plateau ou les
+   * pions encaissent sans broncher a l air d un tableur.
+   */
+  P.react = function (id, quoi) {
+    K.net && K.net.ev('react', { id, k: quoi });
+    P.reactLocal(id, quoi);
+  };
+  P.reactLocal = function (id, quoi) {
+    const el = els[id];
+    if (!el) return;
+    const cls = quoi === 'gain' ? 'reagit-gain' : 'reagit-perte';
+    el.classList.remove('reagit-gain', 'reagit-perte');
+    void el.offsetWidth;                 /* sinon l animation ne repart pas */
+    el.classList.add(cls);
+    setTimeout(() => el.classList.remove(cls), 800);
+  };
+
   P.jump = function (p) {
     const el = els[p.id]; if (!el) return;
     el.classList.remove('jump'); void el.offsetWidth; el.classList.add('jump');

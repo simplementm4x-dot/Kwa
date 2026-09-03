@@ -552,6 +552,7 @@
       case 'fx':     K.board.floatDeltaLocal(d.i, d.text, d.color); break;
       case 'active': K.pawns.setActiveLocal(d.id); break;
       case 'walk':   K.pawns.setWalking(d.id, d.on); break;
+      case 'react':  K.pawns.reactLocal(d.id, d.k); break;
       case 'pos':
         (d.pos || []).forEach(x => { const p = K.player(x.id); if (p) p.pos = x.pos; });
         K.pawns.layoutLocal();
