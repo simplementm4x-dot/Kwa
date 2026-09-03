@@ -1,9 +1,3 @@
 node_modules/
 .DS_Store
 *.log
-
-# Les planches sources (src/) restent en local : ce sont des lots
-# d illustrations achetes, et le depot est public. Le jeu n embarque
-# que les decoupes de assets/, produites par "node tools/assets.js".
-# Retire cette ligne si tu preferes les versionner malgre tout.
-src/
