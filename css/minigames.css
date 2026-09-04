@@ -341,3 +341,15 @@
   margin-left:auto;text-align:right;font-family:var(--pix);font-size:12px;color:var(--gold);
 }
 .tt-temps small{display:block;font-family:var(--sys,inherit);font-size:11px;color:var(--txt-dim);font-weight:700}
+
+/* un niveau ferme par une regle de foret : encore lisible, mais mort.
+   On le laisse a sa place — la grille doit rester la meme grille. */
+.bet.ferme{
+  filter:grayscale(.85) brightness(.42);
+  position:relative;color:rgba(255,255,255,.5);
+}
+.bet.ferme::after{
+  content:'';position:absolute;left:14%;right:14%;top:50%;height:3px;
+  background:rgba(255,70,70,.85);transform:rotate(-38deg);border-radius:2px;
+}
+.bet.ferme:active{transform:none;border-bottom-width:4px}

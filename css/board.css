@@ -486,3 +486,38 @@
 }
 @keyframes finaleBat{0%,100%{opacity:.85}50%{opacity:1}}
 .screen-game.finale .tile.is-finish{filter:drop-shadow(0 0 22px rgba(255,207,77,.85))}
+
+/* --- lune de sang : poussiere rouge et reflets sur la carte ---
+   Trois couches : le voile rouge qui teinte tout, la lune elle-meme
+   qui bat lentement en haut du terrain, et les nuages de poussiere
+   qui traversent en diagonale. Aucune n intercepte le clic. */
+.amb-lune::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(38% 26% at 76% 8%,rgba(255,60,50,.34),transparent 68%),
+    linear-gradient(180deg,rgba(120,8,18,.40),rgba(40,0,8,.26));
+  mix-blend-mode:hard-light;
+  animation:lunePulse 4.6s ease-in-out infinite;
+}
+@keyframes lunePulse{0%,100%{opacity:.72}50%{opacity:1}}
+.amb-lune::after{
+  content:'';position:absolute;left:72%;top:2%;width:78px;height:78px;border-radius:50%;
+  background:radial-gradient(circle at 38% 34%,#ff6a5a,#c11526 58%,#6d0512);
+  box-shadow:0 0 46px 16px rgba(255,40,40,.42),0 0 120px 60px rgba(180,10,20,.24);
+  animation:luneRespire 6.2s ease-in-out infinite;
+}
+@keyframes luneRespire{
+  0%,100%{transform:scale(1);filter:saturate(1)}
+  50%    {transform:scale(1.07);filter:saturate(1.35)}
+}
+.amb-lune i{
+  color:rgba(255,120,110,.9);
+  filter:drop-shadow(0 0 8px rgba(255,40,40,.7));
+  animation:lunePoussiere 6.4s linear infinite;
+}
+@keyframes lunePoussiere{
+  0%  {transform:translate(-24vw,10vh) scale(.7) rotate(0);opacity:0}
+  16% {opacity:.85}
+  84% {opacity:.85}
+  100%{transform:translate(70vw,-16vh) scale(1.25) rotate(180deg);opacity:0}
+}

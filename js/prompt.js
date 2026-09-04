@@ -158,9 +158,15 @@
 
   function bet(spec) {
     return new Promise(res => {
+      /* mini : le plancher impose par une regle de foret. Les niveaux
+         en dessous restent visibles mais barres — on doit voir ce qu on
+         n a plus le droit de prendre, sinon la contrainte ne se sent pas. */
+      const mini = spec.mini || 1;
       let grid = '';
       for (let n = 1; n <= 10; n++) {
-        grid += '<button class="bet" data-n="' + n + '" style="background:linear-gradient(180deg,' +
+        const ferme = n < mini;
+        grid += '<button class="bet' + (ferme ? ' ferme' : '') + '" data-n="' + n + '"' +
+          (ferme ? ' disabled' : '') + ' style="background:linear-gradient(180deg,' +
           diffColor(n) + ',hsl(' + Math.round(140 - (n - 1) * 15.5) + ' 78% 44%))">' + n + '</button>';
       }
       /* la grille de 1 a 10 sert au quiz mais aussi a L Echelle :

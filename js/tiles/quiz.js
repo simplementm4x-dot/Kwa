@@ -56,10 +56,17 @@
       { auto: 1100 });
 
     /* --- la mise --- */
+    /* la lune de sang ferme les niveaux faciles */
+    const mini = K.events.niveauMini();
     const n = await K.ask(p, {
       kind: 'bet', icon: '❓', noPass: true,
       title: 'Tu te mets combien ?', sub: p.name + ' choisit sa difficulte',
-      theme: card.t, cat: card.c
+      theme: card.t, cat: card.c, mini,
+      legendeA: mini > 1 ? mini + ' · le plancher' : undefined,
+      note: mini > 1
+        ? 'Lune de sang : les niveaux 1 a ' + (mini - 1) + ' sont fermes. A partir de 8, ' +
+          'une erreur te fait reculer d une case.'
+        : undefined
     });
     U.closeOverlay();
 

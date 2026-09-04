@@ -102,6 +102,20 @@
            'celle de votre case. Ce sera la mienne.'
     },
     {
+      /* La plus dure des regles : elle ferme les niveaux faciles ET
+         rabote les gains. On ne peut plus prendre trois cases tranquille
+         en se mettant 3 — il faut viser haut et repondre juste. */
+      id: 'lune', ico: '🩸', nom: 'LUNE DE SANG', court: 'Que du haut niveau',
+      mini: 6, demi: true, duree: 3,
+      desc: 'Les niveaux 1 a 5 sont fermes : sur un quiz, il faut se mettre au moins 6, ' +
+            'donc repondre aux questions les plus dures. Et tout gain de plus d une case ' +
+            'est divise par deux, arrondi au-dessus. Les pertes, elles, tombent entier.',
+      poids: c => c.finProche ? 10 : 22,
+      txt: 'La lune vire au rouge. Sous cette lumiere-la, les questions faciles ' +
+           'ne comptent plus : il faudra se mettre au moins 6. Et tout ce que vous ' +
+           'gagnerez au-dela d une case sera coupe en deux.'
+    },
+    {
       id: 'cote', ico: '🎰', nom: 'GROSSE COTE', court: 'Paris doubles', betMult: 2, duree: 3,
       desc: 'Les paris rapportent et coutent deux cases au lieu d une. Ne touche que les ' +
             'parieurs, pas celui qui est sur scene.',
@@ -112,6 +126,16 @@
 
   E.byId = id => CARTES.find(c => c.id === id) || null;
   E.current = () => K.state.event;
+
+  /**
+   * Le niveau le plus bas qu une epreuve a echelle accepte en ce moment.
+   * La lune de sang ferme le bas du tableau : on ne peut plus se mettre
+   * 2 et repartir avec deux cases sans avoir rien risque.
+   */
+  E.niveauMini = function () {
+    const ev = K.state.event;
+    return (ev && ev.mini) || 1;
+  };
 
   E.reset = function () {
     depuis = 0;
@@ -348,7 +372,8 @@
     inversion: { cls: 'amb-inv',   emo: ['🔄', '↩️'],       n: 7 },
     treve:     { cls: 'amb-treve', emo: ['🕊️', '🤍'],       n: 7 },
     faim:      { cls: 'amb-faim',  emo: ['🍽️', '🍖', '🥄'], n: 7 },
-    cote:      { cls: 'amb-cote',  emo: ['🪙', '💰'],       n: 8 }
+    cote:      { cls: 'amb-cote',  emo: ['🪙', '💰'],       n: 8 },
+    lune:      { cls: 'amb-lune',  emo: ['🌑', '🩸', '🕸️'], n: 9 }
   };
 
   function ambiance(ev) {
@@ -408,6 +433,10 @@
 
     if (ev.invert) out.forEach(r => { r.delta = -r.delta; });
     if (ev.mult) out.forEach(r => { r.delta *= ev.mult; });
+    /* la lune de sang coupe les avancees en deux, jamais les reculs :
+       arrondi au-dessus, pour qu un gain de 3 rapporte encore 2 et
+       qu on ne rentre jamais bredouille d une bonne reponse */
+    if (ev.demi) out.forEach(r => { if (r.delta > 1) r.delta = Math.ceil(r.delta / 2); });
     if (ev.treve) out.forEach(r => { if (r.delta < 0) r.delta = 0; });
 
     /* le vent contraire : celui qui mene paie pour ceux qui avancent */
