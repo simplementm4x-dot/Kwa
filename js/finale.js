@@ -119,7 +119,7 @@
     if (!card) return true;                 /* pas de contenu : on ne bloque personne */
 
     const niveau = NIVEAU_MINI + U.rnd(card.q.length - NIVEAU_MINI + 1);
-    const q = card.q[niveau - 1];
+    const q = K.question(card, niveau);
     if (!q) return true;
 
     await U.jingle('EPREUVE FINALE', p.name + ' est au bout du chemin', 1800);

@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/menu.css">
 <link rel="stylesheet" href="css/board.css">
+<link rel="stylesheet" href="css/pano.css">
 <link rel="stylesheet" href="css/game.css">
 <link rel="stylesheet" href="css/minigames.css">
 </head>
@@ -156,6 +157,24 @@
   <!-- ============ JEU ============ -->
   <section class="screen screen-game" id="screen-game">
     <div class="sky"></div>
+    <!-- le decor lointain : uniquement sur grand ecran, voir css/pano.css -->
+    <div class="pano" id="pano" aria-hidden="true">
+      <i class="pn-mont"></i>
+      <i class="pn-volcan"></i>
+      <i class="pn-bois"></i>
+      <i class="pn-cascade"></i>
+      <i class="pn-collines"></i>
+      <i class="pn-ile"></i>
+      <i class="pn-nuage n1"></i>
+      <i class="pn-nuage n2"></i>
+      <i class="pn-nuage n3"></i>
+      <i class="pn-cote g"></i>
+      <i class="pn-cote d"></i>
+      <i class="pn-eperon g"></i>
+      <i class="pn-eperon d"></i>
+      <i class="pn-chene"></i>
+      <i class="pn-grotte"></i>
+    </div>
     <div class="canopy-far"></div>
     <div class="fog"></div>
     <div class="fireflies" id="fireflies"></div>
@@ -236,6 +255,7 @@
 <script src="js/data/mimes.js"></script>
 <script src="js/data/motraccord.js"></script>
 <script src="js/data/undercover.js"></script>
+<script src="js/data/variantes-01.js"></script>
 <script src="js/data/echelle.js"></script>
 <script src="js/data/cliche.js"></script>
 <script src="js/data/missions.js"></script>

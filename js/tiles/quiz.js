@@ -69,7 +69,8 @@
       { auto: 950, mood: n >= 8 ? 'oh' : 'wink' });
 
     /* --- la question --- */
-    const q = card.q[n - 1];
+    const q = K.question(card, n);
+    if (!q) return [];
     let ok, tempsEcoule = false;
     if (q.o && q.o.length) {
       const order = U.shuffle(q.o.map((txt, i) => ({ txt, i })));

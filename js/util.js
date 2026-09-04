@@ -43,14 +43,56 @@ window.KWA = window.KWA || {};
   U.clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   U.sleep = ms => new Promise(r => setTimeout(r, ms));
 
-  /* --- pioche sans repetition (memorisee par cle) --- */
+  /* --- pioche sans repetition (memorisee par cle) ---
+
+     Certaines pioches doivent survivre a la fin de la partie. Les cartes
+     de quiz, par exemple : remettre les 400 themes dans le sac a chaque
+     lancement fait retomber sur les memes des la deuxieme soiree, alors
+     qu il y a de quoi tenir vingt parties sans jamais se repeter.
+
+     Les cles qui commencent par "cards" ou "q:" sont donc gardees dans
+     le telephone. Les autres — les mots a mimer, les repliques de Kwa —
+     repartent a zero a chaque partie, c est tres bien comme ca. */
   const bags = {};
+  const DUR = 'kwa.pioche.v1';
+  const durable = key => key === 'cards' || key.indexOf('q:') === 0;
+
+  try {
+    const sauve = JSON.parse(localStorage.getItem(DUR) || '{}');
+    for (const k in sauve) if (Array.isArray(sauve[k])) bags[k] = sauve[k];
+  } catch (e) { /* rien de sauve, ou stockage refuse : on part a neuf */ }
+
+  function garde() {
+    try {
+      const out = {};
+      for (const k in bags) if (durable(k)) out[k] = bags[k];
+      localStorage.setItem(DUR, JSON.stringify(out));
+    } catch (e) { /* quota ou navigation privee : tant pis */ }
+  }
+
   U.draw = function (key, pool) {
     if (!pool || !pool.length) return null;
     if (!bags[key] || !bags[key].length) bags[key] = U.shuffle(pool.map((_, i) => i));
-    return pool[bags[key].pop()];
+    /* le sac peut avoir ete sauve avec un paquet plus petit : un index
+       hors bornes rendrait une carte vide */
+    let i = bags[key].pop();
+    if (i === undefined || i >= pool.length) {
+      bags[key] = U.shuffle(pool.map((_, k) => k));
+      i = bags[key].pop();
+    }
+    if (durable(key)) garde();
+    return pool[i];
   };
-  U.resetBags = function () { for (const k in bags) delete bags[k]; };
+
+  U.resetBags = function () {
+    for (const k in bags) if (!durable(k)) delete bags[k];
+  };
+
+  /** vide aussi ce qui est garde d une soiree a l autre */
+  U.oublieTout = function () {
+    for (const k in bags) delete bags[k];
+    try { localStorage.removeItem(DUR); } catch (e) {}
+  };
 
   /* --- ecrans --- */
   U.go = function (name) {

@@ -1,0 +1,187 @@
+/* ==========================================================
+   LE DECOR LOINTAIN — RESERVE AUX GRANDS ECRANS
+
+   Sur un telephone, le chemin remplit l ecran : il n y a pas de
+   place pour un arriere-plan, et charger des images qui ne se
+   verront pas coute de la batterie et du forfait.
+
+   Sur un ordinateur, le plateau tient au milieu et il reste un
+   tiers de vide de chaque cote. On le remplit : une chaine de
+   montagnes a l horizon, des falaises qui encadrent le chemin,
+   des bosquets, une ile qui flotte et des nuages qui derivent.
+
+   TOUT est enferme dans la requete de media ci-dessous, y
+   compris les url() : un navigateur ne telecharge pas l image
+   de fond d une regle qui ne s applique pas. Un telephone ne
+   voit donc jamais passer ces 250 Ko.
+
+   Le calque est en z-index 1, sous le plateau (z-index 4) : le
+   decor ne peut jamais recouvrir une case ni un pion, quoi
+   qu il arrive a la taille de la fenetre.
+   ========================================================== */
+.pano{display:none}
+
+@media (min-width: 900px) and (min-height: 520px) {
+
+  .pano{
+    display:block;position:absolute;inset:0;z-index:1;
+    pointer-events:none;overflow:hidden;
+  }
+  .pano i{position:absolute;display:block;background-repeat:no-repeat}
+
+  /* ---------- l horizon ----------
+     Les montagnes sont peintes en plein jour : on les couche dans la
+     nuit de la foret avec du contraste en moins et une pointe de bleu,
+     sinon elles font autocollant. Le flou tient lieu de profondeur de
+     champ, comme pour la canopee. */
+  .pn-mont{
+    left:-4%;right:-4%;bottom:50%;height:300px;
+    background-image:url(../assets/pano-montagnes.png);
+    background-repeat:repeat-x;
+    /* le motif ne part pas du centre : une chaine symetrique autour du
+       milieu de l ecran se lit comme un papier peint */
+    background-position:18% bottom;
+    background-size:auto 300px;
+    filter:brightness(.52) saturate(.72) blur(1.4px) hue-rotate(-6deg);
+    opacity:.92;
+  }
+  /* Le volcan est le seul point de repere de l horizon : il est pose une
+     fois, a gauche, et ne se repete pas — sinon il trahit le motif. */
+  .pn-volcan{
+    left:3%;bottom:49%;width:217px;height:250px;
+    background-image:url(../assets/pano-volcan.png);
+    background-size:contain;background-position:left bottom;
+    filter:brightness(.55) saturate(.78) blur(1px);
+  }
+  /* la ligne de sapins, juste devant : elle mange la base des montagnes
+     et evite la decoupe nette a l horizon. Basse, sinon elle fait un mur
+     vert en travers de l ecran. */
+  .pn-bois{
+    left:-6%;right:-6%;bottom:46%;height:112px;
+    background-image:url(../assets/pano-foret.png);
+    background-repeat:repeat-x;
+    background-position:62% bottom;
+    background-size:auto 112px;
+    filter:brightness(.4) saturate(.55) blur(.9px);
+    opacity:.9;
+  }
+
+  /* deux masses posees de part et d autre, pour que l horizon ne soit
+     pas une bande uniforme */
+  .pn-cascade{
+    left:1%;bottom:41%;width:318px;height:230px;
+    background-image:url(../assets/pano-cascade.png);
+    background-size:contain;background-position:left bottom;
+    filter:brightness(.5) saturate(.7) blur(.6px);
+  }
+  .pn-collines{
+    right:1%;bottom:41%;width:345px;height:210px;
+    background-image:url(../assets/pano-collines.png);
+    background-size:contain;background-position:right bottom;
+    filter:brightness(.5) saturate(.7) blur(.6px);
+  }
+
+  /* ---------- le ciel ---------- */
+  .pn-ile{
+    right:12%;top:7%;width:128px;height:150px;
+    background-image:url(../assets/pano-ile.png);
+    background-size:contain;
+    filter:brightness(.6) saturate(.75);
+    animation:panoFlotte 9s ease-in-out infinite;
+  }
+  @keyframes panoFlotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+
+  .pn-nuage{
+    background-size:contain;
+    filter:brightness(.6) saturate(.5);
+    opacity:.75;
+  }
+  /* trois nuages, trois vitesses : la derive lente est ce qui empeche
+     l arriere-plan de ressembler a une image collee */
+  .pn-nuage.n1{
+    top:9%;width:123px;height:70px;
+    background-image:url(../assets/pano-nuage-1.png);
+    animation:panoDerive 78s linear infinite;
+  }
+  .pn-nuage.n2{
+    top:17%;width:90px;height:46px;
+    background-image:url(../assets/pano-nuage-2.png);
+    animation:panoDerive 112s linear -30s infinite;
+  }
+  .pn-nuage.n3{
+    top:5%;width:65px;height:38px;
+    background-image:url(../assets/pano-nuage-3.png);
+    animation:panoDerive 146s linear -80s infinite;
+  }
+  @keyframes panoDerive{
+    from{transform:translateX(-160px)}
+    to  {transform:translateX(calc(100vw + 160px))}
+  }
+
+  /* ---------- les cotes ----------
+     Les falaises descendent sous le bord de l ecran : on ne voit que le
+     haut du mur et son bandeau d herbe, ce qui les fait lire comme les
+     parois d une vallee plutot que comme deux blocs poses la. */
+  .pn-cote{
+    bottom:-140px;width:clamp(300px,30vw,520px);height:360px;
+    background-size:100% 100%;
+    filter:brightness(.44) saturate(.8);
+  }
+  .pn-cote.g{
+    left:-70px;
+    background-image:url(../assets/pano-falaise-1.png);
+    background-position:left bottom;
+  }
+  .pn-cote.d{
+    right:-90px;
+    background-image:url(../assets/pano-falaise-2.png);
+    background-position:right bottom;
+  }
+  /* un eperon plus haut derriere chaque falaise : deux plans valent
+     mieux qu un mur plat */
+  .pn-eperon{
+    bottom:22%;width:109px;height:260px;
+    background-image:url(../assets/pano-eperon.png);
+    background-size:contain;background-position:bottom;
+    filter:brightness(.4) saturate(.7) blur(.5px);
+  }
+  .pn-eperon.g{left:6%}
+  .pn-eperon.d{right:7%;transform:scaleX(-1)}
+
+  /* ---------- le premier plan ----------
+     Un chene et une grotte, plus nets et plus sombres que le reste :
+     ce sont eux qui donnent l echelle de toute la scene. */
+  .pn-chene{
+    left:2%;bottom:-30px;width:198px;height:312px;
+    background-image:url(../assets/pano-chene.png);
+    background-size:contain;background-position:left bottom;
+    filter:brightness(.34) saturate(.7);
+  }
+  .pn-grotte{
+    right:3%;bottom:16px;width:218px;height:170px;
+    background-image:url(../assets/pano-grotte.png);
+    background-size:contain;background-position:right bottom;
+    filter:brightness(.4) saturate(.75);
+  }
+
+  /* la brume passe devant tout ce decor : c est elle qui recolle les
+     plans entre eux */
+  .fog{z-index:3}
+
+  /* dans la derniere ligne droite, la foret entiere vire a l or */
+  .screen-game.finale .pn-mont{filter:brightness(.6) saturate(.85) blur(1.4px) sepia(.25)}
+  .screen-game.finale .pn-cote,
+  .screen-game.finale .pn-chene,
+  .screen-game.finale .pn-grotte{filter:brightness(.5) saturate(.9) sepia(.3)}
+}
+
+/* ---------- tres grands ecrans ----------
+   Au-dela, les cotes s ecartent : on grossit les masses plutot que de
+   laisser deux colonnes de vide de chaque cote. */
+@media (min-width: 1500px) and (min-height: 620px) {
+  .pn-cote{width:clamp(360px,30vw,560px);height:380px}
+  .pn-chene{width:210px;height:330px}
+  .pn-grotte{width:280px;height:218px}
+  .pn-mont{height:360px;background-size:auto 360px}
+  .pn-bois{height:180px;background-size:auto 180px;bottom:42%}
+}

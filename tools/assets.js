@@ -338,7 +338,10 @@ const ext2 = P.decode('src/externe2.png');
    cascades ne font qu un seul tenant sur la planche. Tant mieux —
    c est exactement le bandeau d horizon qu on cherche. On s arrete
    avant le soleil, qui n a rien a faire dans une foret de nuit. */
-morceau(ext2, 4, 8, 1186, 396, 300, 'pano-montagnes.png', 128);
+/* le volcan est un point de repere : repete, il trahit tout de suite le
+   motif. On le sort de la chaine et on le pose une seule fois. */
+morceau(ext2, 8, 20, 252, 290, 250, 'pano-volcan.png', 96);
+morceau(ext2, 300, 8, 886, 396, 300, 'pano-montagnes.png', 128);
 
 /* les bosquets de sapins, poses devant les montagnes */
 morceau(ext2, 498, 413, 512, 213, 150, 'pano-foret.png', 96);

@@ -102,6 +102,51 @@
     };
   };
 
+  /**
+   * La question d une carte a un niveau donne.
+   *
+   * Une entree peut etre une seule question — c est le format d origine —
+   * ou une liste de variantes du meme niveau. Dans ce cas on pioche sans
+   * remise, par carte et par niveau : retomber sur "Les Simpson, niveau 3"
+   * ne doit pas vouloir dire retomber sur la meme question.
+   *
+   * Les deux formats cohabitent : les variantes arrivent par paquets et
+   * les cartes qui n en ont pas encore continuent de marcher.
+   */
+  K.question = function (card, niveau) {
+    if (!card || !card.q) return null;
+    const entree = card.q[niveau - 1];
+    if (!entree) return null;
+    if (!Array.isArray(entree)) return entree;
+    if (entree.length === 1) return entree[0];
+    return K.util.draw('q:' + card.t + ':' + niveau, entree) || entree[0];
+  };
+
+  /**
+   * Colle les variantes sur les cartes, une fois tout le contenu charge.
+   *
+   * Les variantes vivent dans leurs propres fichiers et designent leur
+   * carte par son theme : on ne touche jamais aux vingt fichiers de
+   * cartes d origine, et un paquet de variantes peut arriver seul.
+   */
+  K.fusionneVariantes = function () {
+    const cartes = {};
+    (K.CARDS || []).forEach(c => { cartes[c.t] = c; });
+    let ajoutees = 0, orphelines = 0;
+    (K.VARIANTES || []).forEach(lot => {
+      const card = cartes[lot.t];
+      if (!card) { orphelines++; return; }
+      Object.keys(lot.v).forEach(n => {
+        const i = +n - 1;
+        if (i < 0 || i >= card.q.length) return;
+        const base = Array.isArray(card.q[i]) ? card.q[i] : [card.q[i]];
+        card.q[i] = base.concat(lot.v[n]);
+        ajoutees += lot.v[n].length;
+      });
+    });
+    return { ajoutees, orphelines };
+  };
+
   K.player = id => K.state.players.find(p => p.id === id);
   K.current = () => K.state.players[K.state.idx];
 

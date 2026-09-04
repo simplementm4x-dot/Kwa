@@ -195,7 +195,7 @@
       /* le temps ecoule vaut une reponse fausse : on montre la bonne et
          on rend -1, que le jeu lit comme "pas de reponse" */
       const stop = chrono.arme(() => {
-        const boutons = U.$('.choice');
+        const boutons = U.$$('.choice');
         if (!boutons.length || boutons[0].dataset.done) return;
         boutons.forEach(c => { c.dataset.done = '1'; });
         const g = boutons.find(c => +c.dataset.k === spec.good);
@@ -206,7 +206,7 @@
       U.on(U.$('#overlay'), 'click', '.choice', (e, t) => {
         if (t.dataset.done) return;
         stop();
-        U.$('.choice').forEach(c => { c.dataset.done = '1'; });
+        U.$$('.choice').forEach(c => { c.dataset.done = '1'; });
         const k = +t.dataset.k;
         const ok = k === spec.good;
         t.classList.add(ok ? 'good' : 'bad');
@@ -265,7 +265,7 @@
 
       /* plus de temps : la photo se revele et la reponse est perdue */
       const stop = chrono.arme(() => {
-        const boutons = U.$('.choice');
+        const boutons = U.$$('.choice');
         if (!boutons.length || boutons[0].dataset.done) return;
         boutons.forEach(c => { c.dataset.done = '1'; });
         clearInterval(compteur);
@@ -278,7 +278,7 @@
       U.on(U.$('#overlay'), 'click', '.choice', (e, t) => {
         if (t.dataset.done) return;
         stop();
-        U.$('.choice').forEach(c => { c.dataset.done = '1'; });
+        U.$$('.choice').forEach(c => { c.dataset.done = '1'; });
         clearInterval(compteur);
         const k = +t.dataset.k;
         const ok = k === spec.good;
@@ -555,7 +555,7 @@
       const montre = () => {
         U.$('#nbVal').textContent = v;
         range.value = v;
-        U.$('#overlay .num-chip').forEach(c => c.classList.toggle('on', +c.dataset.n === v));
+        U.$$('#overlay .num-chip').forEach(c => c.classList.toggle('on', +c.dataset.n === v));
       };
       U.on(U.$('#overlay'), 'click', '.num-chip', (e, t) => { v = +t.dataset.n; K.audio.blip(); montre(); });
       range.addEventListener('input', () => { v = +range.value; K.audio.tick(); montre(); });

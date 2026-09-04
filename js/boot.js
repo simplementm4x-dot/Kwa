@@ -6,6 +6,10 @@
   const U = K.util;
 
   function boot() {
+    /* les variantes de questions rejoignent leurs cartes avant la
+       premiere partie : elles arrivent par paquets, dans leurs propres
+       fichiers, et designent leur carte par son theme */
+    K.fusionneVariantes();
     K.load();
     K.menu.init();
 
