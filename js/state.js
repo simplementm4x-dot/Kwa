@@ -12,8 +12,19 @@
     { id: 'violet', hex: '#a865ff', name: 'Violet'  },
     { id: 'orange', hex: '#ff8c2e', name: 'Orange'  },
     { id: 'rose',   hex: '#ff6fd8', name: 'Rose'    },
-    { id: 'cyan',   hex: '#2ee6d6', name: 'Cyan'    }
+    { id: 'cyan',   hex: '#2ee6d6', name: 'Cyan'    },
+    /* les deux dernieres teintes libres : il fallait qu elles se
+       distinguent des huit autres sur un plateau sombre, de loin, et
+       sur un pion de trente pixels. Le citron n est pas le jaune, le
+       sable n est pas l orange. */
+    { id: 'citron', hex: '#cdf23a', name: 'Citron'  },
+    { id: 'sable',  hex: '#d9a86c', name: 'Sable'   }
   ];
+
+  /* Le nombre de joueurs qu une partie accepte. Il tient a la place
+     disponible : dix couleurs distinctes, dix pastilles dans le
+     bandeau, dix sieges dans un salon. */
+  K.MAX_JOUEURS = 10;
 
   K.TILE_TYPES = {
     start:      { icon: '🏠', label: 'Depart',           c1: '#5b4b8a', c2: '#3b2f63' },

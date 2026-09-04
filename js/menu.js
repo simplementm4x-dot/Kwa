@@ -57,9 +57,7 @@
     U.$('#optBets').addEventListener('change', e => { S().paris = e.target.checked; });
     U.$('#optPacts').addEventListener('change', e => { S().pactes = e.target.checked; });
     U.$('#optEsprit').addEventListener('change', e => { S().esprit = e.target.checked; });
-    U.$('#optSound').addEventListener('change', e => {
-      S().sound = e.target.checked; K.audio.setEnabled(e.target.checked);
-    });
+    U.$('#optSound').addEventListener('change', e => K.son.regle(e.target.checked));
     U.$('#btnToPlayers').addEventListener('click', () => {
       K.audio.tap(); K.save();
       if (S().device === 'multi') { K.net.openLobbyScreen(); U.go('lobby'); }
@@ -93,14 +91,14 @@
         '</div>' +
       '</div>';
     }).join('');
-    U.$('#btnAddPlayer').hidden = K.state.players.length >= 8;
+    U.$('#btnAddPlayer').hidden = K.state.players.length >= K.MAX_JOUEURS;
     const depart = U.$('#btnStart');
     if (depart) depart.textContent = S().libre ? 'CHOISIR UNE EPREUVE ▶' : "C'EST PARTI ▶";
   };
 
   function players() {
     U.$('#btnAddPlayer').addEventListener('click', () => {
-      if (K.state.players.length >= 8) return;
+      if (K.state.players.length >= K.MAX_JOUEURS) return;
       K.audio.tap();
       K.state.players.push(K.newPlayer());
       M.renderPlayers();
@@ -151,7 +149,7 @@
      --------------------------------------------------------- */
   const RULES = [
     ['🎲', 'Le principe', "Kwa, votre animateur televise prefere, vous emmene dans la Foret Enchantee. On lance le de, on avance, et la case decide de votre sort. En mode Terminus le premier au bout gagne ; en mode Tours, on compte qui est alle le plus loin."],
-    ['❓', 'Tu te mets combien ?', "La carte se tire au milieu de l ecran et se retourne : tout le monde decouvre le theme en meme temps. Les paris s ouvrent ensuite — on ne mise pas sur quelqu un, on mise sur quelqu un SUR UN THEME. Puis le joueur choisit son niveau de 1 a 10 : c est le nombre de cases gagnees s il repond juste. Plus c est haut, plus c est vicieux. Faux = on ne bouge pas, et a partir de 8 on recule meme d une case."],
+    ['❓', 'Tu te mets combien ?', "La carte se tire au milieu de l ecran et se retourne : tout le monde decouvre le theme en meme temps. Les paris s ouvrent ensuite — on ne mise pas sur quelqu un, on mise sur quelqu un SUR UN THEME. Puis le joueur choisit son niveau de 1 a 10 : c est le nombre de cases gagnees s il repond juste. Plus c est haut, plus c est vicieux. Faux = on ne bouge pas, et a partir de 5 on recule meme d une case."],
     ['👥', 'A deux, c est plus court', "Undercover, Anecdote, Le Dilemme et Le 21 demandent du monde : un vote a la majorite, un infiltre a demasquer, ou un tour de table. A deux joueurs ils n ont plus de sens — celui qui commence Le 21 gagne meme a tous les coups — et Kwa ne les met pas sur le chemin. Le plateau se remplit alors de quiz, de cases eclair et d epreuves en solo. A partir de trois joueurs, tout revient."],
     ['🕵️', 'Undercover', "Chacun recoit un mot. Les infiltres en ont un legerement different. Debat, puis vote. L equipe qui gagne avance de 2 cases, l autre recule de 2."],
     ['📖', 'Anecdote', "Chacun ecrit une anecdote vraie. On vote pour la meilleure. Le plus vote avance de 5 cases. Mise de cote pour le moment : elle ne tombe plus sur le chemin."],
@@ -225,6 +223,8 @@
       K.state.players.push(K.newPlayer('', 'bleu'));
     }
     K.audio.setEnabled(S().sound);
+    K.music && K.music.setEnabled(S().sound);
+    K.son && K.son.rafraichit();
     syncOptions();
     M.renderPlayers();
   };

@@ -1,3 +1,6 @@
 node_modules/
 .DS_Store
 *.log
+
+# les masters audio : trop lourds pour le depot, ils vivent hors de git
+src/*.wav

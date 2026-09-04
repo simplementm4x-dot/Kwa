@@ -179,7 +179,7 @@
         '<div class="bet-legend"><span>' + U.esc(spec.legendeA || '1 · cadeau') + '</span>' +
         '<span>' + U.esc(spec.legendeB || '10 · suicidaire') + '</span></div>' +
         '<p class="hint" style="margin-top:14px">' + U.esc(spec.note ||
-          'Bonne reponse = tu avances du nombre choisi. A partir de 8, une erreur te fait reculer d une case.') +
+          'Bonne reponse = tu avances du nombre choisi. A partir de 5, une erreur te fait reculer d une case.') +
         '</p>');
       U.on(U.$('#overlay'), 'click', '.bet', (e, t) => { K.audio.blip(); res(+t.dataset.n); });
     });

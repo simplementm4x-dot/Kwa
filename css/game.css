@@ -595,3 +595,17 @@
   background:var(--pc);border:2px solid #12081f;border-radius:8px;
   padding:4px 8px;box-shadow:0 3px 0 rgba(0,0,0,.45);
 }
+
+/* Le bouton du son s installe a cote du classement. Le compteur de
+   tour quitte le flux pour rester exactement au milieu : sans ca, il
+   se decale des qu on ajoute ou qu on retire un bouton sur un cote. */
+.hud-turn{
+  position:absolute;left:50%;top:calc(10px + var(--safe-t));
+  transform:translateX(-50%);pointer-events:none;
+}
+.hud-top #btnScores{margin-left:auto}
+.hud-top .btn-son{margin-left:0}
+.hud-top .btn-son{
+  width:42px;height:42px;flex-basis:42px;font-size:17px;border-bottom-width:4px;
+}
+.hud-top .btn-son:active{border-bottom-width:2px}

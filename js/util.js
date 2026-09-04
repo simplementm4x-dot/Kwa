@@ -100,6 +100,7 @@ window.KWA = window.KWA || {};
     const sc = U.$('#screen-' + name + ' .scroll');
     if (sc) sc.scrollTop = 0;
     K.state && (K.state.screen = name);
+    K.music && K.music.ecran(name);
   };
 
   /* --- toast --- */
@@ -181,6 +182,7 @@ window.KWA = window.KWA || {};
     o.className = 'overlay';
     o.innerHTML = html;
     old.replaceWith(o);
+    K.son && K.son.poseOverlay();
     return o;
   };
   U.closeOverlay = function () {

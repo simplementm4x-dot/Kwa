@@ -22,9 +22,17 @@
     /* la pastille de la regle en cours : on clique dessus pour relire ce
        qu elle fait et voir combien de joueurs doivent encore passer */
     U.$('#hudEvent').addEventListener('click', () => K.events.detail());
+    K.son.install();
 
     /* deverrouillage audio au premier contact (iOS) */
-    const unlock = () => { K.audio.unlock(); document.removeEventListener('touchstart', unlock); document.removeEventListener('click', unlock); };
+    const unlock = () => {
+      K.audio.unlock();
+      /* le navigateur interdit le son avant un geste : le theme du menu
+         ne peut donc demarrer qu ici, au premier contact avec l ecran */
+      K.music && K.music.reveille();
+      document.removeEventListener('touchstart', unlock);
+      document.removeEventListener('click', unlock);
+    };
     document.addEventListener('touchstart', unlock, { passive: true });
     document.addEventListener('click', unlock);
 

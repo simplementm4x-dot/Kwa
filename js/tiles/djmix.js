@@ -23,6 +23,9 @@
     const autres = ctx.players.filter(x => x.id !== p.id);
     if (!autres.length) return [];
 
+    /* le jingle part sans qu on l attende : il tourne pendant que Kwa
+       annonce l epreuve, comme un generique sous une voix off */
+    K.music && K.music.jingle('dj');
     await K.kwa.say('DJ MIX ! ' + p.name + ', il te faut quelqu un aux platines.', { mood: 'oh' });
 
     const id = await K.ask(p, {

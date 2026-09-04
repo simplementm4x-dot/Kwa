@@ -9,8 +9,14 @@
   A.setEnabled = v => { on = !!v; };
   A.enabled = () => on;
 
-  function ac() {
-    if (!on) return null;
+  /**
+   * `force` : rendre le contexte meme son coupe.
+   * La musique en a besoin pour aller BAISSER son volume — lui refuser
+   * le contexte parce que le son vient d etre coupe, c est exactement
+   * ce qui la laissait tourner apres un appui sur le bouton mute.
+   */
+  function ac(force) {
+    if (!on && !force) return null;
     if (!ctx) {
       const C = window.AudioContext || window.webkitAudioContext;
       if (!C) return null;
@@ -20,6 +26,9 @@
     return ctx;
   }
   A.unlock = () => { ac(); };
+  /* la musique partage le meme contexte : un seul reveil, un seul
+     deverrouillage, et les bruitages passent par-dessus le fond */
+  A.context = () => ac(true);
 
   /** une note simple */
   function note(freq, dur, type, vol, delay, slideTo) {

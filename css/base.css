@@ -195,3 +195,32 @@ input,textarea{user-select:text;-webkit-user-select:text;font-family:inherit}
 .big-num{font-family:var(--pix);font-size:34px;color:var(--gold);text-shadow:0 3px 0 #000}
 .sep{height:1px;background:var(--line);margin:14px 0;opacity:.6}
 .chip{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:800;background:var(--panel2);color:var(--txt-dim)}
+
+/* ==========================================================
+   LE BOUTON DU SON
+
+   Le meme bouton se pose dans toutes les barres du jeu : les
+   entetes de menu, le HUD de la partie, l entete d une question
+   en plein ecran, et dans l angle de l ecran titre qui n a pas
+   de barre. Une seule regle de style pour tous, et la variante
+   ".coin" pour celui qui doit se placer tout seul.
+   ========================================================== */
+.btn-son{
+  width:34px;height:34px;flex:0 0 34px;margin-left:auto;padding:0;
+  border:2px solid var(--line);border-radius:10px;border-bottom-width:3px;
+  background:rgba(20,10,40,.85);color:var(--txt);
+  font-size:15px;line-height:1;display:grid;place-items:center;
+}
+.btn-son:active{transform:translateY(2px);border-bottom-width:1px}
+/* coupe : la pastille vire au rouge, on voit d un coup d oeil que la
+   table joue en silence */
+.btn-son.off{
+  color:#ff8fa3;border-color:#7a2740;background:rgba(70,12,28,.85);
+}
+.btn-son.coin{
+  position:absolute;top:calc(10px + var(--safe-t));right:12px;
+  z-index:6;margin:0;
+}
+/* il prend la taille de ses voisins : 38 dans une barre de menu a cote
+   du chevron de retour, 34 dans l entete plus serree d une question */
+.topbar .btn-son{width:38px;height:38px;flex-basis:38px;font-size:16px}

@@ -534,11 +534,7 @@
       '<button class="btn btn-ghost" id="pzSound">' + (K.audio.enabled() ? '🔊 Son actif' : '🔇 Son coupe') + '</button>' +
       '<button class="btn btn-ghost" id="pzQuit">Quitter la partie</button>');
     U.$('#pzOk').addEventListener('click', U.closeOverlay, { once: true });
-    U.$('#pzSound').addEventListener('click', e => {
-      const v = !K.audio.enabled();
-      K.audio.setEnabled(v); K.state.settings.sound = v;
-      e.target.textContent = v ? '🔊 Son actif' : '🔇 Son coupe';
-    });
+    U.$('#pzSound').addEventListener('click', () => K.son.bascule());
     U.$('#pzQuit').addEventListener('click', () => {
       K.state.over = true;
       K.net.reset();

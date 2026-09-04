@@ -23,6 +23,8 @@ const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
    de joueur). Au-dela on coupe : sans plafond, une trame annoncant une taille
    enorme ferait gonfler la memoire en attendant des octets qui ne viennent pas. */
 const MAX_FRAME = 1024 * 1024;
+/* doit rester d accord avec K.MAX_JOUEURS, cote client */
+const MAX_SIEGES = 10;
 
 /* Beaucoup de proxys ferment un WebSocket inactif au bout d une minute, et un
    telephone qui perd le reseau ne previent pas. On envoie donc un ping
@@ -49,7 +51,9 @@ const MIME = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.ico': 'image/x-icon',
-  '.woff2': 'font/woff2'
+  '.woff2': 'font/woff2',
+  '.webm': 'audio/webm',
+  '.m4a': 'audio/mp4'
 };
 
 const server = http.createServer((req, res) => {
@@ -374,7 +378,9 @@ function handle(c, m) {
     case 'join': {
       const room = rooms.get(String(m.code || '').trim());
       if (!room) { c.send({ t: 'error', msg: 'Aucun salon avec ce code' }); return; }
-      if (room.seats.length >= 8) { c.send({ t: 'error', msg: 'Salon complet (8 joueurs)' }); return; }
+      if (room.seats.length >= MAX_SIEGES) {
+        c.send({ t: 'error', msg: 'Salon complet (' + MAX_SIEGES + ' joueurs)' }); return;
+      }
       if (room.started) { c.send({ t: 'error', msg: 'La partie a deja commence' }); return; }
       leave(c);
       const seat = newSeat(room, c, m.p);

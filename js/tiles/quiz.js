@@ -10,6 +10,12 @@
   /* le temps laisse pour repondre a une question fermee */
   const SECONDES = 20;
 
+  /* A partir de ce niveau, rater coute une case.
+     En dessous, se mettre 4 etait de l argent gratuit : on encaissait
+     quatre cases quatre fois sur cinq et on ne perdait jamais rien.
+     Le pari ne commencait qu a 8, donc presque jamais. */
+  const RISQUE = 5;
+
   /**
    * L ouverture : la carte se tire au milieu de l ecran.
    *
@@ -64,8 +70,8 @@
       theme: card.t, cat: card.c, mini,
       legendeA: mini > 1 ? mini + ' · le plancher' : undefined,
       note: mini > 1
-        ? 'Lune de sang : les niveaux 1 a ' + (mini - 1) + ' sont fermes. A partir de 8, ' +
-          'une erreur te fait reculer d une case.'
+        ? 'Lune de sang : les niveaux 1 a ' + (mini - 1) + ' sont fermes. A partir de ' +
+          RISQUE + ', une erreur te fait reculer d une case.'
         : undefined
     });
     U.closeOverlay();
@@ -113,7 +119,7 @@
     }
     U.closeOverlay();
 
-    const delta = ok ? n : (n >= 8 ? -1 : 0);
+    const delta = ok ? n : (n >= RISQUE ? -1 : 0);
     if (ok) p.stats.correct++; else p.stats.wrong++;
 
     await U.panel(ok ? '🎉' : (tempsEcoule ? '⏱️' : '💀'),
