@@ -76,8 +76,19 @@
         }
       }
     }
-    /* les 2 premieres cases jouables sont des quiz : mise en jambe */
-    if (arr.length > 2) { arr[0] = 'quiz'; arr[1] = 'quiz'; }
+    /* Les deux premieres cases jouables sont des quiz : mise en jambe.
+       On les DEPLACE en tete au lieu d ecraser ce qui s y trouvait.
+       Ecraser faisait disparaitre du plateau, une fois sur trente, une
+       epreuve qui n y figurait qu une seule fois — et il y a maintenant
+       assez de types pour que plusieurs n apparaissent qu une fois. */
+    if (arr.length > 2) {
+      let deplaces = 0;
+      for (let k = 0; k < 2; k++) {
+        const i = arr.lastIndexOf('quiz');
+        if (i > 1) { arr.splice(i, 1); deplaces++; }
+      }
+      arr = new Array(deplaces).fill('quiz').concat(arr);
+    }
     return ['start'].concat(arr, ['finish']);
   }
 
