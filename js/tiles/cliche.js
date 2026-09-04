@@ -90,7 +90,7 @@
       K.scene.montre(K.scene.photo({
         cat: bonne.c, url: bonne.u, choix: choix.map(x => x.r), duree: SECONDES
       }));
-      const rep = await K.simultane.demande(joueurs, spec, { ms: 40000 });
+      const rep = await K.simultane.demande(joueurs, spec, { ms: 30000 });
       K.scene.cache();
       U.closeOverlay();
 

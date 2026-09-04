@@ -191,7 +191,11 @@ const banniere = ctx => {
   const gele = pions(victime);
   const avance = await (async () => {
     const t0 = Date.now();
-    while (Date.now() - t0 < 90000) {
+    /* Un tour entier peut etre long : carte du theme, ecran public,
+       epreuve collective avec son chrono. On laisse le temps qu il faut,
+       ce qu on verifie ici c est que la partie AVANCE malgre la coupure,
+       pas qu elle avance vite. */
+    while (Date.now() - t0 < 180000) {
       if (pions(host) !== gele) return true;
       /* Un panneau ouvert chez l hote bloque tout le reste : on y repond
          d abord. Et on ne le cherche que s il est VISIBLE — l overlay

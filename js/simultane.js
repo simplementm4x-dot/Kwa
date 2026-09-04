@@ -43,16 +43,31 @@
     const reponses = {};
     const limite = opts.ms || 45000;
 
+    /**
+     * Celui qui perd le reseau pendant la question ne repondra jamais.
+     * On ne va pas immobiliser huit personnes pendant trois quarts de
+     * minute pour l attendre : des que sa television s endort, on
+     * considere qu il n a pas joue.
+     */
+    function decroche(p) {
+      return new Promise(res => {
+        if (p.off) return res();
+        const t = setInterval(() => { if (p.off) { clearInterval(t); res(); } }, 700);
+        setTimeout(() => clearInterval(t), limite + 200);
+      });
+    }
+
     const jobs = players.map(p => {
       const s = typeof spec === 'function' ? spec(p) : spec;
       const question = (net && net.isActive() && net.isHost() && !net.isMe(p.id))
         ? net.ask(p, s, { muet: true })
         : K.prompt.render(s);
 
-      /* chaque reponse arrive quand elle arrive ; la limite ne coupe
-         que l attente, pas la question */
+      /* chaque reponse arrive quand elle arrive ; la limite et la
+         deconnexion ne coupent que l attente, pas la question */
       return Promise.race([
         question.then(v => { reponses[p.id] = v; }),
+        decroche(p),
         U.sleep(limite)
       ]);
     });

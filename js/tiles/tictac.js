@@ -66,7 +66,7 @@
         items: ['Lance quand tu veux', 'Arrete quand tu y crois', 'Aucun chronometre'],
         pied: 'Tout le monde joue en meme temps'
       }));
-      const rep = await K.simultane.demande(joueurs, spec, { ms: 60000 });
+      const rep = await K.simultane.demande(joueurs, spec, { ms: 35000 });
       K.scene.cache();
       Object.keys(rep).forEach(id => { if (rep[id] > 0) temps[id] = rep[id]; });
     } else {
