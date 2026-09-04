@@ -206,9 +206,20 @@ const banniere = ctx => {
       const foot = ov && !ov.hidden
         ? [...ov.querySelectorAll('button')].find(x => !x.disabled)
         : null;
-      const act = porteur && porteur !== victime ? porteur.$('#actBtn') : null;
+
+      /* Le de tombe sur l ecran de celui dont c est le tour, et ce n est
+         pas toujours le meme : au deuxieme tour ce n est deja plus le
+         joueur de depart. La boucle cherchait le bouton sur un seul
+         telephone, et l automate des invites refuse par principe de
+         toucher au de — plus personne ne le pressait, et la partie
+         attendait pour de bon. On le presse donc partout ou il est,
+         sauf chez celui qu on a coupe. */
+      const ecrans = [host].concat(guests).filter(c => c !== victime);
+      const dispo = ecrans.map(c => ({ c, b: c.$('#actBtn') }))
+                          .find(x => x.b && !x.b.disabled);
+
       if (foot) click(host.win, foot, host.errors);
-      else if (act) click(porteur.win, act, porteur.errors);
+      else if (dispo) click(dispo.c.win, dispo.b, dispo.c.errors);
       else { const k = host.$('#kwaBubble'); if (k) click(host.win, k, host.errors); }
       await sleep(90);
     }
